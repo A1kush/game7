@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A1K Runner — Unified Build (Team HP + A1 Kit v5 + Talents Lanes)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+  :root {
+    --bg:#0d131c; --ink:#e9f4ff; --muted:#a8b7ce; --line:#293854;
+    --panel:#121b20; --panel2:#0f1826; --panel3:#0b1421;
+    --hp:#36c777; --hp2:#6de38e; --mp:#3ec5ff; --mp2:#6aa8ff;
+    --boss:#ff8c6a; --boss2:#ffbb9a; --rage:#f9cc2b; --rage2:#ff7a31;
+  }
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  *{box-sizing:border-box}
+  #wrap{position:relative;margin:0 auto;max-width:1280px;height:100vh;overflow:hidden;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;background:linear-gradient(#0c1420,#0a1018)}
+  .hud{position:absolute;left:10px;right:10px;top:8px;display:flex;gap:10px;align-items:center;pointer-events:none;flex-wrap:wrap}
+  .pill{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px;color:var(--muted)}
+  .bar{position:relative;height:12px;background:var(--panel);border:1px solid var(--line);border-radius:999px;overflow:hidden;min-width:200px}
+  .fill{position:absolute;inset:0;transform-origin:left center}
+  .hp{background:linear-gradient(90deg,var(--hp),var(--hp2))}
+  .mp{background:linear-gradient(90deg,var(--mp),var(--mp2))}
+  .boss{background:linear-gradient(90deg,var(--boss),var(--boss2))}
+  .xp{background:linear-gradient(90deg,#2EA8FF,#7B61FF)}
+  .xpText{position:absolute;left:0;right:0;top:-16px;text-align:center;font-weight:700;font-size:12px;color:#a8b7ce;text-shadow:0 1px 2px #000}
+  #xpDomFill.pulse{animation:xpGlow .6s ease-out}
+  @keyframes xpGlow{0%{box-shadow:0 0 0 rgba(123,97,255,0)}50%{box-shadow:0 0 10px rgba(123,97,255,.9)}100%{box-shadow:0 0 0 rgba(123,97,255,0)}}
+  .subdock{position:absolute;left:10px;top:70px;display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:6px 10px;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .controls{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none}
+  .stick{position:relative;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#111b2a 0%,#0c1420 60%,#0c1420 100%);border:1px solid var(--line);box-shadow:inset 0 0 18px rgba(0,0,0,.55);pointer-events:auto}
+  .stick .nub{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#29384f,#1b2639);border:1px solid #3b4d71;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+  .actions{position:relative;display:flex;gap:22px;pointer-events:auto;align-items:flex-end}
+  .col{display:flex;flex-direction:column;gap:16px;align-items:flex-end}
+  .btn-round{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a384f,#182235);border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.35);color:#dfe9ff;display:flex;align-items:center;justify-content:center;user-select:none;cursor:pointer}
+  .btn-round.small{width:56px;height:56px;font-size:11px}
+  .btn-round.big{width:86px;height:86px;font-weight:700}
+  .btn-round:active{transform:translateY(1px)}
+  #itemMenu{position:fixed;z-index:10000;background:#0f1826;border:1px solid var(--line);border-radius:8px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  #itemMenu button{display:block;width:100%;padding:6px 10px;background:transparent;border:0;color:#cfe3ff;text-align:left}
+  #itemMenu button:hover{background:#15243a}
+  #notifWrap{position:fixed;right:14px;top:14px;z-index:12000;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+  .toast{background:#0f1826;border:1px solid var(--line);border-radius:8px;color:#cfe3ff;padding:6px 10px;box-shadow:0 8px 18px rgba(0,0,0,.35);opacity:.95}
+  .bag-overlay{position:fixed;top:0;right:0;bottom:0;width:60%;max-width:600px;background:linear-gradient(rgba(3,7,15,.95),rgba(3,7,15,.95));box-shadow:0 0 32px rgba(123,97,255,.55);border-left:2px solid rgba(123,97,255,.5);padding:12px;display:none;flex-direction:column;z-index:1000;overflow-y:auto}
+  .bag-overlay.open{display:flex}
+  .bag-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:4px;border-bottom:1px solid rgba(123,97,255,.3);color:#e9f4ff}
+  .bag-nav{display:flex;flex-direction:column;gap:6px;padding-right:8px;border-right:1px solid rgba(123,97,255,.3)}
+  .bag-nav-item{background:rgba(255,255,255,0.05);color:#a8b7ce;padding:6px 10px;text-align:left;cursor:pointer;font-weight:600;border-radius:4px;border:1px solid rgba(123,97,255,.2)}
+  .bag-nav-item:hover{background:rgba(123,97,255,.2);color:#e9f4ff;border-color:rgba(123,97,255,.4)}
+  .bag-nav-item.active{background:linear-gradient(90deg,#2EA8FF,#7B61FF);color:#fff;border-color:rgba(123,97,255,.6)}
+  .bag-body{flex:1;display:flex;margin-top:8px}
+  .bag-content{flex:3;padding-right:8px;overflow-y:auto}
+  .bag-detail{flex:2;border-left:1px solid rgba(58,226,255,.2);padding-left:8px;color:#cfe3ff;overflow-y:auto}
+  .bag-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+  .gear-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .pets-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .vehicles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;padding:8px}
+  .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;padding:8px}
+  .shop-item{background:rgba(255,255,255,.04);border:1px solid rgba(123,97,255,.2);border-radius:6px;padding:8px;text-align:center;font-size:12px}
+  .shop-item h5{margin:0 0 4px;font-size:13px;color:#cfe3ff}
+  .shop-item p{margin:0 0 8px;color:#9baec8;font-size:11px}
+  .shop-item button{background:rgba(123,97,255,.2);border:1px solid rgba(123,97,255,.4);color:#e9f4ff;padding:4px 8px;border-radius:4px;cursor:pointer;width:100%}
+  .shop-item button:hover{background:rgba(123,97,255,.4)}
+  .bag-panel{display:none}
+  .bag-panel.active{display:block}
+  .slot-box{height:44px;border:1px dashed rgba(123,97,255,.4);display:flex;align-items:center;justify-content:center;font-size:10px;color:#cfe3ff;cursor:pointer;user-select:none;background:rgba(255,255,255,.04)}
+  .slot-box.item{background:rgba(46,168,255,.08)}
+  .slot-box.equip{background:rgba(255,165,0,.08)}
+  .slot-box.pet{background:rgba(255,192,203,.08)}
+  .bag-detail-content h4{margin:0 0 4px 0;font-size:14px;color:#cfe3ff}
+  .bag-detail-content p{font-size:12px;margin:0 0 8px 0;color:#9baec8}
+  .bag-actions button{display:inline-block;margin-right:6px;margin-bottom:6px;padding:4px 8px;font-size:12px;border:none;border-radius:4px;cursor:pointer;background:#0f1826;color:#cfe3ff}
+  .bag-actions button:hover{background:#1a263a}
+  .drawer-close{position:absolute;top:6px;right:8px;width:20px;height:20px;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:20px;cursor:pointer;pointer-events:auto}
+  .drawer-close:hover{color:var(--ink)}
+  /* Talent Lanes */
+  .lane-wrap{display:flex;gap:12px;flex-wrap:wrap}
+  .lane-col{flex:1 1 160px;background:rgba(255,255,255,0.03);border:1px solid rgba(123,97,255,0.25);padding:6px;border-radius:6px}
+  .lane-col h4{margin:2px 0 6px;font-size:12px;letter-spacing:.5px;color:#cfe3ff}
+  .lane-node{display:flex;flex-direction:column;gap:2px;margin-bottom:6px;padding:6px;background:#0f1826;border:1px solid rgba(123,97,255,0.25);border-radius:4px;font-size:11px;cursor:pointer;position:relative}
+  .lane-node.owned{background:#1d2c48;border-color:#63e6ff;color:#bfe9ff}
+  .lane-node.locked{opacity:.45;cursor:not-allowed}
+  .lane-node span.cost{position:absolute;right:6px;top:4px;font-size:10px;color:#ffd56a}
+  .lane-node small{color:#8ea5c4;font-size:10px}
+  .lane-node button{margin-top:4px;font-size:10px;padding:3px 6px;background:#2d3a54;border:1px solid #4b638b;border-radius:3px;color:#d7e9ff;cursor:pointer}
+  .lane-node button:disabled{opacity:.4;cursor:not-allowed}
+  #talentSummary{margin-top:6px;font-size:11px;color:#9baec8;line-height:1.4;white-space:pre-wrap}
+  .upgrade-btn[disabled]{opacity:.4;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv" width="1280" height="720"></canvas>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="pill" id="stagePill">Stage 1 • Wave 1/10 • Kills 0</div>
+    <div class="bar"><div class="fill hp" id="hpFill"></div></div>
+    <div class="bar"><div class="fill mp" id="mpFill"></div></div>
+    <div class="bar" style="min-width:260px;position:relative">
+      <div class="fill xp" id="xpDomFill"></div>
+      <div class="xpText" id="xpDomLabel">0/50 XP — Lv 1</div>
+    </div>
+    <div class="bar" style="min-width:260px">
+      <div class="fill boss" id="bossFill"></div>
+    </div>
+    <div class="pill" id="boostPill">Lv 1 • Booster: -</div>
+  </div>
+  <div id="currency" class="hud" style="top:30px;gap:8px;justify-content:flex-start;pointer-events:none">
+    <div class="pill" style="pointer-events:auto">Gold: <b id="goldVal">0</b></div>
+    <div class="pill" style="pointer-events:auto">Silver: <b id="silverVal">0</b></div>
+    <div class="pill" style="pointer-events:auto">Tickets: <b id="ticketVal">0</b></div>
+    <div class="pill" style="pointer-events:auto">Gems: <b id="gemVal">0</b></div>
+    <div class="pill" style="pointer-events:auto">Boss Kills: <b id="bossKillsVal">0</b></div>
+    <div class="pill" style="pointer-events:auto" id="giftKeysPill">Gift Keys: <b id="giftKeyVal">0</b></div>
+    <div class="pill" style="pointer-events:auto" id="bossKeysPill">Boss Keys: <b id="bossKeyVal">0</b></div>
+  </div>
+
+  <!-- Dock -->
+  <div class="subdock">
+    <button class="btn" id="btnSpeed">×1</button>
+    <button class="btn" id="btnInventory">Items</button>
+    <button class="btn" id="btnPets">Pets</button>
+    <button class="btn" id="btnVehicles">Vehicles</button>
+    <button class="btn" id="btnTalents">Talents</button>
+    <button class="btn" id="btnAuto">Auto: OFF</button>
+    <button class="btn" id="btnStart">Pause</button>
+    <button class="btn" id="btnShop">Shop</button>
+    <button class="btn" id="btnSettings">Settings</button>
+  </div>
+
+  <!-- Bag Overlay -->
+  <aside id="inventory" class="bag-overlay">
+    <div class="bag-header">
+      <h3>Bag</h3>
+      <div>
+        <span>Gold: <span id="bagGoldVal">0</span></span>
+        <button class="drawer-close" aria-label="Close" id="btnCloseBag">×</button>
+      </div>
+    </div>
+    <div class="bag-body">
+      <div class="bag-nav">
+        <button class="bag-nav-item active" data-tab="items">Items</button>
+        <button class="bag-nav-item" data-tab="gear">Gear</button>
+        <button class="bag-nav-item" data-tab="pets">Pets</button>
+        <button class="bag-nav-item" data-tab="talent">Talents</button>
+        <button class="bag-nav-item" data-tab="vehicles">Vehicles</button>
+        <button class="bag-nav-item" data-tab="shop">Shop</button>
+        <button class="bag-nav-item" data-tab="settings">Settings</button>
+      </div>
+      <div class="bag-content">
+        <div id="bag-items" class="bag-panel active">
+          <div id="bagGrid" class="bag-grid"></div>
+        </div>
+        <div id="bag-gear" class="bag-panel">
+          <div id="gearSlots" class="gear-grid"></div>
+          <hr style="margin:8px 0;border-color:var(--line)">
+          <div id="gearGrid" class="bag-grid"></div>
+        </div>
+        <div id="bag-pets" class="bag-panel">
+          <div id="petsGrid" class="pets-grid"></div>
+        </div>
+        <div id="bag-talent" class="bag-panel">
+          <div id="talentLaneWrap" class="lane-wrap"></div>
+          <div id="talentSummary"></div>
+        </div>
+        <div id="bag-vehicles" class="bag-panel">
+          <div id="vehiclesGrid" class="vehicles-grid"></div>
+        </div>
+        <div id="bag-shop" class="bag-panel">
+          <div id="shopGrid" class="shop-grid"></div>
+        </div>
+        <div id="bag-settings" class="bag-panel">
+          <div class="card" style="background:rgba(255,255,255,0.04);padding:8px;border:1px solid rgba(123,97,255,0.2);border-radius:6px">
+            <h4 style="margin:0 0 6px;font-size:14px">Game Settings</h4>
+            <label style="display:block;margin-top:6px"><input type="checkbox" id="setting-auto-ai"> Auto-AI</label>
+            <label style="display:block;margin-top:6px"><input type="checkbox" id="setting-parallax" checked> Parallax Background</label>
+          </div>
+        </div>
+      </div>
+      <div class="bag-detail">
+        <div id="detailContent" class="bag-detail-content">
+          <h4 id="detailName">Select Item</h4>
+          <p id="detailStats">-</p>
+          <div id="detailActions" class="bag-actions"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="joyWrap">
+      <div class="stick" id="stick">
+        <div class="nub" id="nub"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="col">
+        <div class="btn-round small" id="btnRage">R</div>
+        <div class="btn-round small" id="btnShield">Shield</div>
+        <div class="btn-round small" id="btnJump">Jump</div>
+        <div class="btn-round big" id="btnShoot"><b>•</b></div>
+      </div>
+      <div class="col">
+        <div class="btn-round small" id="btnSwitch2">Switch</div>
+        <div class="btn-round small" id="btnS1">S1</div>
+        <div class="btn-round small" id="btnS2">S2</div>
+        <div class="btn-round small" id="btnS3">S3</div>
+        <div class="btn-round small" id="btnS5" title="A1 Finisher">S5</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CORE SCRIPT ================= -->
+<script>
+/* ================================================================
+   HIGH-LEVEL ROADMAP / WHAT IS IMPLEMENTED HERE
+   ----------------------------------------------------------------
+   1. Team HP & Revival System
+      - Per player: hp, hpMax, isDefeated, reviveT.
+      - defeatPlayer / revivePlayer / checkGameOver.
+      - HUD uses current leader's HP (legacy st.hp mirrors leader).
+      - Revive Token instantly revives one defeated hero.
+
+   2. Enemy AI & Formations
+      - spawnWave assigns role (shooter/melee) & behavior (hitAndRun/relentless).
+      - updateEnemyFormations() resolves horizontal overlap.
+      - Shooter keeps distance; hitAndRun retreats briefly after first shot.
+
+   3. Gear & Loot Rules
+      - LOOT_TABLES with proper rank distributions.
+      - Gold Bag item: open for 500–5000 gold.
+      - Item upgrade system with +10 cap (Upgrade button disabled at +10).
+      - Luck stat affects drop rolls.
+
+   4. A1 Combat Kit v5
+      - a1_basicAttack() 5‑hit combo with per-hit damage & parry windows.
+      - a1_useSkill(): S1 multi-waves; S2 Fuse Bomb (armor shred + hitstop); S3 Combo Burst (echo tick + reset S2); S5 Finisher (multi-lane waves + Crescendo).
+      - updateA1RageMode() drains rage, applies global 0.2s skill lock while active.
+      - Aura trails during & shortly after Rage.
+
+   5. Talent Lanes
+      - Five lanes: ATK / DEF / Recovery / Cooldown / Luck.
+      - lane-based purchase UI replaces old canvas.
+      - tallyTalentStats integrates lane effects & recalculates hero stats.
+
+   6. Crescendo Cooldown Reset
+      - After any S5 or SECRET: S1 & S2 cooldown reset.
+
+   NOTE: Many legacy systems trimmed/simplified to keep this single-file
+         version focused on the requested tasks & finishing A1's kit.
+=================================================================== */
+
+/* =============== Constants / Canvas Setup ====================== */
+const DESIGN_W = 1280, DESIGN_H = 720;
+const cv = document.getElementById('cv'); let ctx = cv.getContext('2d');
+function resize() {
+  const scale = Math.min(innerWidth / DESIGN_W, innerHeight / DESIGN_H);
+  const cssW = DESIGN_W * scale, cssH = DESIGN_H * scale;
+  Object.assign(cv.style, { width: cssW+'px', height: cssH+'px', position:'absolute', left: ((innerWidth - cssW)/2)+'px', top: ((innerHeight - cssH)/2)+'px'});
+  const dpr = Math.min(devicePixelRatio||1, 2);
+  cv.width = Math.round(DESIGN_W * dpr); cv.height = Math.round(DESIGN_H * dpr);
+  ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', resize); resize();
+
+/* ================== Game State ================== */
+const st = {
+  running:true, speed:1, time:0, dt:0, started:false,
+  stage:1, wave:1, wavesPerStage:10, kills:0,
+  gold:0, silver:0, tickets:0, gems:0, bossKills:0,
+  giftKeys:0, bossKeys:0,
+  xp:0, level:1, apTotal:0, apSpent:0,
+  lootLuckBase:0,
+  players:[
+    { id:'A1', x:200, y:DESIGN_H-160, lane:0, vx:0, vy:0,
+      hpMax:100, hp:100, isDefeated:false, reviveT:0,
+      dmgBase:20, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0 },
+    { id:'Unique', x:240, y:DESIGN_H-130, lane:1, vx:0, vy:0,
+      hpMax:100, hp:100, isDefeated:false, reviveT:0,
+      dmgBase:18, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0 },
+    { id:'Missy', x:220, y:DESIGN_H-100, lane:2, vx:0, vy:0,
+      hpMax:100, hp:100, isDefeated:false, reviveT:0,
+      dmgBase:18, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0 },
+  ],
+  leader:0,
+  enemies:[], shots:[], eShots:[], pickups:[], effects:[],
+  bossAlive:false, bossHP:0, bossMax:1,
+  cds:{ 'A1':{S1:0,S2:0,S3:0,S5:0}, 'Unique':{S1:0,S2:0,S3:0}, 'Missy':{S1:0,S2:0,S3:0}},
+  // Inventory / Gear
+  inv:[], invRows:4,
+  equippedGear:{weapon:null,armor:null,acc1:null,acc2:null},
+  equippedPets:[], petSlots:1,
+  equippedVehicle:null,
+  bagOpen:false, bagTab:'items',
+  // Talent Lanes
+  talentLanes:{}, talentPicks:new Set(), _talentStats:{},
+  luck:0,
+  // Misc
+  _globalSkillLock:0,
+  reviveTokens:0
+};
+
+/* ================== Utility UI ================== */
+function $(q){return document.querySelector(q);}
+function notify(msg,color){const wrap=notifWrap();const d=document.createElement('div');d.className='toast';if(color)d.style.color=color;d.textContent=msg;wrap.appendChild(d);setTimeout(()=>{d.style.transition='opacity .4s';d.style.opacity=0;setTimeout(()=>d.remove(),400);},1400);}
+let _notifEl=null;function notifWrap(){if(!_notifEl){_notifEl=document.createElement('div');_notifEl.id='notifWrap';document.body.appendChild(_notifEl);}return _notifEl;}
+function addFloater(x,y,txt,color){st.effects.push({x,y,txt,color,vy:-0.25,life:800});}
+
+/* ================= Team HP Helpers ================= */
+function leader(){return st.players[st.leader];}
+function mirrorLeaderHP(){
+  const L=leader();
+  st.hp = L.hp; st.hpMax = L.hpMax; // mirror for legacy HUD code
+}
+function defeatPlayer(p){
+  if(p.isDefeated) return;
+  p.isDefeated=true; p.reviveT=(40+Math.floor(Math.random()*21))*1000;
+  addFloater(p.x,p.y-50,p.id+' Down!','#ff4d4f');
+  // Auto-switch if leader
+  if(st.players[st.leader]===p){
+    const idx=st.players.findIndex(pl=>!pl.isDefeated);
+    if(idx>=0) st.leader=idx;
+  }
+}
+function revivePlayer(p, instant=false){
+  p.isDefeated=false; p.reviveT=0; p.hp=p.hpMax;
+  addFloater(p.x,p.y-50,p.id+' Revived','#36c777');
+  if(instant) notify(p.id+' revived!');
+}
+function damagePlayer(p,dmg){
+  if(p.isDefeated) return;
+  p.hp = Math.max(0,p.hp-dmg);
+  addFloater(p.x,p.y-30,'-'+dmg,'#ff7a6a');
+  if(p.hp<=0) defeatPlayer(p);
+}
+function checkPlayersRevive(dtMs){
+  for(const p of st.players){
+    if(p.isDefeated && p.reviveT>0){
+      p.reviveT-=dtMs;
+      if(p.reviveT<=0) revivePlayer(p);
+    }
+  }
+}
+function checkGameOver(){
+  if(st.players.every(p=>p.isDefeated)){
+    notify('Game Over!');
+    // Simple reset
+    for(const p of st.players){
+      p.isDefeated=false; p.hpMax=100; p.hp=p.hpMax; p.reviveT=0;
+    }
+    st.stage=1; st.wave=1; st.kills=0;
+    st.enemies.length=0; st.shots.length=0; st.eShots.length=0; st.pickups.length=0;
+    spawnWave();
+  }
+}
+
+/* ================ Enemy Formation & AI ================= */
+function updateEnemyFormations(){
+  const R=28;
+  for(let i=0;i<st.enemies.length;i++){
+    const a=st.enemies[i]; if(a.hp<=0) continue;
+    for(let j=i+1;j<st.enemies.length;j++){
+      const b=st.enemies[j]; if(b.hp<=0) continue;
+      const dx=b.x-a.x;
+      if(Math.abs(dx)<R){
+        const push=(R - Math.abs(dx))*0.5;
+        const dir=dx>=0?1:-1;
+        a.x-=push*dir; b.x+=push*dir;
+      }
+    }
+  }
+}
+function applyEnemyBehavior(e, dt){
+  if(!e.role) return;
+  const L=leader();
+  if(e.role==='shooter'){
+    // Maintain distance ~240px
+    const dist=L.x - e.x;
+    const desired=-240;
+    if(dist>desired+40) e.x+=Math.min(120*dt,(dist-desired)*0.5*dt);
+    if(dist<desired-40) e.x-=Math.min(120*dt,(desired-dist)*0.5*dt);
+  }
+  if(e.behavior==='hitAndRun'){
+    if(e._justFired && !e._retreating){
+      e._retreating=true; e._retreatT=1200;
+    }
+    if(e._retreating){
+      e._retreatT-=dt*1000;
+      e.x+=160*dt; // move right
+      if(e._retreatT<=0){e._retreating=false; e._justFired=false;}
+    }
+  }
+}
+
+/* ================ Loot Tables & Gold Bag ================= */
+const LOOT_TABLES = {
+  mobChest:[
+    {name:'Rusty Blade',rank:'C',slot:'weapon',atk:5},
+    {name:'Cracked Buckler',rank:'C',slot:'armor',def:5},
+    {name:'Gleam Ring',rank:'B',slot:'acc1',atk:8}
+  ],
+  miniBossChest:[
+    {name:'Reinforced Edge',rank:'B',slot:'weapon',atk:18},
+    {name:'Composite Armor',rank:'B',slot:'armor',def:22},
+    {name:'Battle Loop',rank:'B',slot:'acc2',atk:15}
+  ],
+  bossChest:[
+    {name:'Aether Greatblade',rank:'A',slot:'weapon',atk:40},
+    {name:'Starlit Carapace',rank:'A',slot:'armor',def:45},
+    {name:'Celestial Loop',rank:'S',slot:'acc1',atk:55}
+  ]
+};
+function rollLoot(type){
+  const pool=LOOT_TABLES[type]||[];
+  if(!pool.length) return null;
+  // Luck weighting: higher luck pushes index upward slightly
+  const luck = st.luck||0;
+  const bias = Math.min(0.6, luck*0.01);
+  let idx = Math.floor(Math.random()*pool.length + bias*(pool.length-1));
+  if(idx>=pool.length) idx=pool.length-1;
+  const base = JSON.parse(JSON.stringify(pool[idx]));
+  base.id=Math.random();
+  base.type='gear';
+  base.level=0;
+  return base;
+}
+
+/* =============== Inventory / Bag UI =============== */
+function maxBagSlots(){return st.invRows*8;}
+function addItemToBag(it){
+  if(st.inv.length>=maxBagSlots()){notify('Bag Full!','#ff7a6a');return;}
+  st.inv.push(it); if(st.bagOpen) renderBag();
+}
+function renderBag(){
+  if(!st.bagOpen) return;
+  // Items tab
+  const grid=document.getElementById('bagGrid');
+  if(grid){
+    grid.innerHTML='';
+    const items=st.inv.filter(i=>i && i.type!=='gear' && i.slot!=='weapon' && i.slot!=='armor' && !['acc1','acc2'].includes(i.slot) && i.slot!=='pet' && i.slot!=='vehicle');
+    items.forEach(it=>{
+      const cell=document.createElement('div');
+      cell.className='slot-box item';
+      cell.textContent=it.name;
+      cell.onclick=()=>renderDetail(it, st.inv.findIndex(x=>x&&x.id===it.id));
+      grid.appendChild(cell);
+    });
+    const empty = maxBagSlots() - st.inv.length;
+    for(let i=0;i<empty;i++){
+      const cell=document.createElement('div');
+      cell.className='slot-box';
+      cell.textContent='+';
+      grid.appendChild(cell);
+    }
+  }
+  // Gear tab
+  const gearSlotsEl=document.getElementById('gearSlots');
+  const gearGrid=document.getElementById('gearGrid');
+  if(gearSlotsEl&&gearGrid){
+    gearSlotsEl.innerHTML=''; gearGrid.innerHTML='';
+    const slots=['weapon','armor','acc1','acc2'];
+    slots.forEach(sl=>{
+      const slotDiv=document.createElement('div');
+      const item=st.equippedGear[sl];
+      slotDiv.className='slot-box equip';
+      slotDiv.textContent=item?item.name:('+ '+sl);
+      slotDiv.onclick=()=>{ if(item) renderDetail(item, sl, true); };
+      gearSlotsEl.appendChild(slotDiv);
+    });
+    st.inv.filter(it=>it&&['weapon','armor','acc1','acc2'].includes(it.slot)).forEach(it=>{
+      const cell=document.createElement('div');
+      cell.className='slot-box item';
+      cell.textContent=it.name+(it.level?(' +'+it.level):'');
+      cell.onclick=()=>renderDetail(it, st.inv.findIndex(x=>x&&x.id===it.id));
+      gearGrid.appendChild(cell);
+    });
+  }
+  // Pets tab
+  const petsGrid=document.getElementById('petsGrid');
+  if(petsGrid){
+    petsGrid.innerHTML='';
+    for(let i=0;i<st.petSlots;i++){
+      const pet=st.equippedPets[i];
+      const cell=document.createElement('div');
+      cell.className='slot-box equip pet';
+      cell.textContent=pet?pet.name:('Pet Slot '+(i+1));
+      cell.onclick=()=>{ if(pet) renderDetail(pet,'petEquipped:'+i,true); };
+      petsGrid.appendChild(cell);
+    }
+    const hr=document.createElement('hr');
+    hr.style.gridColumn='1 / -1'; hr.style.margin='8px 0'; hr.style.border='1px solid var(--line)';
+    petsGrid.appendChild(hr);
+    st.inv.filter(it=>it&&it.slot==='pet').forEach(it=>{
+      const cell=document.createElement('div');
+      cell.className='slot-box item pet';
+      cell.textContent=it.name;
+      cell.onclick=()=>renderDetail(it, st.inv.findIndex(x=>x&&x.id===it.id));
+      petsGrid.appendChild(cell);
+    });
+  }
+  // Vehicles
+  const vehiclesGrid=document.getElementById('vehiclesGrid');
+  if(vehiclesGrid){
+    vehiclesGrid.innerHTML='';
+    const cell=document.createElement('div');
+    cell.className='slot-box equip vehicle';
+    cell.textContent=st.equippedVehicle?st.equippedVehicle.name:'Equip Vehicle';
+    cell.onclick=()=>{ if(st.equippedVehicle) renderDetail(st.equippedVehicle,'vehicleEquipped',true); };
+    vehiclesGrid.appendChild(cell);
+    const hr=document.createElement('hr');
+    hr.style.gridColumn='1 / -1'; hr.style.margin='8px 0'; hr.style.border='1px solid var(--line)';
+    vehiclesGrid.appendChild(hr);
+    st.inv.filter(it=>it&&it.slot==='vehicle').forEach(it=>{
+      const c=document.createElement('div');
+      c.className='slot-box item vehicle';
+      c.textContent=it.name;
+      c.onclick=()=>renderDetail(it, st.inv.findIndex(x=>x&&x.id===it.id));
+      vehiclesGrid.appendChild(c);
+    });
+  }
+  // Shop
+  renderShop();
+  // Talents
+  renderTalentLanes();
+  document.getElementById('bagGoldVal').textContent=st.gold;
+}
+function openBag(tab='items'){
+  st.bagOpen=true; st.bagTab=tab;
+  document.getElementById('inventory').classList.add('open');
+  document.querySelectorAll('.bag-nav-item').forEach(b=>{
+    const t=b.getAttribute('data-tab');
+    b.classList.toggle('active', t===tab);
+  });
+  document.querySelectorAll('.bag-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('bag-'+tab);
+  if(panel) panel.classList.add('active');
+  renderBag();
+}
+function closeBag(){
+  st.bagOpen=false;
+  document.getElementById('inventory').classList.remove('open');
+}
+document.getElementById('btnInventory').onclick=()=>openBag('items');
+document.getElementById('btnPets').onclick=()=>openBag('pets');
+document.getElementById('btnVehicles').onclick=()=>openBag('vehicles');
+document.getElementById('btnTalents').onclick=()=>openBag('talent');
+document.getElementById('btnShop').onclick=()=>openBag('shop');
+document.getElementById('btnSettings').onclick=()=>openBag('settings');
+document.getElementById('btnCloseBag').onclick=()=>closeBag();
+document.querySelectorAll('.bag-nav-item').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    openBag(btn.getAttribute('data-tab'));
+  });
+});
+
+/* ================= Shop Items =================== */
+const SHOP_ITEMS = [
+  {id:'hp_potion', name:'HP Potion', description:'Heals 40% leader HP.', cost:60, type:'consumable'},
+  {id:'rage_pill', name:'Rage Pill', description:'Grants +30 Rage to party.', cost:90, type:'consumable'},
+  {id:'revive_token', name:'Revive Token', description:'Instantly revives one defeated hero.', cost:80, type:'consumable'},
+  {id:'gold_bag', name:'Gold Bag', description:'Open for 500–5000 gold.', cost:300, type:'item'},
+  {id:'gear_kit', name:'Random Gear Kit', description:'Adds 3 random gear pieces.', cost:250, type:'item'},
+  {id:'ap_reset', name:'AP Reset', description:'Refund all spent AP.', cost:400, type:'consumable'}
+];
+function renderShop(){
+  const grid=document.getElementById('shopGrid'); if(!grid) return;
+  grid.innerHTML='';
+  SHOP_ITEMS.forEach(it=>{
+    const d=document.createElement('div');
+    d.className='shop-item';
+    d.innerHTML=`<h5>${it.name}</h5><p>${it.description}</p><p><b>Cost: ${it.cost} Gold</b></p><button data-id="${it.id}">Buy</button>`;
+    grid.appendChild(d);
+  });
+  grid.onclick=e=>{
+    if(e.target.matches('button[data-id]')){
+      buyShopItem(e.target.getAttribute('data-id'));
+    }
+  };
+}
+function buyShopItem(id){
+  const it=SHOP_ITEMS.find(i=>i.id===id); if(!it) return;
+  if(st.gold<it.cost){notify('Not enough gold','#ff7a6a');return;}
+  st.gold-=it.cost; updateCurrencies();
+  notify('Purchased '+it.name);
+  switch(it.id){
+    case 'hp_potion': {
+      const L=leader();
+      const heal=Math.round(L.hpMax*0.4);
+      L.hp=Math.min(L.hpMax, L.hp+heal);
+      addFloater(L.x,L.y-60,'+'+heal+' HP','#36c777');
+      break;
+    }
+    case 'rage_pill':
+      st.players.forEach(p=>p.rage=Math.min(p.rageMax,p.rage+30));
+      break;
+    case 'revive_token': {
+      // Revive first defeated else store token
+      const dead = st.players.find(p=>p.isDefeated);
+      if(dead) revivePlayer(dead,true);
+      else st.reviveTokens++;
+      break;
+    }
+    case 'gold_bag':
+      addItemToBag({id:Math.random(),name:'Gold Bag',type:'gold_bag',slot:'item'});
+      break;
+    case 'gear_kit':
+      for(let i=0;i<3;i++){
+        const slot=['weapon','armor','acc1','acc2'][Math.floor(Math.random()*4)];
+        addItemToBag(makeGear('Random '+slot,slot, {atk:5+Math.floor(Math.random()*8)}));
+      }
+      break;
+    case 'ap_reset':
+      st.talentPicks.clear(); st.apSpent=0; tallyTalentStats(); renderTalentLanes(); break;
+  }
+  renderBag();
+}
+
+/* ================== Gear / Items =================== */
+function makeGear(name, slot, extra={}){
+  return { id:Math.random(), name, slot, type:'gear', level:0, ...extra };
+}
+function renderDetail(item, indexOrSlot, equipped=false){
+  const nameEl=$('#detailName'), statEl=$('#detailStats'), actEl=$('#detailActions');
+  if(!item){ nameEl.textContent='Select Item'; statEl.textContent='-'; actEl.innerHTML=''; return; }
+  nameEl.textContent=item.name+(item.level?(' +'+item.level):'');
+  let desc='';
+  if(item.type==='gear'){
+    if(item.atk) desc+='ATK +'+item.atk+' ';
+    if(item.def) desc+='DEF +'+item.def+' ';
+  } else if(item.type==='gold_bag'){
+    desc='Open to gain random gold.';
+  } else {
+    desc=item.description||'-';
+  }
+  statEl.textContent=desc.trim()||'-';
+  actEl.innerHTML='';
+  // Actions
+  if(item.type==='gear'){
+    if(equipped){
+      const b=document.createElement('button'); b.textContent='Unequip';
+      b.onclick=()=>{
+        // put back to bag
+        if(typeof indexOrSlot==='string'){
+          // slot key
+          const slotKey=indexOrSlot;
+          st.equippedGear[slotKey]=null;
+          addItemToBag(item);
+          recalcStats(); renderBag(); renderDetail(null);
+        }
+      };
+      actEl.appendChild(b);
+    } else {
+      const b=document.createElement('button'); b.textContent='Equip';
+      b.onclick=()=>{
+        const idx=indexOrSlot;
+        const it=st.inv[idx];
+        if(!it) return;
+        const slot=it.slot;
+        if(st.equippedGear[slot]) addItemToBag(st.equippedGear[slot]);
+        st.equippedGear[slot]=it;
+        st.inv.splice(idx,1);
+        recalcStats(); renderBag(); renderDetail(null);
+      };
+      actEl.appendChild(b);
+    }
+    // Upgrade
+    const up=document.createElement('button');
+    up.className='upgrade-btn';
+    up.textContent=item.level>=10?'Max +10':'Upgrade';
+    up.disabled=item.level>=10 || st.gold<calcUpgradeCost(item);
+    up.onclick=()=>{
+      if(item.level>=10) return;
+      const cost=calcUpgradeCost(item);
+      if(st.gold<cost){notify('Need '+cost+' Gold','#ff7a6a');return;}
+      st.gold-=cost;
+      item.level++;
+      // Simple scaling: +12% atk/def each level
+      if(item.atk) item.atk = Math.round(item.atk*1.12);
+      if(item.def) item.def = Math.round(item.def*1.12);
+      updateCurrencies(); recalcStats(); renderBag(); renderDetail(item,indexOrSlot,equipped);
+    };
+    actEl.appendChild(up);
+  } else if(item.type==='gold_bag'){
+    const b=document.createElement('button'); b.textContent='Open';
+    b.onclick=()=>{
+      const idx=st.inv.findIndex(x=>x&&x.id===item.id);
+      if(idx>=0) st.inv.splice(idx,1);
+      const amt=500+Math.floor(Math.random()*4501);
+      st.gold+=amt; updateCurrencies();
+      notify('+'+amt+' Gold','#ffd56a');
+      renderBag(); renderDetail(null);
+    };
+    actEl.appendChild(b);
+  } else {
+    const b=document.createElement('button'); b.textContent='Close';
+    b.onclick=()=>renderDetail(null);
+    actEl.appendChild(b);
+  }
+}
+function calcUpgradeCost(item){
+  return 100*(item.level+1);
+}
+
+/* =================== Talents: Lane System =================== */
+st.talentLanes = {
+  atk:[
+    {id:'atk_1', cost:1, text:'+5% ATK', fx:s=>s.atkMul+=0.05},
+    {id:'atk_2', cost:2, req:['atk_1'], text:'+8% ATK', fx:s=>s.atkMul+=0.08},
+    {id:'atk_3', cost:3, req:['atk_2'], text:'+12% ATK', fx:s=>s.atkMul+=0.12}
+  ],
+  def:[
+    {id:'def_1', cost:1, text:'+80 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+80;}},
+    {id:'def_2', cost:2, req:['def_1'], text:'+120 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+120;}},
+    {id:'def_3', cost:3, req:['def_2'], text:'+160 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+160;}}
+  ],
+  recovery:[
+    {id:'rec_1', cost:1, text:'+6% Lifesteal', fx:s=>{s.ls=(s.ls||0)+0.06;}},
+    {id:'rec_2', cost:2, req:['rec_1'], text:'+10% Lifesteal', fx:s=>{s.ls=(s.ls||0)+0.10;}}
+  ],
+  cooldown:[
+    {id:'cd_1', cost:1, text:'-4% Skill CD', fx:s=>{s.haste=(s.haste||0)+4;}},
+    {id:'cd_2', cost:2, req:['cd_1'], text:'-6% Skill CD', fx:s=>{s.haste=(s.haste||0)+6;}}
+  ],
+  luck:[
+    {id:'luck_1', cost:1, text:'+5 Luck', fx:s=>{s.luck=(s.luck||0)+5;}},
+    {id:'luck_2', cost:2, req:['luck_1'], text:'+10 Luck', fx:s=>{s.luck=(s.luck||0)+10;}},
+    {id:'luck_3', cost:3, req:['luck_2'], text:'+15 Luck', fx:s=>{s.luck=(s.luck||0)+15;}}
+  ]
+};
+function canBuyTalent(node){
+  if(st.apSpent >= st.apTotal) return false;
+  if(st.talentPicks.has(node.id)) return false;
+  if(node.req && !node.req.every(r=>st.talentPicks.has(r))) return false;
+  return true;
+}
+function buyTalent(node){
+  if(!canBuyTalent(node)) return;
+  st.talentPicks.add(node.id);
+  st.apSpent += node.cost||1;
+  tallyTalentStats();
+  renderTalentLanes();
+}
+function tallyTalentStats(){
+  const stats={atkMul:0};
+  st.luck=0;
+  for(const lane of Object.values(st.talentLanes)){
+    for(const n of lane){
+      if(st.talentPicks.has(n.id) && n.fx) n.fx(stats);
+    }
+  }
+  st._talentStats=stats;
+  if(stats.hpFlat){
+    for(const p of st.players){
+      const r=p.hp/p.hpMax;
+      p.hpMax=100+stats.hpFlat;
+      p.hp=Math.round(p.hpMax*r);
+    }
+  }
+  if(stats.luck) st.luck=stats.luck;
+  recalcStats();
+  updateTalentSummary();
+}
+function renderTalentLanes(){
+  const wrap=document.getElementById('talentLaneWrap'); if(!wrap) return;
+  wrap.innerHTML='';
+  for(const [laneName, nodes] of Object.entries(st.talentLanes)){
+    const col=document.createElement('div');
+    col.className='lane-col';
+    col.innerHTML=`<h4>${laneName.toUpperCase()}</h4>`;
+    nodes.forEach(node=>{
+      const owned=st.talentPicks.has(node.id);
+      const can=canBuyTalent(node);
+      const div=document.createElement('div');
+      div.className='lane-node';
+      if(owned) div.classList.add('owned');
+      else if(!can) div.classList.add('locked');
+      div.innerHTML=`<span>${node.text}</span><span class="cost">AP ${node.cost||1}</span>${node.req?('<small>Requires '+node.req.join(', ')+'</small>'):''}`;
+      const btn=document.createElement('button');
+      btn.textContent=owned?'Owned':'Buy';
+      btn.disabled=!can||owned;
+      btn.onclick=()=>buyTalent(node);
+      div.appendChild(btn);
+      col.appendChild(div);
+    });
+    wrap.appendChild(col);
+  }
+  updateTalentSummary();
+}
+function updateTalentSummary(){
+  const el=document.getElementById('talentSummary');
+  if(!el) return;
+  el.textContent=`AP: ${st.apSpent}/${st.apTotal}\nLuck: ${st.luck}\nATK Mult: ${(1+(st._talentStats.atkMul||0)).toFixed(2)}x`;
+}
+
+/* =================== Stats Recalculation =================== */
+function recalcStats(){
+  for(const p of st.players){
+    const atkMul=1+(st._talentStats.atkMul||0);
+    let gearAtk=0;
+    for(const slot of Object.values(st.equippedGear)){
+      if(slot && slot.atk) gearAtk+=slot.atk;
+    }
+    p.dmg = Math.round((p.dmgBase + gearAtk)*atkMul);
+  }
+}
+
+/* ================= Experience / Level ================= */
+function xpToNext(lv){return Math.round(50+25*lv+5*lv*lv);}
+function grantXP(n){
+  st.xp+=n;
+  while(st.xp>=xpToNext(st.level)){
+    st.xp-=xpToNext(st.level);
+    st.level++;
+    st.apTotal = Math.min(200, st.apTotal+2);
+  }
+}
+
+/* =================== A1 Combat Kit v5 =================== */
+const A1_COMBO_WINDOW=750;
+function a1_basicAttack(a){
+  const now=performance.now();
+  if(!a.a1ComboIdx) a.a1ComboIdx=0;
+  if(!a.a1ComboTimer) a.a1ComboTimer=0;
+  if(now>a.a1ComboTimer) a.a1ComboIdx=0; // chain reset
+  a.a1ComboIdx = (a.a1ComboIdx%5)+1;
+  a.a1ComboTimer=now+A1_COMBO_WINDOW;
+  // Damage profile 5 hits
+  const mult=[0.9,1.0,1.1,1.3,1.8][a.a1ComboIdx-1]||1;
+  melee(a,36,42, Math.round(a.dmg*mult));
+  addAfterImage(a.x,a.y,'#ff4d4f');
+  // Parry window: final strike longer
+  st.parryT=Math.max(st.parryT, a.a1ComboIdx===5?900:550);
+  // Finisher extras
+  if(a.a1ComboIdx===5){
+    wave(a,1.0,'#ff4d4f',Math.round(a.dmg*2.2));
+  }
+}
+function a1_useSkill(a,key){
+  if(!cdReady(a.id,key)) return;
+  if(st._globalSkillLock>0) return;
+  a._castInvT=Math.max(a._castInvT||0,3000);
+  st._shieldOn=true; st._shieldT=Math.max(st._shieldT||0,2000);
+  if(key==='S1'){
+    const swings=5;
+    for(let i=0;i<swings;i++){
+      setTimeout(()=>{
+        melee(a,40,44, Math.round(a.dmg*1.0));
+        if(i%2===1) wave(a,0.9,'#ff7a6a');
+        // micro hitstop feel
+        st._hitstop=Math.max(st._hitstop||0,30);
+      }, i*90);
+    }
+    st.parryT=Math.max(st.parryT,600);
+  } else if(key==='S2'){
+    // Fuse Bomb: delayed AoE + armor shred + freeze-frame
+    addCast(a.x+12,a.y-42,'#ff4d4f');
+    setTimeout(()=>{
+      st.shots.push({
+        x:a.x+140,y:a.y-40,vx:0,vy:0,dmg:Math.round(a.dmg*4),
+        life:90,aoe:84,kind:'a1_bomb',armorShred:0.18
+      });
+      addImpact(a.x+140,a.y-40,'#ff4d4f');
+      st._hitstop=Math.max(st._hitstop||0,120);
+    },700);
+  } else if(key==='S3'){
+    // Combo Burst: heavy hit + echo (after 0.6s) + reset S2 CD
+    melee(a,48,50, Math.round(a.dmg*2.4));
+    wave(a,1.25,'#ff4d4f', Math.round(a.dmg*1.5));
+    setTimeout(()=>{
+      melee(a,48,50, Math.round(a.dmg*0.9));
+      wave(a,0.9,'#ff4d4f',Math.round(a.dmg*0.9));
+    },600);
+    st.cds[a.id].S2=0; // reset S2
+  } else if(key==='S5'){
+    // Finisher: multi-lane waves + Crescendo reset
+    for(const ln of [0,1,2]){
+      const yPos=laneY(ln)-40;
+      st.shots.push({
+        kind:'wave',color:'#ff4d4f', w:96, h:24,
+        x:a.x+20,y:yPos,vx:1000,vy:0,speed:1000,
+        dmg:Math.round(a.dmg*6),life:900,laneY:laneY(ln),
+        homing:false,pierce:8,ownerId:'A1',s5:true
+      });
+    }
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  }
+  startCD(a.id,key);
+}
+function updateA1RageMode(a, dtMs){
+  if(!a) return;
+  if(a.rageOn){
+    a.rageDur-=dtMs;
+    st._globalSkillLock=Math.max(st._globalSkillLock||0,200);
+    if(a.rageDur<=0){
+      a.rageOn=false;
+      a._rageTrailT=1000;
+    }
+  } else {
+    if(a.rage>=a.rageMax && a.rageICD<=0){
+      // Activate automatically only if player pressed Rage button; logic outside
+    }
+  }
+  if(a.rageICD>0) a.rageICD-=dtMs;
+  if(a._rageTrailT>0) a._rageTrailT-=dtMs;
+}
+
+/* ================ Legacy helper stubs reused ================ */
+function laneY(l){ return (DESIGN_H - 100) + (l===0?-30:(l===2?30:0)); }
+function addAfterImage(x,y,color='#ff4d4f'){ st.effects.push({kind:'after',x,y,color,life:160,max:160}); }
+function addCast(x,y,color){ st.effects.push({kind:'cast',x,y,color,life:320,max:320}); }
+function addImpact(x,y,color){ st.effects.push({kind:'impact',x,y,color,life:260,max:260}); }
+function wave(a,mul,tint,fixed){
+  const w=46,h=14;
+  st.shots.push({
+    kind:'wave',color:tint||'#9ad1ff',w,h,
+    x:a.x+24,y:a.y-40,vx:640,vy:0,speed:640,
+    dmg:fixed!=null?fixed:Math.round(a.dmg*mul),
+    life:2000,laneY:a.y,homing:false,pierce:2,ownerId:a.id
+  });
+}
+function melee(a,reach,height,dmg){
+  // Basic forward rectangle
+  let hit=false;
+  for(const e of st.enemies){
+    if(e.hp>0 && e.x>a.x && (e.x-a.x)<=reach && Math.abs(e.y-a.y)<=height/2){
+      let real=dmg;
+      if(e.armorShredDebuff) real=Math.round(real*(1+e.armorShredDebuff));
+      e.hp-=real; hit=true;
+      addFloater(e.x,e.y-20,'-'+real,'#ff7a6a');
+      if(e.hp<=0) onEnemyKilled(e);
+    }
+  }
+  if(hit) addImpact(a.x+reach/2,a.y-40,'#ff7a6a');
+  // Parry window synergy
+  st.parryT=Math.max(st.parryT,500);
+}
+
+/* ================= Cooldowns ================== */
+const CD = {
+  'A1':{S1:6000,S2:10000,S3:16000,S5:45000},
+  'Unique':{S1:6000,S2:10000,S3:16000},
+  'Missy':{S1:6000,S2:10000,S3:16000}
+};
+function cdReady(id,key){return st.cds[id] && st.cds[id][key]<=0;}
+function startCD(id,key){ if(st.cds[id]) st.cds[id][key]=CD[id][key]; }
+
+/* ================== Rage Activation ================== */
+function triggerRageFor(p){
+  if(p.rage>=p.rageMax && !p.rageOn && p.rageICD<=0){
+    p.rageOn=true; p.rage=0; p.rageDur=10000; p.rageICD=20000;
+    addCast(p.x+12,p.y-44,'#f9cc2b');
+    notify(p.id+' Rage!');
+  }
+}
+
+/* ================== Spawn Wave & Enemies ================== */
+function spawnWave(){
+  // Simple: spawn number based on stage/wave
+  const count = 10 + Math.floor(Math.random()*6) + st.wave;
+  for(let i=0;i<count;i++){
+    const hp=80 + st.stage*40 + st.wave*10;
+    const e={
+      kind:'mob',
+      x:DESIGN_W+40+i*40,
+      y:laneY(i%3),
+      hp:hp, max:hp,
+      vx:-0.25 - 0.01*st.stage,
+      fireCD:800+Math.random()*600
+    };
+    // Assign role & behavior
+    e.role = Math.random()<0.5?'shooter':'melee';
+    e.behavior = Math.random()<0.35?'hitAndRun':'relentless';
+    st.enemies.push(e);
+  }
+  // Mini-boss chance
+  if(st.wave>=5 && st.wave<=7 && Math.random()<0.4){
+    const hp=600+st.stage*120;
+    const m={kind:'miniboss',x:DESIGN_W-120,y:laneY(1),hp,max:hp,vx:-0.15,fireCD:600,role:'shooter',behavior:'relentless'};
+    st.enemies.push(m);
+  }
+}
+
+/* ================== Enemy Shooting ================== */
+function enemyShoot(e){
+  const L=leader();
+  if(!L) return;
+  const ang=Math.atan2(L.y-e.y, L.x-e.x);
+  const sp= e.kind==='miniboss'?560:420;
+  const vx=Math.cos(ang)*sp;
+  const vy=Math.sin(ang)*sp;
+  st.eShots.push({x:e.x,y:e.y,vx,vy,speed:sp,life:2500,owner:'enemy'});
+  e._justFired=true;
+}
+
+/* ================== Enemy Death / Drops ================== */
+function onEnemyKilled(e){
+  st.kills++;
+  // Drops: base gold + chance for gear chest
+  const baseGold=20+Math.floor(Math.random()*40);
+  st.gold+=baseGold;
+  updateCurrencies();
+  grantXP(5);
+  // Chest roll
+  const chestRoll=Math.random();
+  const luckScale=1+ (st.luck||0)*0.01;
+  if(e.kind==='miniboss'){
+    const it=rollLoot('miniBossChest');
+    if(it){ addItemToBag(it); notify('Mini-Boss Gear: '+it.name); }
+  } else if(chestRoll < 0.02*luckScale){
+    const it=rollLoot('mobChest');
+    if(it){ addItemToBag(it); notify('Loot: '+it.name); }
+  }
+}
+
+/* ================== Currency UI ================== */
+function updateCurrencies(){
+  $('#goldVal').textContent=st.gold;
+  $('#silverVal').textContent=st.silver;
+  $('#ticketVal').textContent=st.tickets;
+  $('#gemVal').textContent=st.gems;
+  $('#bossKillsVal').textContent=st.bossKills;
+  $('#giftKeyVal').textContent=st.giftKeys;
+  $('#bossKeyVal').textContent=st.bossKeys;
+  if(st.bagOpen) $('#bagGoldVal').textContent=st.gold;
+}
+
+/* ================== Input / Controls ================== */
+const SPEEDS=[1,2,3,4,6];
+$('#btnSpeed').onclick=()=>{
+  const i=SPEEDS.indexOf(st.speed);
+  st.speed=SPEEDS[(i+1)%SPEEDS.length];
+  $('#btnSpeed').textContent='×'+st.speed;
+};
+$('#btnStart').onclick=()=>{st.running=!st.running; $('#btnStart').textContent=st.running?'Pause':'Start';};
+$('#btnAuto').onclick=()=>{st.auto=!st.auto; $('#btnAuto').textContent='Auto: '+(st.auto?'ON':'OFF');};
+
+document.getElementById('btnSwitch2').onclick=()=>{
+  let next=(st.leader+1)%st.players.length;
+  // skip defeated heroes
+  for(let i=0;i<st.players.length;i++){
+    if(!st.players[next].isDefeated) break;
+    next=(next+1)%st.players.length;
+  }
+  st.leader=next;
+};
+document.getElementById('btnRage').onclick=()=>triggerRageFor(leader());
+document.getElementById('btnShield').onclick=()=>{ if(!st._shieldOn){ st._shieldOn=true; st._shieldT=2500;} };
+document.getElementById('btnJump').onclick=()=>jumpAll();
+document.getElementById('btnShoot').onpointerdown=()=>hold.shoot=true;
+document.getElementById('btnShoot').onpointerup=()=>hold.shoot=false;
+document.getElementById('btnS1').onclick=()=> useSkillWrapper(leader(),'S1');
+document.getElementById('btnS2').onclick=()=> useSkillWrapper(leader(),'S2');
+document.getElementById('btnS3').onclick=()=> useSkillWrapper(leader(),'S3');
+document.getElementById('btnS5').onclick=()=> useSkillWrapper(leader(),'S5');
+
+const keys={};
+addEventListener('keydown',e=>{
+  keys[e.code]=true;
+  if(e.code==='KeyQ'){ document.getElementById('btnSwitch2').click(); }
+  if(e.code==='Space'){ jumpAll(); }
+});
+addEventListener('keyup',e=>keys[e.code]=false);
+
+const stick=document.getElementById('stick'), nub=document.getElementById('nub');
+let joyId=null,joyX=0,joyY=0,lastTap=0;
+stick.addEventListener('pointerdown',e=>{stick.setPointerCapture(e.pointerId);joyId=e.pointerId;onJoy(e);});
+stick.addEventListener('pointermove',e=>{if(e.pointerId===joyId) onJoy(e);});
+stick.addEventListener('pointerup',e=>{
+  if(e.pointerId===joyId){joyId=null;joyX=0;joyY=0;nub.style.left='50%';nub.style.top='50%';const now=performance.now();if(now-lastTap<260) jumpAll(); lastTap=now;}
+});
+function onJoy(e){
+  const r=stick.getBoundingClientRect(); const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  let dx=e.clientX-cx, dy=e.clientY-cy;
+  const m=Math.hypot(dx,dy);const lim=r.width*0.38;
+  if(m>lim){dx=dx/m*lim; dy=dy/m*lim;}
+  nub.style.left=(50+dx/r.width*100)+'%';
+  nub.style.top=(50+dy/r.height*100)+'%';
+  joyX=dx/lim; joyY=dy/lim;
+}
+const hold={shoot:false};
+
+/* ================= Basic Attack Wrapper ================= */
+function basicAttackLoop(){
+  // Only A1's manual hold for now
+  if(hold.shoot){
+    const L=leader();
+    if(L.id==='A1'){
+      if(!L._basicCD || L._basicCD<=0){
+        a1_basicAttack(L);
+        L._basicCD=260; // ms between combo hits
+      }
+    } else {
+      // Placeholder simple shot for other heroes
+      if(!L._basicCD || L._basicCD<=0){
+        st.shots.push({x:L.x+10,y:L.y-40,vx:700,vy:0,speed:700,dmg:L.dmg,life:1600,ownerId:L.id});
+        L._basicCD=420;
+      }
+    }
+  }
+}
+
+/* ================= Jump Logic ================= */
+function jumpAll(){
+  const L=leader();
+  if(L.grounded){L.vy=-0.22; L.grounded=false;}
+}
+
+/* ================= Skill Wrapper ================= */
+function useSkillWrapper(a,key){
+  if(!a || a.isDefeated) return;
+  if(a.id==='A1') a1_useSkill(a,key);
+  else genericSkill(a,key);
+  // Crescendo reset if Secret (not implemented separate) or S5
+  if(key==='S5' || key==='SECRET'){
+    if(st.cds[a.id]){
+      st.cds[a.id].S1=0;
+      st.cds[a.id].S2=0;
+    }
+  }
+}
+function genericSkill(a,key){
+  if(!cdReady(a.id,key)) return;
+  a._castInvT=Math.max(a._castInvT||0,2000);
+  if(key==='S1'){
+    // Small AoE
+    addCast(a.x+8,a.y-40,'#6aa8ff');
+    st.shots.push({x:a.x+80,y:a.y-40,vx:0,vy:0,dmg:Math.round(a.dmg*2.2),life:100,aoe:60});
+  } else if(key==='S2'){
+    // Heal self
+    a.hp=Math.min(a.hpMax,a.hp+Math.round(a.hpMax*0.25));
+    addCast(a.x,a.y-36,'#36c777');
+  } else if(key==='S3'){
+    // Multi-shots
+    for(let i=0;i<5;i++){
+      setTimeout(()=>{
+        st.shots.push({x:a.x+10,y:a.y-40,vx:700,vy:(i-2)*30,speed:700,dmg:Math.round(a.dmg*1.1),life:1600,ownerId:a.id});
+      },i*80);
+    }
+  }
+  startCD(a.id,key);
+}
+
+/* ================= Cooldown Tick ================= */
+function tickCooldowns(dtMs){
+  for(const hero in st.cds){
+    for(const k in st.cds[hero]){
+      st.cds[hero][k]=Math.max(0, st.cds[hero][k]-dtMs);
+    }
+  }
+  if(st._globalSkillLock>0) st._globalSkillLock-=dtMs;
+}
+
+/* ================= Physics & Game Loop ================= */
+function nearestEnemy(a){
+  let best=null,bestD=1e9;
+  for(const e of st.enemies){
+    if(e.hp>0){
+      const d=Math.hypot(e.x-a.x,e.y-a.y);
+      if(d<bestD){bestD=d; best=e;}
+    }
+  }
+  return best;
+}
+function update(dt){
+  const dtMs=dt*1000;
+  // Timers
+  tickCooldowns(dtMs);
+  checkPlayersRevive(dtMs);
+  // Rage update
+  updateA1RageMode(st.players[0],dtMs);
+  // Movement
+  const L=leader();
+  if(!L.isDefeated){
+    L.vx = joyX*0.5;
+    L.vy += 0.0018;
+    L.x += L.vx*DESIGN_W*dt;
+    L.y += L.vy*DESIGN_H*dt;
+    const gy=laneY(L.lane);
+    if(L.y>gy){L.y=gy; L.vy=0; L.grounded=true;}
+    L.x=Math.max(40,Math.min(DESIGN_W-40,L.x));
+  }
+  // Follow others
+  st.players.forEach((p,i)=>{
+    if(p===L) return;
+    if(p.isDefeated) return;
+    const targetX = L.x - 100 - i*20;
+    p.x += (targetX - p.x)*0.08;
+    const gy=laneY(p.lane);
+    p.y += (gy - p.y)*0.18;
+  });
+
+  // Enemy update
+  for(const e of st.enemies){
+    if(e.hp<=0) continue;
+    // Basic move
+    e.x += (e.vx||0)*DESIGN_W*dt;
+    // Behavior
+    applyEnemyBehavior(e,dt);
+    if(e.fireCD!=null){
+      e.fireCD-=dtMs;
+      if(e.fireCD<=0){
+        enemyShoot(e);
+        e.fireCD=(e.kind==='miniboss'?500:900)+Math.random()*600;
+      }
+    }
+  }
+  updateEnemyFormations();
+
+  // Player shots
+  for(const s of st.shots){
+    s.x += (s.vx||0)*dt;
+    s.y += (s.vy||0)*dt;
+    s.life -= dtMs;
+  }
+  st.shots = st.shots.filter(s=>s.life>0);
+
+  // Enemy shots
+  for(const b of st.eShots){
+    b.x += b.vx*dt;
+    b.y += b.vy*dt;
+    b.life -= dtMs;
+  }
+  st.eShots = st.eShots.filter(b=>b.life>0);
+
+  // Collisions: player shots -> enemies
+  for(const s of st.shots){
+    for(const e of st.enemies){
+      if(e.hp<=0) continue;
+      const dx=e.x-s.x, dy=e.y-s.y;
+      const dist=Math.hypot(dx,dy);
+      if( (s.aoe && dist < s.aoe) || (!s.aoe && dist<28) ){
+        let dmg=s.dmg;
+        if(s.kind==='a1_bomb'){
+          // apply armor shred debuff
+          e.armorShredDebuff=Math.max(e.armorShredDebuff||0, s.armorShred||0);
+          setTimeout(()=>{ if(e.armorShredDebuff) e.armorShredDebuff-= (s.armorShred||0); },6000);
+        }
+        e.hp-=dmg;
+        addFloater(e.x,e.y-18,'-'+dmg,'#ff7a6a');
+        if(!s.pierce) s.life=0; else s.pierce--;
+        if(e.hp<=0) onEnemyKilled(e);
+      }
+    }
+  }
+
+  // Enemy shots -> players (target leader mostly)
+  for(const b of st.eShots){
+    for(const p of st.players){
+      if(p.isDefeated) continue;
+      if(Math.abs(p.x-b.x)<20 && Math.abs(p.y-b.y)<30){
+        const dmg=8;
+        damagePlayer(p,dmg);
+        b.life=0;
+        break;
+      }
+    }
+  }
+
+  // Pickups (very simple)
+  for(const it of st.pickups){
+    it.life -= dtMs;
+  }
+  st.pickups = st.pickups.filter(p=>p.life>0);
+
+  // Effects
+  for(const ef of st.effects) ef.life-=dtMs;
+  st.effects=st.effects.filter(e=>e.life>0);
+
+  // Basic Attack
+  if(st.players[0]._basicCD>0) st.players[0]._basicCD-=dtMs;
+  if(leader()._basicCD>0) leader()._basicCD-=dtMs;
+  basicAttackLoop();
+
+  // Wave progression: if no enemies remain
+  if(st.enemies.every(e=>e.hp<=0)){
+    st.wave++;
+    if(st.wave>st.wavesPerStage){
+      st.stage++; st.wave=1;
+    }
+    spawnWave();
+  }
+  // Game Over check
+  checkGameOver();
+  // Mirror leader hp for HUD
+  mirrorLeaderHP();
+}
+
+/* ===================== Drawing ===================== */
+function draw(){
+  ctx.clearRect(0,0,DESIGN_W,DESIGN_H);
+  // BG
+  ctx.fillStyle='#0f1826'; ctx.fillRect(0,0,DESIGN_W,DESIGN_H);
+  ctx.fillStyle='#14243a'; ctx.fillRect(0,DESIGN_H-160,DESIGN_W,160);
+  // Players
+  for(const p of st.players){
+    if(p.isDefeated) continue;
+    // Character rectangle
+    ctx.fillStyle = p.id==='A1'?'#ff4d4f':(p.id==='Unique'?'#6aa8ff':'#ff8c6a');
+    ctx.fillRect(p.x-18,p.y-44,36,60);
+    // Overhead HP bar (personal)
+    const ratio=p.hp/p.hpMax;
+    ctx.fillStyle='#1e2e34'; ctx.fillRect(p.x-24,p.y-56,48,4);
+    ctx.fillStyle='#36c777'; ctx.fillRect(p.x-24,p.y-56,48*ratio,4);
+    // Rage bar
+    const rRatio=p.rage/p.rageMax;
+    ctx.fillStyle='#2d2208'; ctx.fillRect(p.x-24,p.y-62,48,3);
+    ctx.fillStyle='#f9cc2b'; ctx.fillRect(p.x-24,p.y-62,48*rRatio,3);
+    // Rage trail aura
+    if(p.id==='A1' && (p.rageOn || p._rageTrailT>0)){
+      const t=p.rageOn?1:Math.max(0,p._rageTrailT/1000);
+      ctx.globalAlpha=0.15+0.15*Math.sin(st.time*8);
+      ctx.fillStyle='#ff4d4f';
+      ctx.beginPath();ctx.arc(p.x,p.y-24,42,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;
+    }
+  }
+  // Enemy
+  for(const e of st.enemies){
+    if(e.hp<=0) continue;
+    ctx.fillStyle = e.kind==='miniboss'?'#ffbb9a':'#ff6e6e';
+    ctx.fillRect(e.x-20,e.y-36,40,60);
+    const ratio=e.hp/e.max;
+    ctx.fillStyle='#2a1e1e'; ctx.fillRect(e.x-24,e.y-46,48,4);
+    ctx.fillStyle='#ff8c6a'; ctx.fillRect(e.x-24,e.y-46,48*ratio,4);
+  }
+  // Projectiles
+  ctx.fillStyle='#9ad1ff';
+  for(const s of st.shots){
+    if(s.kind==='wave'){
+      ctx.fillStyle=s.color||'#9ad1ff';
+      ctx.fillRect(s.x - (s.w||18)/2, s.y - (s.h||6)/2, s.w||18, s.h||6);
+    } else if(s.kind==='a1_bomb'){
+      ctx.fillStyle='#ff4d4f';
+      ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.fillStyle='#9ad1ff';
+      ctx.fillRect(s.x-4,s.y-3,8,6);
+    }
+  }
+  ctx.fillStyle='#ffb18b';
+  for(const b of st.eShots){
+    ctx.fillRect(b.x-3,b.y-2,6,4);
+  }
+  // Effects text
+  ctx.font='12px sans-serif';
+  ctx.textAlign='center';
+  for(const ef of st.effects){
+    ctx.globalAlpha = Math.max(0, ef.life / (ef.max||800));
+    ctx.fillStyle = ef.color||'#fff';
+    if(ef.kind==='cast'){
+      ctx.strokeStyle=ef.color||'#6aa8ff';
+      ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(ef.x,ef.y,12+(1-(ef.life/(ef.max||320)))*20,0,Math.PI*2);ctx.stroke();
+    } else if(ef.kind==='impact'){
+      ctx.strokeStyle=ef.color||'#ff7a6a';
+      ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(ef.x,ef.y,8+(1-(ef.life/(ef.max||260)))*10,0,Math.PI*2);ctx.stroke();
+    } else if(ef.kind==='after'){
+      ctx.fillStyle=ef.color||'#ff4d4f';
+      ctx.beginPath();ctx.arc(ef.x,ef.y,10,0,Math.PI*2);ctx.fill();
+    } else if(ef.txt){
+      ctx.fillText(ef.txt,ef.x,ef.y);
+    }
+    ctx.globalAlpha=1;
+  }
+
+  // HUD updates
+  document.getElementById('hpFill').style.transform='scaleX('+(st.hp/st.hpMax)+')';
+  document.getElementById('mpFill').style.transform='scaleX('+ ( (st.mp||100)/(st.mpMax||100) ) +')';
+  document.getElementById('bossFill').style.transform='scaleX('+(st.bossAlive?(st.bossHP/st.bossMax):0)+')';
+  const xpNext=xpToNext(st.level);
+  document.getElementById('xpDomFill').style.transform='scaleX('+Math.min(1, st.xp/xpNext)+')';
+  document.getElementById('xpDomLabel').textContent=`${Math.floor(st.xp)}/${xpNext} XP — Lv ${st.level}`;
+  document.getElementById('stagePill').textContent=`Stage ${st.stage} • Wave ${st.wave}/${st.wavesPerStage} • Kills ${st.kills}`;
+  document.getElementById('boostPill').textContent=`Lv ${st.level} • Booster: -`;
+}
+
+/* ================== Main Loop ================== */
+let last=performance.now();
+function loop(t){
+  const dt=(t-last)/1000; last=t;
+  if(st.running){
+    st.time+=dt*st.speed; st.dt=dt*st.speed;
+    if(!st.started){ st.started=true; spawnWave(); }
+    update(st.dt);
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ================== Damage Mirror & Simple Systems ================== */
+st.mp=100; st.mpMax=100; st.mpRegen=8;
+function mpTick(dt){ st.mp=Math.min(st.mpMax, st.mp + st.mpRegen*dt); }
+
+/* ================ Damage Intakes replaced with per-player ================ */
+/* Already integrated through damagePlayer in collisions */
+
+/* ================= Key Systems End ================= */
+
+/* Initial build */
+tallyTalentStats();
+updateCurrencies();
+renderTalentLanes(); // pre-render lanes
+
+/* ================ Auto Settings Panel ================= */
+document.getElementById('setting-auto-ai').addEventListener('change',e=>{
+  st.auto=e.target.checked;
+  $('#btnAuto').textContent='Auto: '+(st.auto?'ON':'OFF');
+});
+document.getElementById('setting-parallax').addEventListener('change',e=>{
+  st.useParallax=e.target.checked;
+});
+
+/* ================ Public API (dev) ================= */
+window.game={
+  st,
+  addGold(n){st.gold+=n;updateCurrencies();},
+  addItem(i){addItemToBag(i);}
+};
+</script>
+</body>
+</html>
