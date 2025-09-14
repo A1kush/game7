@@ -1633,6 +1633,11 @@ function spawnWave(){
     st.enemies.push(e);
   }
   
+  // Spawn interactive objects occasionally
+  if(Math.random() < 0.3){
+    spawnInteractiveObjects();
+  }
+  
   // Mini-boss chance enhanced
   if(st.wave>=5 && st.wave<=7 && Math.random()<0.4){
     const hp=600+st.stage*120;
@@ -1643,6 +1648,49 @@ function spawnWave(){
   // Boss wave every 10 waves
   if(st.wave === 10){
     spawnBoss();
+  }
+}
+
+function spawnInteractiveObjects(){
+  const objectTypes = ['chest', 'switch', 'ladder'];
+  const objectType = objectTypes[Math.floor(Math.random() * objectTypes.length)];
+  
+  const x = 300 + Math.random() * 400;
+  const y = laneY(Math.floor(Math.random() * 3));
+  
+  switch(objectType){
+    case 'chest':
+      st.pickups.push({
+        kind: 'chest',
+        x: x,
+        y: y,
+        life: 60000,
+        chestType: 'normal'
+      });
+      break;
+      
+    case 'switch':
+      st.pickups.push({
+        kind: 'switch',
+        x: x,
+        y: y,
+        life: 120000,
+        switchType: Math.random() < 0.5 ? 'treasure' : 'platform',
+        activated: false,
+        singleUse: true
+      });
+      break;
+      
+    case 'ladder':
+      st.pickups.push({
+        kind: 'ladder',
+        x: x,
+        y: y,
+        life: 120000,
+        direction: Math.random() < 0.5 ? 'up' : 'down',
+        singleUse: false
+      });
+      break;
   }
 }
 
@@ -1749,7 +1797,7 @@ function useBossSkill(boss){
   }
 }
 
-/* ================== Universal Action Button System ================== */
+/* ================= Enhanced Universal Action Button System ================= */
 function performContextAction(){
   const L = leader();
   if(!L || L.isDefeated) return;
@@ -1767,6 +1815,16 @@ function performContextAction(){
     const vehicle = nearbyItems.vehicles[0];
     enterVehicle(L, vehicle);
     updateActionButtonText();
+  } else if(nearbyItems.ladders.length > 0){
+    // Climb ladder
+    const ladder = nearbyItems.ladders[0];
+    climbLadder(L, ladder);
+    updateActionButtonText();
+  } else if(nearbyItems.stunnedEnemies.length > 0){
+    // Grab stunned enemy
+    const enemy = nearbyItems.stunnedEnemies[0];
+    grabAndThrowEnemy(L, enemy);
+    updateActionButtonText();
   } else if(nearbyItems.pets.length > 0){
     // Pick up pet
     const pet = nearbyItems.pets[0];
@@ -1777,6 +1835,11 @@ function performContextAction(){
     const item = nearbyItems.throwables[0];
     throwItem(L, item);
     updateActionButtonText();
+  } else if(nearbyItems.switches.length > 0){
+    // Activate switch
+    const switch_ = nearbyItems.switches[0];
+    activateSwitch(L, switch_);
+    updateActionButtonText();
   } else {
     // Default action: basic attack
     basicAttackAction(L);
@@ -1785,7 +1848,10 @@ function performContextAction(){
 
 function findNearbyInteractables(player){
   const range = 80;
-  const result = {chests: [], vehicles: [], pets: [], throwables: []};
+  const result = {
+    chests: [], vehicles: [], pets: [], throwables: [], 
+    ladders: [], stunnedEnemies: [], switches: []
+  };
   
   // Check pickups for chests, pets, etc.
   for(const pickup of st.pickups){
@@ -1793,6 +1859,8 @@ function findNearbyInteractables(player){
     if(dist < range){
       if(pickup.kind === 'chest') result.chests.push(pickup);
       else if(pickup.kind === 'pet') result.pets.push(pickup);
+      else if(pickup.kind === 'ladder') result.ladders.push(pickup);
+      else if(pickup.kind === 'switch') result.switches.push(pickup);
       else if(pickup.throwable) result.throwables.push(pickup);
     }
   }
@@ -1802,6 +1870,14 @@ function findNearbyInteractables(player){
     for(const vehicle of st.vehicles){
       const dist = Math.hypot(vehicle.x - player.x, vehicle.y - player.y);
       if(dist < range) result.vehicles.push(vehicle);
+    }
+  }
+  
+  // Check for stunned enemies
+  for(const enemy of st.enemies){
+    if(enemy.stunned && enemy.hp > 0){
+      const dist = Math.hypot(enemy.x - player.x, enemy.y - player.y);
+      if(dist < range) result.stunnedEnemies.push(enemy);
     }
   }
   
@@ -1821,16 +1897,141 @@ function updateActionButtonText(){
   } else if(nearby.vehicles.length > 0){
     btn.textContent = 'RIDE';
     btn.title = 'Enter Vehicle';
+  } else if(nearby.ladders.length > 0){
+    btn.textContent = 'CLIMB';
+    btn.title = 'Climb Ladder';
+  } else if(nearby.stunnedEnemies.length > 0){
+    btn.textContent = 'GRAB';
+    btn.title = 'Grab Stunned Enemy';
   } else if(nearby.pets.length > 0){
     btn.textContent = 'PET';
     btn.title = 'Pickup Pet';
   } else if(nearby.throwables.length > 0){
     btn.textContent = 'GRAB';
     btn.title = 'Throw Item';
+  } else if(nearby.switches.length > 0){
+    btn.textContent = 'USE';
+    btn.title = 'Activate Switch';
   } else {
     btn.textContent = 'ACT';
     btn.title = 'Context Action';
   }
+}
+
+/* ================= Enhanced Interactive Objects ================= */
+function climbLadder(player, ladder){
+  // Move player up/down based on ladder direction
+  if(ladder.direction === 'up'){
+    player.y -= 100;
+    notify(player.id + ' climbed up!', '#6aa8ff');
+  } else {
+    player.y += 100;
+    notify(player.id + ' climbed down!', '#6aa8ff');
+  }
+  
+  // Remove ladder use or make it multi-use
+  if(ladder.singleUse){
+    const idx = st.pickups.indexOf(ladder);
+    if(idx >= 0) st.pickups.splice(idx, 1);
+  }
+}
+
+function grabAndThrowEnemy(player, enemy){
+  // Create a thrown enemy projectile
+  enemy.stunned = false; // Remove stun
+  enemy.hp = 0; // Kill the enemy
+  
+  // Create projectile
+  st.shots.push({
+    kind: 'thrown_enemy',
+    x: player.x + 20,
+    y: player.y - 30,
+    vx: 600,
+    vy: -150,
+    dmg: Math.round(player.dmg * 2),
+    life: 3000,
+    w: 40,
+    h: 40,
+    color: '#ff6e6e',
+    gravity: true,
+    aoe: 60,
+    ownerId: player.id
+  });
+  
+  notify('Enemy thrown!', '#ff6aa8');
+  onEnemyKilled(enemy); // Grant rewards
+}
+
+function activateSwitch(player, switch_){
+  if(switch_.activated) return;
+  
+  switch_.activated = true;
+  switch_.activatedBy = player.id;
+  
+  // Switch effects based on type
+  switch(switch_.switchType){
+    case 'door':
+      // Open door (would need door system)
+      notify('Door opened!', '#6aa8ff');
+      break;
+    case 'platform':
+      // Activate moving platform
+      notify('Platform activated!', '#6aa8ff');
+      break;
+    case 'treasure':
+      // Spawn treasure
+      spawnTreasureRoom();
+      notify('Secret treasure revealed!', '#ffd56a');
+      break;
+    case 'teleporter':
+      // Teleport player
+      teleportPlayer(player, switch_.destination);
+      break;
+    default:
+      notify('Switch activated!', '#6aa8ff');
+  }
+  
+  // Visual feedback
+  addCast(switch_.x, switch_.y, '#6aa8ff');
+  
+  // Remove switch if single use
+  if(switch_.singleUse){
+    const idx = st.pickups.indexOf(switch_);
+    if(idx >= 0) st.pickups.splice(idx, 1);
+  }
+}
+
+function teleportPlayer(player, destination){
+  if(!destination) return;
+  
+  // Teleport effect
+  addCast(player.x, player.y, '#8b00ff');
+  
+  player.x = destination.x || player.x;
+  player.y = destination.y || player.y;
+  
+  addCast(player.x, player.y, '#8b00ff');
+  notify(player.id + ' teleported!', '#8b00ff');
+}
+
+function spawnTreasureRoom(){
+  // Spawn multiple high-value items
+  for(let i = 0; i < 3; i++){
+    const chest = {
+      kind: 'chest',
+      x: 400 + i * 100,
+      y: laneY(1),
+      life: 30000,
+      chestType: 'treasure',
+      throwable: false
+    };
+    st.pickups.push(chest);
+  }
+  
+  // Spawn special currency
+  st.gems += 50;
+  st.giftKeys += 5;
+  updateCurrencies();
 }
 
 /* ================== Basic Pet System ================== */
@@ -1860,29 +2061,222 @@ function pickupPet(player, petPickup){
   notify('Pet acquired: ' + pet.name, '#00ff88');
 }
 
-/* ================== Basic Vehicle System ================== */
+/* ================= Advanced Vehicle Mechanics ================= */
 function enterVehicle(player, vehicle){
-  if(vehicle.riders && vehicle.riders.length >= vehicle.maxRiders) {
+  if(!vehicle.riders) vehicle.riders = [];
+  if(!vehicle.maxRiders) vehicle.maxRiders = 3; // Default 3 seats
+  
+  if(vehicle.riders.length >= vehicle.maxRiders) {
     notify('Vehicle is full!', '#ff7a6a');
     return;
   }
   
-  if(!vehicle.riders) vehicle.riders = [];
-  vehicle.riders.push(player.id);
-  player._riding = vehicle;
+  // Determine role based on seat
+  const seatIndex = vehicle.riders.length;
+  let role = 'passenger';
+  if(seatIndex === 0) role = 'driver';
+  else if(seatIndex === 1) role = 'gunner';
   
-  notify(player.id + ' entered vehicle', '#6aa8ff');
+  vehicle.riders.push({
+    playerId: player.id,
+    role: role,
+    seatIndex: seatIndex
+  });
+  
+  player._riding = vehicle;
+  player._vehicleRole = role;
+  
+  // Show vehicle selection UI for other heroes
+  if(vehicle.riders.length === 1){
+    showVehicleSelectionUI(vehicle);
+  }
+  
+  notify(`${player.id} entered vehicle as ${role}`, '#6aa8ff');
+  
+  // Update vehicle skills UI
+  updateVehicleSkillsUI(vehicle);
+}
+
+function showVehicleSelectionUI(vehicle){
+  // Create temporary UI for other heroes to join
+  const availableHeroes = st.players.filter(p => !p.isDefeated && !p._riding);
+  
+  if(availableHeroes.length > 0){
+    // Add floating buttons above vehicle for each available hero
+    vehicle._selectionButtons = [];
+    
+    availableHeroes.forEach((hero, index) => {
+      const button = {
+        x: vehicle.x + (index * 60) - 30,
+        y: vehicle.y - 100,
+        w: 50,
+        h: 30,
+        text: hero.id,
+        heroId: hero.id,
+        vehicle: vehicle,
+        life: 10000 // 10 second timeout
+      };
+      vehicle._selectionButtons.push(button);
+    });
+    
+    notify('Other heroes can join! Click hero buttons above vehicle', '#6aa8ff');
+  }
+}
+
+function updateVehicleSelectionButtons(dtMs){
+  if(!st.vehicles) return;
+  
+  for(const vehicle of st.vehicles){
+    if(vehicle._selectionButtons){
+      // Update button timers
+      vehicle._selectionButtons.forEach(btn => btn.life -= dtMs);
+      
+      // Remove expired buttons
+      vehicle._selectionButtons = vehicle._selectionButtons.filter(btn => btn.life > 0);
+      
+      // Clear selection UI if no buttons left
+      if(vehicle._selectionButtons.length === 0){
+        delete vehicle._selectionButtons;
+      }
+    }
+  }
+}
+
+function handleVehicleButtonClick(x, y){
+  if(!st.vehicles) return;
+  
+  for(const vehicle of st.vehicles){
+    if(vehicle._selectionButtons){
+      for(const btn of vehicle._selectionButtons){
+        const dist = Math.hypot(x - btn.x, y - btn.y);
+        if(dist < 30){ // Click radius
+          const hero = st.players.find(p => p.id === btn.heroId);
+          if(hero && !hero._riding && !hero.isDefeated){
+            enterVehicle(hero, vehicle);
+            // Remove this button
+            const idx = vehicle._selectionButtons.indexOf(btn);
+            if(idx >= 0) vehicle._selectionButtons.splice(idx, 1);
+          }
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function updateVehicleSkillsUI(vehicle){
+  // Create/update vehicle skills UI
+  if(!vehicle.skills) vehicle.skills = ['V1', 'V2']; // Default vehicle skills
+  
+  // This would create floating skill buttons above the vehicle
+  // For now, we'll add them to the main UI when someone is driving
+  const driver = vehicle.riders.find(r => r.role === 'driver');
+  if(driver && st.players[st.leader].id === driver.playerId){
+    // Show vehicle skills in main UI (could be implemented as overlay)
+    notify('Vehicle skills: V1, V2 available', '#6aa8ff');
+  }
 }
 
 function exitVehicle(player){
   if(!player._riding) return;
   
   const vehicle = player._riding;
-  const idx = vehicle.riders.indexOf(player.id);
-  if(idx >= 0) vehicle.riders.splice(idx, 1);
+  const riderIndex = vehicle.riders.findIndex(r => r.playerId === player.id);
+  
+  if(riderIndex >= 0){
+    vehicle.riders.splice(riderIndex, 1);
+    
+    // Reassign roles if driver left
+    if(vehicle.riders.length > 0 && player._vehicleRole === 'driver'){
+      vehicle.riders[0].role = 'driver';
+      const newDriver = st.players.find(p => p.id === vehicle.riders[0].playerId);
+      if(newDriver) newDriver._vehicleRole = 'driver';
+    }
+  }
   
   player._riding = null;
-  notify(player.id + ' exited vehicle', '#6aa8ff');
+  player._vehicleRole = null;
+  
+  notify(`${player.id} exited vehicle`, '#6aa8ff');
+  
+  // Clear selection UI if vehicle is empty
+  if(vehicle.riders.length === 0){
+    delete vehicle._selectionButtons;
+  }
+}
+
+function useVehicleSkill(vehicle, skillKey){
+  const driver = vehicle.riders.find(r => r.role === 'driver');
+  if(!driver) return;
+  
+  const driverPlayer = st.players.find(p => p.id === driver.playerId);
+  if(!driverPlayer) return;
+  
+  if(skillKey === 'V1'){
+    // Vehicle Boost - temporary speed increase
+    vehicle._boost = 5000; // 5 second boost
+    addCast(vehicle.x, vehicle.y, '#ffaa00');
+    notify('Vehicle Boost Activated!', '#ffaa00');
+  } else if(skillKey === 'V2'){
+    // Vehicle Weapon - all passengers fire
+    vehicle.riders.forEach(rider => {
+      const passenger = st.players.find(p => p.id === rider.playerId);
+      if(passenger){
+        // Fire from vehicle position
+        st.shots.push({
+          x: vehicle.x + (rider.seatIndex * 20),
+          y: vehicle.y - 20,
+          vx: 700,
+          vy: 0,
+          dmg: Math.round(passenger.dmg * 1.5),
+          life: 1500,
+          color: '#ff6aa8',
+          ownerId: passenger.id
+        });
+      }
+    });
+    addCast(vehicle.x, vehicle.y, '#ff6aa8');
+    notify('Vehicle Weapons Fired!', '#ff6aa8');
+  }
+}
+
+function updateVehicles(dtMs){
+  if(!st.vehicles) return;
+  
+  for(const vehicle of st.vehicles){
+    // Update boost timer
+    if(vehicle._boost > 0){
+      vehicle._boost -= dtMs;
+    }
+    
+    // Move vehicle if it has a driver
+    const driver = vehicle.riders && vehicle.riders.find(r => r.role === 'driver');
+    if(driver){
+      const driverPlayer = st.players.find(p => p.id === driver.playerId);
+      if(driverPlayer){
+        // Vehicle moves based on driver input
+        const speed = vehicle._boost > 0 ? 1.5 : 1.0;
+        vehicle.x += joyX * 0.7 * speed;
+        vehicle.y += joyY * 0.7 * speed;
+        
+        // Keep vehicle in bounds
+        vehicle.x = Math.max(60, Math.min(DESIGN_W - 60, vehicle.x));
+        vehicle.y = Math.max(100, Math.min(DESIGN_H - 100, vehicle.y));
+        
+        // Update all riders' positions
+        vehicle.riders.forEach((rider, index) => {
+          const passenger = st.players.find(p => p.id === rider.playerId);
+          if(passenger){
+            passenger.x = vehicle.x + (index * 15) - 30;
+            passenger.y = vehicle.y;
+          }
+        });
+      }
+    }
+  }
+  
+  updateVehicleSelectionButtons(dtMs);
 }
 
 /* ================== Throwable System ================== */
@@ -2236,15 +2630,216 @@ function update(dt){
     if(L.y>gy){L.y=gy; L.vy=0; L.grounded=true;}
     L.x=Math.max(40,Math.min(DESIGN_W-40,L.x));
   }
-  // Follow others
-  st.players.forEach((p,i)=>{
-    if(p===L) return;
-    if(p.isDefeated) return;
-    const targetX = L.x - 100 - i*20;
-    p.x += (targetX - p.x)*0.08;
-    const gy=laneY(p.lane);
-    p.y += (gy - p.y)*0.18;
+/* ================= Advanced Follower AI ================= */
+function updateAdvancedFollowerAI(dtMs){
+  st.players.forEach((p, i) => {
+    if(p === leader() || p.isDefeated) return;
+    
+    // Independent movement AI
+    if(!p._riding && p._aiState !== 'shopping'){
+      updateFollowerCombatAI(p, dtMs);
+    }
+    
+    // Between-wave inventory management
+    if(st.enemies.every(e => e.hp <= 0) && !p._aiShopCooldown){
+      scheduleFollowerUpkeep(p);
+    }
   });
+}
+
+function updateFollowerCombatAI(follower, dtMs){
+  const L = leader();
+  
+  // AI State machine
+  if(!follower._aiState) follower._aiState = 'follow';
+  if(!follower._aiTimer) follower._aiTimer = 0;
+  
+  follower._aiTimer += dtMs;
+  
+  switch(follower._aiState){
+    case 'follow':
+      // Standard follow behavior with improved positioning
+      const targetX = L.x - 80 - (Math.random() * 40);
+      const targetY = laneY(follower.lane) + (Math.random() * 20 - 10);
+      
+      follower.x += (targetX - follower.x) * 0.12;
+      follower.y += (targetY - follower.y) * 0.18;
+      
+      // Check for better positioning opportunities
+      if(follower._aiTimer > 3000){
+        const nearestEnemy = findNearestEnemyTo(follower);
+        if(nearestEnemy && Math.hypot(nearestEnemy.x - follower.x, nearestEnemy.y - follower.y) > 200){
+          follower._aiState = 'reposition';
+          follower._aiTimer = 0;
+        }
+      }
+      break;
+      
+    case 'reposition':
+      // Move to better firing position
+      const enemy = findNearestEnemyTo(follower);
+      if(enemy){
+        const optimalX = enemy.x - 180; // Stay at range
+        const optimalY = enemy.y + (Math.random() * 60 - 30);
+        
+        follower.x += (optimalX - follower.x) * 0.15;
+        follower.y += (optimalY - follower.y) * 0.15;
+        
+        // Return to follow after positioning
+        if(follower._aiTimer > 2000 || Math.hypot(optimalX - follower.x, optimalY - follower.y) < 30){
+          follower._aiState = 'follow';
+          follower._aiTimer = 0;
+        }
+      } else {
+        follower._aiState = 'follow';
+        follower._aiTimer = 0;
+      }
+      break;
+      
+    case 'cover':
+      // Take cover behind obstacles or other players
+      const coverX = L.x - 120;
+      const coverY = L.y + 40;
+      
+      follower.x += (coverX - follower.x) * 0.20;
+      follower.y += (coverY - follower.y) * 0.20;
+      
+      if(follower._aiTimer > 3000){
+        follower._aiState = 'follow';
+        follower._aiTimer = 0;
+      }
+      break;
+  }
+  
+  // Adaptive skill usage AI
+  updateFollowerSkillAI(follower, dtMs);
+}
+
+function updateFollowerSkillAI(follower, dtMs){
+  if(!follower._skillCooldowns) follower._skillCooldowns = {};
+  
+  // Update AI skill cooldowns
+  for(const skill in follower._skillCooldowns){
+    follower._skillCooldowns[skill] -= dtMs;
+    if(follower._skillCooldowns[skill] < 0) follower._skillCooldowns[skill] = 0;
+  }
+  
+  // Smart skill usage based on situation
+  const nearestEnemy = findNearestEnemyTo(follower);
+  const enemyCount = st.enemies.filter(e => e.hp > 0 && Math.hypot(e.x - follower.x, e.y - follower.y) < 250).length;
+  
+  // Use skills intelligently
+  if(nearestEnemy && follower._skillCooldowns.S1 <= 0){
+    if(follower.id === 'Unique' && enemyCount >= 3){
+      // Use S1 for mob control
+      unique_useSkill(follower, 'S1');
+      follower._skillCooldowns.S1 = 6000;
+    } else if(follower.id === 'Missy' && follower.hp < follower.hpMax * 0.7){
+      // Use S2 for healing when low
+      missy_useSkill(follower, 'S2');
+      follower._skillCooldowns.S2 = 10000;
+    }
+  }
+  
+  // Emergency skill usage
+  if(follower.hp < follower.hpMax * 0.3 && follower._skillCooldowns.emergency <= 0){
+    if(follower.id === 'Missy'){
+      missy_useSkill(follower, 'S2'); // Heal
+    } else if(follower.id === 'Unique' && follower._drones){
+      unique_useSkill(follower, 'S2'); // Heal drones or summon
+    }
+    follower._skillCooldowns.emergency = 15000;
+  }
+}
+
+function scheduleFollowerUpkeep(follower){
+  if(follower._aiState === 'shopping') return;
+  
+  follower._aiState = 'shopping';
+  follower._aiShopCooldown = 20000; // 20 second cooldown between shopping
+  
+  // Delay the shopping to feel more natural
+  setTimeout(() => {
+    performFollowerUpkeep(follower);
+  }, 1000 + Math.random() * 2000);
+}
+
+function performFollowerUpkeep(follower){
+  if(follower.isDefeated) return;
+  
+  notify(`${follower.id} is managing inventory...`, '#6aa8ff');
+  
+  // Auto-organize inventory
+  autoOrganizeInventoryFor(follower);
+  
+  // Auto-sell low-value items
+  autoSellItemsFor(follower);
+  
+  // Smart shopping based on needs
+  smartShopFor(follower);
+  
+  // Return to normal AI
+  setTimeout(() => {
+    follower._aiState = 'follow';
+    follower._aiTimer = 0;
+  }, 3000);
+}
+
+function autoOrganizeInventoryFor(follower){
+  // Simulate inventory organization
+  // In a full implementation, this would sort items by type, rarity, etc.
+  if(Math.random() < 0.3){
+    notify(`${follower.id} organized inventory`, '#6aa8ff');
+  }
+}
+
+function autoSellItemsFor(follower){
+  // Simulate selling low-value items
+  const sellChance = Math.random();
+  if(sellChance < 0.4){
+    const goldGain = 50 + Math.floor(Math.random() * 100);
+    st.gold += goldGain;
+    updateCurrencies();
+    notify(`${follower.id} sold items (+${goldGain} gold)`, '#ffd56a');
+  }
+}
+
+function smartShopFor(follower){
+  // AI shopping based on follower needs
+  const needsHealing = follower.hp < follower.hpMax * 0.8;
+  const hasGold = st.gold >= 60;
+  
+  if(needsHealing && hasGold && Math.random() < 0.6){
+    // Buy healing item
+    st.gold -= 60;
+    const heal = Math.round(follower.hpMax * 0.4);
+    follower.hp = Math.min(follower.hpMax, follower.hp + heal);
+    updateCurrencies();
+    addFloater(follower.x, follower.y-60, '+'+heal+' HP', '#36c777');
+    notify(`${follower.id} bought HP potion`, '#36c777');
+  } else if(st.gold >= 90 && Math.random() < 0.3){
+    // Buy rage pill
+    st.gold -= 90;
+    follower.rage = Math.min(follower.rageMax, follower.rage + 30);
+    updateCurrencies();
+    notify(`${follower.id} bought rage pill`, '#f9cc2b');
+  }
+}
+
+function findNearestEnemyTo(character){
+  let nearest = null;
+  let bestDist = Infinity;
+  
+  for(const e of st.enemies){
+    if(e.hp <= 0) continue;
+    const dist = Math.hypot(e.x - character.x, e.y - character.y);
+    if(dist < bestDist){
+      bestDist = dist;
+      nearest = e;
+    }
+  }
+  return nearest;
+}
 
   // Enemy update
   for(const e of st.enemies){
@@ -2276,11 +2871,22 @@ function update(dt){
   }
   updateEnemyFormations();
   
+  // Update advanced follower AI
+  updateAdvancedFollowerAI(dtMs);
+  
+  // Update vehicles
+  updateVehicles(dtMs);
+  
   // Update pets
   updatePets(dtMs);
   
   // Update action button context
   updateActionButtonText();
+  
+  // Update AI shop cooldowns
+  st.players.forEach(p => {
+    if(p._aiShopCooldown > 0) p._aiShopCooldown -= dtMs;
+  });
   updateEnemyFormations();
 
   // Player shots
@@ -2543,7 +3149,47 @@ function draw(){
   for(const b of st.eShots){
     ctx.fillRect(b.x-3,b.y-2,6,4);
   }
-  // Effects text
+  // Interactive objects (pickups, chests, etc.)
+  ctx.fillStyle='#6aa8ff';
+  for(const pickup of st.pickups){
+    if(pickup.kind === 'chest'){
+      ctx.fillStyle = pickup.chestType === 'treasure' ? '#ffd56a' : '#8b7355';
+      ctx.fillRect(pickup.x-12, pickup.y-20, 24, 20);
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillRect(pickup.x-8, pickup.y-18, 16, 4);
+    } else if(pickup.kind === 'switch'){
+      ctx.fillStyle = pickup.activated ? '#36c777' : '#ff6aa8';
+      ctx.fillRect(pickup.x-8, pickup.y-16, 16, 16);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(pickup.x-4, pickup.y-12, 8, 8);
+    } else if(pickup.kind === 'ladder'){
+      ctx.fillStyle = '#8b7355';
+      ctx.fillRect(pickup.x-4, pickup.y-40, 8, 80);
+      ctx.fillRect(pickup.x-12, pickup.y-30, 24, 4);
+      ctx.fillRect(pickup.x-12, pickup.y-10, 24, 4);
+      ctx.fillRect(pickup.x-12, pickup.y+10, 24, 4);
+    } else {
+      // Generic pickup
+      ctx.fillStyle='#6aa8ff';
+      ctx.fillRect(pickup.x-6, pickup.y-6, 12, 12);
+    }
+  }
+  
+  // Vehicle selection buttons
+  if(st.vehicles){
+    for(const vehicle of st.vehicles){
+      if(vehicle._selectionButtons){
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        for(const btn of vehicle._selectionButtons){
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillRect(btn.x - btn.w/2, btn.y - btn.h/2, btn.w, btn.h);
+          ctx.fillStyle = '#fff';
+          ctx.fillText(btn.text, btn.x, btn.y + 4);
+        }
+      }
+    }
+  }
   ctx.font='12px sans-serif';
   ctx.textAlign='center';
   for(const ef of st.effects){
