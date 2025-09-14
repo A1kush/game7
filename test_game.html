@@ -210,6 +210,7 @@
         <div class="btn-round small" id="btnS2">S2</div>
         <div class="btn-round small" id="btnS3">S3</div>
         <div class="btn-round small" id="btnS5" title="A1 Finisher">S5</div>
+        <div class="btn-round small" id="btnX1" title="A1 Secret Skill">X1</div>
       </div>
     </div>
   </div>
@@ -290,7 +291,7 @@ const st = {
   leader:0,
   enemies:[], shots:[], eShots:[], pickups:[], effects:[],
   bossAlive:false, bossHP:0, bossMax:1,
-  cds:{ 'A1':{S1:0,S2:0,S3:0,S5:0}, 'Unique':{S1:0,S2:0,S3:0}, 'Missy':{S1:0,S2:0,S3:0}},
+  cds:{ 'A1':{S1:0,S2:0,S3:0,S5:0,X1:0}, 'Unique':{S1:0,S2:0,S3:0,S5:0,X1:0}, 'Missy':{S1:0,S2:0,S3:0,S5:0,X1:0}},
   // Inventory / Gear
   inv:[], invRows:4,
   equippedGear:{weapon:null,armor:null,acc1:null,acc2:null},
@@ -564,6 +565,7 @@ const SHOP_ITEMS = [
   {id:'rage_pill', name:'Rage Pill', description:'Grants +30 Rage to party.', cost:90, type:'consumable'},
   {id:'revive_token', name:'Revive Token', description:'Instantly revives one defeated hero.', cost:80, type:'consumable'},
   {id:'gold_bag', name:'Gold Bag', description:'Open for 500–5000 gold.', cost:300, type:'item'},
+  {id:'big_gold_bag', name:'Big Gold Bag', description:'Open for 2000–10000 gold.', cost:1200, type:'item'},
   {id:'gear_kit', name:'Random Gear Kit', description:'Adds 3 random gear pieces.', cost:250, type:'item'},
   {id:'ap_reset', name:'AP Reset', description:'Refund all spent AP.', cost:400, type:'consumable'}
 ];
@@ -608,6 +610,9 @@ function buyShopItem(id){
     case 'gold_bag':
       addItemToBag({id:Math.random(),name:'Gold Bag',type:'gold_bag',slot:'item'});
       break;
+    case 'big_gold_bag':
+      addItemToBag({id:Math.random(),name:'Big Gold Bag',type:'big_gold_bag',slot:'item'});
+      break;
     case 'gear_kit':
       for(let i=0;i<3;i++){
         const slot=['weapon','armor','acc1','acc2'][Math.floor(Math.random()*4)];
@@ -633,7 +638,9 @@ function renderDetail(item, indexOrSlot, equipped=false){
     if(item.atk) desc+='ATK +'+item.atk+' ';
     if(item.def) desc+='DEF +'+item.def+' ';
   } else if(item.type==='gold_bag'){
-    desc='Open to gain random gold.';
+    desc='Open to gain random gold (500-5000).';
+  } else if(item.type==='big_gold_bag'){
+    desc='Open to gain random gold (2000-10000).';
   } else {
     desc=item.description||'-';
   }
@@ -693,6 +700,17 @@ function renderDetail(item, indexOrSlot, equipped=false){
       const amt=500+Math.floor(Math.random()*4501);
       st.gold+=amt; updateCurrencies();
       notify('+'+amt+' Gold','#ffd56a');
+      renderBag(); renderDetail(null);
+    };
+    actEl.appendChild(b);
+  } else if(item.type==='big_gold_bag'){
+    const b=document.createElement('button'); b.textContent='Open';
+    b.onclick=()=>{
+      const idx=st.inv.findIndex(x=>x&&x.id===item.id);
+      if(idx>=0) st.inv.splice(idx,1);
+      const amt=2000+Math.floor(Math.random()*8001);
+      st.gold+=amt; updateCurrencies();
+      notify('+'+amt+' Gold (Big Bag!)','#ffaa00');
       renderBag(); renderDetail(null);
     };
     actEl.appendChild(b);
@@ -877,17 +895,57 @@ function a1_useSkill(a,key){
     },600);
     st.cds[a.id].S2=0; // reset S2
   } else if(key==='S5'){
-    // Finisher: multi-lane waves + Crescendo reset
-    for(const ln of [0,1,2]){
-      const yPos=laneY(ln)-40;
-      st.shots.push({
-        kind:'wave',color:'#ff4d4f', w:96, h:24,
-        x:a.x+20,y:yPos,vx:1000,vy:0,speed:1000,
-        dmg:Math.round(a.dmg*6),life:900,laneY:laneY(ln),
-        homing:false,pierce:8,ownerId:'A1',s5:true
-      });
+    // S5 (Void Impale) - NEW: Consumes 35% of Current HP for devastating single-target attack
+    const hpCost = Math.round(a.hp * 0.35);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Void Impale!', '#ff4d4f');
+      return;
     }
+    
+    // Consume HP
+    a.hp -= hpCost;
+    addFloater(a.x, a.y - 30, '-' + hpCost + ' HP', '#ff4d4f');
+    
+    // Swift dash with impale
+    addCast(a.x, a.y, '#8b00ff');
+    st.shots.push({
+      kind:'a1_void_impale', x:a.x+20, y:a.y, vx:800, vy:0,
+      dmg:Math.round(a.dmg*15), life:300, w:120, h:60,
+      color:'#8b00ff', pierce:1, hpRecovery:hpCost, ownerId:'A1'
+    });
+    
     // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  } else if(key==='X1'){
+    // X1 (Astral Sever EX) - Secret Skill: Full-screen cross-slash, costs 20% Max HP
+    const hpCost = Math.round(a.hpMax * 0.20);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Astral Sever!', '#ff4d4f');
+      return;
+    }
+    
+    // Consume HP
+    a.hp -= hpCost;
+    addFloater(a.x, a.y - 30, '-' + hpCost + ' HP', '#ff4d4f');
+    
+    // Full-screen cross-slash effect
+    addCast(a.x, a.y, '#ffaa00');
+    
+    // Horizontal slash
+    st.shots.push({
+      kind:'astral_sever_h', x:0, y:a.y, vx:0, vy:0,
+      dmg:Math.round(a.dmg*10 + (st.bossHP * 0.1)), life:800, 
+      w:DESIGN_W, h:80, color:'#ffaa00', pierce:99, ownerId:'A1'
+    });
+    
+    // Vertical slash
+    st.shots.push({
+      kind:'astral_sever_v', x:a.x, y:0, vx:0, vy:0,
+      dmg:Math.round(a.dmg*10 + (st.bossHP * 0.1)), life:800,
+      w:80, h:DESIGN_H, color:'#ffaa00', pierce:99, ownerId:'A1'
+    });
+    
+    // Crescendo Reset (Secret Skill)
     if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
   }
   startCD(a.id,key);
@@ -943,9 +1001,9 @@ function melee(a,reach,height,dmg){
 
 /* ================= Cooldowns ================== */
 const CD = {
-  'A1':{S1:6000,S2:10000,S3:16000,S5:45000},
-  'Unique':{S1:6000,S2:10000,S3:16000},
-  'Missy':{S1:6000,S2:10000,S3:16000}
+  'A1':{S1:6000,S2:10000,S3:16000,S5:45000,X1:120000},
+  'Unique':{S1:6000,S2:10000,S3:16000,S5:35000,X1:120000},
+  'Missy':{S1:6000,S2:10000,S3:16000,S5:30000,X1:120000}
 };
 function cdReady(id,key){return st.cds[id] && st.cds[id][key]<=0;}
 function startCD(id,key){ if(st.cds[id]) st.cds[id][key]=CD[id][key]; }
@@ -1058,6 +1116,7 @@ document.getElementById('btnS1').onclick=()=> useSkillWrapper(leader(),'S1');
 document.getElementById('btnS2').onclick=()=> useSkillWrapper(leader(),'S2');
 document.getElementById('btnS3').onclick=()=> useSkillWrapper(leader(),'S3');
 document.getElementById('btnS5').onclick=()=> useSkillWrapper(leader(),'S5');
+document.getElementById('btnX1').onclick=()=> useSkillWrapper(leader(),'X1');
 
 const keys={};
 addEventListener('keydown',e=>{
@@ -1232,14 +1291,40 @@ function update(dt){
   for(const s of st.shots){
     for(const e of st.enemies){
       if(e.hp<=0) continue;
-      const dx=e.x-s.x, dy=e.y-s.y;
-      const dist=Math.hypot(dx,dy);
-      if( (s.aoe && dist < s.aoe) || (!s.aoe && dist<28) ){
+      let hit = false;
+      
+      // Special collision for new A1 skills
+      if(s.kind==='a1_void_impale'){
+        // Void Impale: rectangular hit area
+        const dx = Math.abs(e.x - s.x);
+        const dy = Math.abs(e.y - s.y);
+        hit = dx < (s.w/2) && dy < (s.h/2);
+      } else if(s.kind==='astral_sever_h'){
+        // Horizontal slash: full-width
+        hit = Math.abs(e.y - s.y) < (s.h/2);
+      } else if(s.kind==='astral_sever_v'){
+        // Vertical slash: full-height
+        hit = Math.abs(e.x - s.x) < (s.w/2);
+      } else {
+        // Standard collision
+        const dx=e.x-s.x, dy=e.y-s.y;
+        const dist=Math.hypot(dx,dy);
+        hit = (s.aoe && dist < s.aoe) || (!s.aoe && dist<28);
+      }
+      
+      if(hit){
         let dmg=s.dmg;
         if(s.kind==='a1_bomb'){
           // apply armor shred debuff
           e.armorShredDebuff=Math.max(e.armorShredDebuff||0, s.armorShred||0);
           setTimeout(()=>{ if(e.armorShredDebuff) e.armorShredDebuff-= (s.armorShred||0); },6000);
+        } else if(s.kind==='a1_void_impale' && e.hp <= dmg && s.hpRecovery){
+          // Void Impale: HP recovery on kill
+          const caster = st.players.find(p => p.id === s.ownerId);
+          if(caster){
+            caster.hp = Math.min(caster.hpMax, caster.hp + s.hpRecovery);
+            addFloater(caster.x, caster.y-30, '+'+s.hpRecovery+' HP', '#36c777');
+          }
         }
         e.hp-=dmg;
         addFloater(e.x,e.y-18,'-'+dmg,'#ff7a6a');

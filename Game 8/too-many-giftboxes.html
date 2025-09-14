@@ -210,6 +210,7 @@
         <div class="btn-round small" id="btnS2">S2</div>
         <div class="btn-round small" id="btnS3">S3</div>
         <div class="btn-round small" id="btnS5" title="A1 Finisher">S5</div>
+        <div class="btn-round small" id="btnX1" title="A1 Secret Skill">X1</div>
       </div>
     </div>
   </div>
@@ -290,7 +291,7 @@ const st = {
   leader:0,
   enemies:[], shots:[], eShots:[], pickups:[], effects:[],
   bossAlive:false, bossHP:0, bossMax:1,
-  cds:{ 'A1':{S1:0,S2:0,S3:0,S5:0}, 'Unique':{S1:0,S2:0,S3:0}, 'Missy':{S1:0,S2:0,S3:0}},
+  cds:{ 'A1':{S1:0,S2:0,S3:0,S5:0,X1:0}, 'Unique':{S1:0,S2:0,S3:0,S5:0,X1:0}, 'Missy':{S1:0,S2:0,S3:0,S5:0,X1:0}},
   // Inventory / Gear
   inv:[], invRows:4,
   equippedGear:{weapon:null,armor:null,acc1:null,acc2:null},
@@ -564,6 +565,7 @@ const SHOP_ITEMS = [
   {id:'rage_pill', name:'Rage Pill', description:'Grants +30 Rage to party.', cost:90, type:'consumable'},
   {id:'revive_token', name:'Revive Token', description:'Instantly revives one defeated hero.', cost:80, type:'consumable'},
   {id:'gold_bag', name:'Gold Bag', description:'Open for 500–5000 gold.', cost:300, type:'item'},
+  {id:'big_gold_bag', name:'Big Gold Bag', description:'Open for 2000–10000 gold.', cost:1200, type:'item'},
   {id:'gear_kit', name:'Random Gear Kit', description:'Adds 3 random gear pieces.', cost:250, type:'item'},
   {id:'ap_reset', name:'AP Reset', description:'Refund all spent AP.', cost:400, type:'consumable'}
 ];
@@ -608,6 +610,9 @@ function buyShopItem(id){
     case 'gold_bag':
       addItemToBag({id:Math.random(),name:'Gold Bag',type:'gold_bag',slot:'item'});
       break;
+    case 'big_gold_bag':
+      addItemToBag({id:Math.random(),name:'Big Gold Bag',type:'big_gold_bag',slot:'item'});
+      break;
     case 'gear_kit':
       for(let i=0;i<3;i++){
         const slot=['weapon','armor','acc1','acc2'][Math.floor(Math.random()*4)];
@@ -633,7 +638,9 @@ function renderDetail(item, indexOrSlot, equipped=false){
     if(item.atk) desc+='ATK +'+item.atk+' ';
     if(item.def) desc+='DEF +'+item.def+' ';
   } else if(item.type==='gold_bag'){
-    desc='Open to gain random gold.';
+    desc='Open to gain random gold (500-5000).';
+  } else if(item.type==='big_gold_bag'){
+    desc='Open to gain random gold (2000-10000).';
   } else {
     desc=item.description||'-';
   }
@@ -696,6 +703,17 @@ function renderDetail(item, indexOrSlot, equipped=false){
       renderBag(); renderDetail(null);
     };
     actEl.appendChild(b);
+  } else if(item.type==='big_gold_bag'){
+    const b=document.createElement('button'); b.textContent='Open';
+    b.onclick=()=>{
+      const idx=st.inv.findIndex(x=>x&&x.id===item.id);
+      if(idx>=0) st.inv.splice(idx,1);
+      const amt=2000+Math.floor(Math.random()*8001);
+      st.gold+=amt; updateCurrencies();
+      notify('+'+amt+' Gold (Big Bag!)','#ffaa00');
+      renderBag(); renderDetail(null);
+    };
+    actEl.appendChild(b);
   } else {
     const b=document.createElement('button'); b.textContent='Close';
     b.onclick=()=>renderDetail(null);
@@ -711,25 +729,40 @@ st.talentLanes = {
   atk:[
     {id:'atk_1', cost:1, text:'+5% ATK', fx:s=>s.atkMul+=0.05},
     {id:'atk_2', cost:2, req:['atk_1'], text:'+8% ATK', fx:s=>s.atkMul+=0.08},
-    {id:'atk_3', cost:3, req:['atk_2'], text:'+12% ATK', fx:s=>s.atkMul+=0.12}
+    {id:'atk_3', cost:3, req:['atk_2'], text:'+12% ATK', fx:s=>s.atkMul+=0.12},
+    {id:'atk_4', cost:4, req:['atk_3'], text:'+15% ATK + Crit Chance', fx:s=>{s.atkMul+=0.15; s.crit=(s.crit||0)+0.10;}},
+    {id:'atk_5', cost:5, req:['atk_4'], text:'Berserker: ATK scales with missing HP', fx:s=>{s.berserker=true;}},
+    {id:'atk_ultimate', cost:8, req:['atk_5'], text:'APEX HUNTER: +50% ATK, kills grant rage', fx:s=>{s.atkMul+=0.50; s.killRage=true;}}
   ],
   def:[
     {id:'def_1', cost:1, text:'+80 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+80;}},
     {id:'def_2', cost:2, req:['def_1'], text:'+120 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+120;}},
-    {id:'def_3', cost:3, req:['def_2'], text:'+160 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+160;}}
+    {id:'def_3', cost:3, req:['def_2'], text:'+160 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+160;}},
+    {id:'def_4', cost:4, req:['def_3'], text:'+200 HP + 10% Damage Reduction', fx:s=>{s.hpFlat=(s.hpFlat||0)+200; s.damageReduction=(s.damageReduction||0)+0.10;}},
+    {id:'def_5', cost:5, req:['def_4'], text:'Guardian: Nearby allies take 20% less damage', fx:s=>{s.guardian=true;}},
+    {id:'def_ultimate', cost:8, req:['def_5'], text:'FORTRESS: Team immunity when at low HP', fx:s=>{s.fortress=true;}}
   ],
   recovery:[
     {id:'rec_1', cost:1, text:'+6% Lifesteal', fx:s=>{s.ls=(s.ls||0)+0.06;}},
-    {id:'rec_2', cost:2, req:['rec_1'], text:'+10% Lifesteal', fx:s=>{s.ls=(s.ls||0)+0.10;}}
+    {id:'rec_2', cost:2, req:['rec_1'], text:'+10% Lifesteal', fx:s=>{s.ls=(s.ls||0)+0.10;}},
+    {id:'rec_3', cost:3, req:['rec_2'], text:'+15% Lifesteal + HP Regen', fx:s=>{s.ls=(s.ls||0)+0.15; s.regen=(s.regen||0)+2;}},
+    {id:'rec_4', cost:4, req:['rec_3'], text:'Vampiric: Killing blows fully heal', fx:s=>{s.vampiric=true;}},
+    {id:'rec_ultimate', cost:7, req:['rec_4'], text:'PHOENIX: Auto-revive on death (once per stage)', fx:s=>{s.phoenix=true;}}
   ],
   cooldown:[
-    {id:'cd_1', cost:1, text:'-4% Skill CD', fx:s=>{s.haste=(s.haste||0)+4;}},
-    {id:'cd_2', cost:2, req:['cd_1'], text:'-6% Skill CD', fx:s=>{s.haste=(s.haste||0)+6;}}
+    {id:'cd_1', cost:1, text:'-8% Skill CD', fx:s=>{s.haste=(s.haste||0)+8;}},
+    {id:'cd_2', cost:2, req:['cd_1'], text:'-12% Skill CD', fx:s=>{s.haste=(s.haste||0)+12;}},
+    {id:'cd_3', cost:3, req:['cd_2'], text:'-15% Skill CD + Movement Speed', fx:s=>{s.haste=(s.haste||0)+15; s.moveSpeed=(s.moveSpeed||0)+0.20;}},
+    {id:'cd_4', cost:4, req:['cd_3'], text:'Cascade: Skills have 25% chance to reset CD', fx:s=>{s.cascade=true;}},
+    {id:'cd_ultimate', cost:7, req:['cd_4'], text:'TIME MASTER: All abilities cost 50% less CD', fx:s=>{s.timeMaster=true;}}
   ],
   luck:[
-    {id:'luck_1', cost:1, text:'+5 Luck', fx:s=>{s.luck=(s.luck||0)+5;}},
-    {id:'luck_2', cost:2, req:['luck_1'], text:'+10 Luck', fx:s=>{s.luck=(s.luck||0)+10;}},
-    {id:'luck_3', cost:3, req:['luck_2'], text:'+15 Luck', fx:s=>{s.luck=(s.luck||0)+15;}}
+    {id:'luck_1', cost:1, text:'+8 Luck', fx:s=>{s.luck=(s.luck||0)+8;}},
+    {id:'luck_2', cost:2, req:['luck_1'], text:'+15 Luck', fx:s=>{s.luck=(s.luck||0)+15;}},
+    {id:'luck_3', cost:3, req:['luck_2'], text:'+25 Luck + Gold Find', fx:s=>{s.luck=(s.luck||0)+25; s.goldFind=(s.goldFind||0)+0.30;}},
+    {id:'luck_4', cost:4, req:['luck_3'], text:'Fortune: 10% chance for double loot', fx:s=>{s.fortune=true;}},
+    {id:'luck_5', cost:5, req:['luck_4'], text:'Jackpot: Rare items can upgrade quality', fx:s=>{s.jackpot=true;}},
+    {id:'luck_ultimate', cost:8, req:['luck_5'], text:'GOLDEN TOUCH: Everything drops gold, permanent luck aura', fx:s=>{s.goldenTouch=true;}}
   ]
 };
 function canBuyTalent(node){
@@ -877,21 +910,256 @@ function a1_useSkill(a,key){
     },600);
     st.cds[a.id].S2=0; // reset S2
   } else if(key==='S5'){
-    // Finisher: multi-lane waves + Crescendo reset
-    for(const ln of [0,1,2]){
-      const yPos=laneY(ln)-40;
-      st.shots.push({
-        kind:'wave',color:'#ff4d4f', w:96, h:24,
-        x:a.x+20,y:yPos,vx:1000,vy:0,speed:1000,
-        dmg:Math.round(a.dmg*6),life:900,laneY:laneY(ln),
-        homing:false,pierce:8,ownerId:'A1',s5:true
+    // S5 (Void Impale) - NEW: Consumes 35% of Current HP for devastating single-target attack
+    const hpCost = Math.round(a.hp * 0.35);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Void Impale!', '#ff4d4f');
+      return;
+    }
+    
+    // Consume HP
+    a.hp -= hpCost;
+    addFloater(a.x, a.y - 30, '-' + hpCost + ' HP', '#ff4d4f');
+    
+    // Swift dash with impale
+    addCast(a.x, a.y, '#8b00ff');
+    st.shots.push({
+      kind:'a1_void_impale', x:a.x+20, y:a.y, vx:800, vy:0,
+      dmg:Math.round(a.dmg*15), life:300, w:120, h:60,
+      color:'#8b00ff', pierce:1, hpRecovery:hpCost, ownerId:'A1'
+    });
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  } else if(key==='X1'){
+    // X1 (Astral Sever EX) - Secret Skill: Full-screen cross-slash, costs 20% Max HP
+    const hpCost = Math.round(a.hpMax * 0.20);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Astral Sever!', '#ff4d4f');
+      return;
+    }
+    
+    // Consume HP
+    a.hp -= hpCost;
+    addFloater(a.x, a.y - 30, '-' + hpCost + ' HP', '#ff4d4f');
+    
+    // Full-screen cross-slash effect
+    addCast(a.x, a.y, '#ffaa00');
+    
+    // Horizontal slash
+    st.shots.push({
+      kind:'astral_sever_h', x:0, y:a.y, vx:0, vy:0,
+      dmg:Math.round(a.dmg*10 + (st.bossHP * 0.1)), life:800, 
+      w:DESIGN_W, h:80, color:'#ffaa00', pierce:99, ownerId:'A1'
+    });
+    
+    // Vertical slash
+    st.shots.push({
+      kind:'astral_sever_v', x:a.x, y:0, vx:0, vy:0,
+      dmg:Math.round(a.dmg*10 + (st.bossHP * 0.1)), life:800,
+      w:80, h:DESIGN_H, color:'#ffaa00', pierce:99, ownerId:'A1'
+    });
+    
+    // Crescendo Reset (Secret Skill)
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  }
+  startCD(a.id,key);
+}
+
+/* =================== UNIQUE Combat Kit (MOB SLAYER) =================== */
+function unique_useSkill(a,key){
+  if(!cdReady(a.id,key)) return;
+  if(st._globalSkillLock>0) return;
+  a._castInvT=Math.max(a._castInvT||0,2500);
+  
+  if(key==='S1'){
+    // S1 (Scatter Bloom): 5 ricocheting shards with shardlings on kill
+    addCast(a.x,a.y,'#6aa8ff');
+    for(let i=0;i<5;i++){
+      setTimeout(()=>{
+        st.shots.push({
+          kind:'unique_shard', x:a.x+20, y:a.y-30, vx:600+i*100, vy:(i-2)*80,
+          dmg:Math.round(a.dmg*1.5), life:1800, w:12, h:12, color:'#6aa8ff',
+          pierce:3, ricochet:2, ownerId:'Unique'
+        });
+      }, i*100);
+    }
+  } else if(key==='S2'){
+    // S2 (Drone Command): Summon/heal drones
+    if(!a._drones) a._drones = [];
+    if(a._drones.length < 2){
+      // Summon new drone
+      a._drones.push({
+        x:a.x+40, y:a.y-60, hp:100, hpMax:100, atk:1.0,
+        targetX:a.x+40, targetY:a.y-60, fireCD:800
+      });
+      addCast(a.x+40,a.y-60,'#00ff88');
+    } else {
+      // Heal and buff existing drones
+      a._drones.forEach(drone => {
+        drone.hp = Math.min(drone.hpMax, drone.hp + 30);
+        drone.atk = Math.min(2.0, drone.atk + 0.1);
+        addFloater(drone.x, drone.y-20, '+30 HP', '#36c777');
       });
     }
+  } else if(key==='S3'){
+    // S3 (Overcharge Stream v2): Attached sweeping beam
+    addCast(a.x,a.y,'#ff6aa8');
+    const beamDuration = 2500;
+    const beam = {
+      kind:'unique_beam', x:a.x+30, y:a.y-40, attachedTo:a,
+      dmg:Math.round(a.dmg*0.8), life:beamDuration, rampUp:0,
+      w:200, h:60, color:'#ff6aa8', ownerId:'Unique'
+    };
+    st.shots.push(beam);
+  } else if(key==='S5'){
+    // S5 (Drone Overdrive): Kamikaze drones, costs 30% Current HP
+    const hpCost = Math.round(a.hp * 0.30);
+    if(a.hp <= hpCost || !a._drones || a._drones.length === 0) {
+      notify('Need drones and HP for Overdrive!', '#ff4d4f');
+      return;
+    }
+    
+    a.hp -= hpCost;
+    addFloater(a.x, a.y-30, '-'+hpCost+' HP', '#ff4d4f');
+    
+    // Convert drones to kamikazes
+    a._drones.forEach(drone => {
+      st.shots.push({
+        kind:'unique_kamikaze', x:drone.x, y:drone.y, vx:400, vy:0,
+        dmg:Math.round(a.dmg*8), life:3000, w:80, h:80,
+        color:'#ff6aa8', aoe:120, seeking:true, ownerId:'Unique'
+      });
+    });
+    a._drones = []; // Destroy all drones
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  } else if(key==='X1'){
+    // X1 (Prismatic Cataclysm): Persistent energy lattice, costs 20% Max HP
+    const hpCost = Math.round(a.hpMax * 0.20);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Cataclysm!', '#ff4d4f');
+      return;
+    }
+    
+    a.hp -= hpCost;
+    addFloater(a.x, a.y-30, '-'+hpCost+' HP', '#ff4d4f');
+    
+    // Create persistent lattice
+    st.shots.push({
+      kind:'unique_lattice', x:a.x+100, y:a.y-100, vx:0, vy:0,
+      hp:300, hpMax:300, dmg:Math.round(a.dmg*3), life:15000,
+      w:200, h:200, color:'#6aa8ff', fireRate:300, lastFire:0,
+      lootVacuum:true, ownerId:'Unique'
+    });
+    
     // Crescendo Reset
     if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
   }
   startCD(a.id,key);
 }
+
+/* =================== MISSY Combat Kit (SUPPORT/LOOT) =================== */
+function missy_useSkill(a,key){
+  if(!cdReady(a.id,key)) return;
+  if(st._globalSkillLock>0) return;
+  a._castInvT=Math.max(a._castInvT||0,2000);
+  
+  if(key==='S1'){
+    // S1 (Lucky Charm Volley): Fast poke that marks enemies
+    addCast(a.x,a.y,'#ffd56a');
+    for(let i=0;i<3;i++){
+      setTimeout(()=>{
+        st.shots.push({
+          kind:'missy_charm', x:a.x+15, y:a.y-35, vx:800, vy:(i-1)*50,
+          dmg:Math.round(a.dmg*1.2), life:1500, w:16, h:16,
+          color:'#ffd56a', mark:true, ownerId:'Missy'
+        });
+      }, i*120);
+    }
+  } else if(key==='S2'){
+    // S2 (Winged Aegis v2): Dome that reflects and heals
+    addCast(a.x,a.y,'#36c777');
+    st.shots.push({
+      kind:'missy_dome', x:a.x, y:a.y-50, vx:0, vy:0,
+      life:8000, w:160, h:160, color:'#36c777',
+      reflect:true, healPulse:true, ownerId:'Missy'
+    });
+    
+    // Heal team
+    st.players.forEach(p => {
+      if(!p.isDefeated){
+        const heal = Math.round(p.hpMax * 0.08);
+        p.hp = Math.min(p.hpMax, p.hp + heal);
+        addFloater(p.x, p.y-30, '+'+heal+' HP', '#36c777');
+      }
+    });
+  } else if(key==='S3'){
+    // S3 (Neko Dominion v2): Summon Maneki guardians
+    addCast(a.x,a.y,'#ff9aa8');
+    for(let i=0;i<2;i++){
+      st.shots.push({
+        kind:'missy_maneki', x:a.x+50+(i*100), y:a.y, vx:0, vy:0,
+        hp:80, life:12000, w:40, h:60, color:'#ff9aa8',
+        taunt:true, pullRadius:150, ownerId:'Missy'
+      });
+    }
+  } else if(key==='S5'){
+    // S5 (Sacrificial Gambit): Costs 25% team HP for massive buff
+    const totalHpCost = st.players.reduce((sum, p) => sum + Math.round(p.hp * 0.25), 0);
+    
+    let canAfford = true;
+    st.players.forEach(p => {
+      if(!p.isDefeated && p.hp <= Math.round(p.hp * 0.25)) canAfford = false;
+    });
+    
+    if(!canAfford) {
+      notify('Team needs more HP for Gambit!', '#ff4d4f');
+      return;
+    }
+    
+    // Take HP from all players
+    st.players.forEach(p => {
+      if(!p.isDefeated){
+        const cost = Math.round(p.hp * 0.25);
+        p.hp -= cost;
+        addFloater(p.x, p.y-30, '-'+cost+' HP', '#ff4d4f');
+        
+        // Grant massive buff
+        p._critBuff = 5000; // 5 seconds 100% crit
+        p._invulnBuff = 5000; // 5 seconds invulnerability
+      }
+    });
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  } else if(key==='X1'){
+    // X1 (Sovereign Parade): Royal procession with bells, costs 20% Max HP
+    const hpCost = Math.round(a.hpMax * 0.20);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Parade!', '#ff4d4f');
+      return;
+    }
+    
+    a.hp -= hpCost;
+    addFloater(a.x, a.y-30, '-'+hpCost+' HP', '#ff4d4f');
+    
+    // Create royal bells and procession
+    for(let i=0;i<2;i++){
+      st.shots.push({
+        kind:'missy_royal_bell', x:a.x+80+(i*120), y:a.y-80, vx:0, vy:0,
+        hp:200, life:20000, w:60, h:80, color:'#ffd56a',
+        healRate:400, lootPull:true, convertBullets:true, ownerId:'Missy'
+      });
+    }
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  }
+  startCD(a.id,key);
+}
+
 function updateA1RageMode(a, dtMs){
   if(!a) return;
   if(a.rageOn){
@@ -943,9 +1211,9 @@ function melee(a,reach,height,dmg){
 
 /* ================= Cooldowns ================== */
 const CD = {
-  'A1':{S1:6000,S2:10000,S3:16000,S5:45000},
-  'Unique':{S1:6000,S2:10000,S3:16000},
-  'Missy':{S1:6000,S2:10000,S3:16000}
+  'A1':{S1:6000,S2:10000,S3:16000,S5:45000,X1:120000},
+  'Unique':{S1:6000,S2:10000,S3:16000,S5:35000,X1:120000},
+  'Missy':{S1:6000,S2:10000,S3:16000,S5:30000,X1:120000}
 };
 function cdReady(id,key){return st.cds[id] && st.cds[id][key]<=0;}
 function startCD(id,key){ if(st.cds[id]) st.cds[id][key]=CD[id][key]; }
@@ -1058,6 +1326,7 @@ document.getElementById('btnS1').onclick=()=> useSkillWrapper(leader(),'S1');
 document.getElementById('btnS2').onclick=()=> useSkillWrapper(leader(),'S2');
 document.getElementById('btnS3').onclick=()=> useSkillWrapper(leader(),'S3');
 document.getElementById('btnS5').onclick=()=> useSkillWrapper(leader(),'S5');
+document.getElementById('btnX1').onclick=()=> useSkillWrapper(leader(),'X1');
 
 const keys={};
 addEventListener('keydown',e=>{
@@ -1115,9 +1384,11 @@ function jumpAll(){
 function useSkillWrapper(a,key){
   if(!a || a.isDefeated) return;
   if(a.id==='A1') a1_useSkill(a,key);
+  else if(a.id==='Unique') unique_useSkill(a,key);
+  else if(a.id==='Missy') missy_useSkill(a,key);
   else genericSkill(a,key);
   // Crescendo reset if Secret (not implemented separate) or S5
-  if(key==='S5' || key==='SECRET'){
+  if(key==='S5' || key==='X1'){
     if(st.cds[a.id]){
       st.cds[a.id].S1=0;
       st.cds[a.id].S2=0;
@@ -1232,14 +1503,40 @@ function update(dt){
   for(const s of st.shots){
     for(const e of st.enemies){
       if(e.hp<=0) continue;
-      const dx=e.x-s.x, dy=e.y-s.y;
-      const dist=Math.hypot(dx,dy);
-      if( (s.aoe && dist < s.aoe) || (!s.aoe && dist<28) ){
+      let hit = false;
+      
+      // Special collision for new A1 skills
+      if(s.kind==='a1_void_impale'){
+        // Void Impale: rectangular hit area
+        const dx = Math.abs(e.x - s.x);
+        const dy = Math.abs(e.y - s.y);
+        hit = dx < (s.w/2) && dy < (s.h/2);
+      } else if(s.kind==='astral_sever_h'){
+        // Horizontal slash: full-width
+        hit = Math.abs(e.y - s.y) < (s.h/2);
+      } else if(s.kind==='astral_sever_v'){
+        // Vertical slash: full-height
+        hit = Math.abs(e.x - s.x) < (s.w/2);
+      } else {
+        // Standard collision
+        const dx=e.x-s.x, dy=e.y-s.y;
+        const dist=Math.hypot(dx,dy);
+        hit = (s.aoe && dist < s.aoe) || (!s.aoe && dist<28);
+      }
+      
+      if(hit){
         let dmg=s.dmg;
         if(s.kind==='a1_bomb'){
           // apply armor shred debuff
           e.armorShredDebuff=Math.max(e.armorShredDebuff||0, s.armorShred||0);
           setTimeout(()=>{ if(e.armorShredDebuff) e.armorShredDebuff-= (s.armorShred||0); },6000);
+        } else if(s.kind==='a1_void_impale' && e.hp <= dmg && s.hpRecovery){
+          // Void Impale: HP recovery on kill
+          const caster = st.players.find(p => p.id === s.ownerId);
+          if(caster){
+            caster.hp = Math.min(caster.hpMax, caster.hp + s.hpRecovery);
+            addFloater(caster.x, caster.y-30, '+'+s.hpRecovery+' HP', '#36c777');
+          }
         }
         e.hp-=dmg;
         addFloater(e.x,e.y-18,'-'+dmg,'#ff7a6a');
