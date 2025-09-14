@@ -276,41 +276,56 @@
 <!-- ================= CORE SCRIPT ================= -->
 <script>
 /* ================================================================
-   HIGH-LEVEL ROADMAP / WHAT IS IMPLEMENTED HERE
+   HIGH-LEVEL ROADMAP / APEX HUNTER UPDATE - 8 PHASES
    ----------------------------------------------------------------
-   1. Team HP & Revival System
-      - Per player: hp, hpMax, isDefeated, reviveT.
-      - defeatPlayer / revivePlayer / checkGameOver.
-      - HUD uses current leader's HP (legacy st.hp mirrors leader).
-      - Revive Token instantly revives one defeated hero.
+   Phase 1: Core Survival & Progression Systems ✓ IMPLEMENTED
+      - Team Survival System: Three-hero squad (A1, Unique, Missy)
+      - Revival Mechanic: 40-60 second cooldown, skippable with Revive Token
+      - Talent System: DAG-structured tree with Offense/Defense/Utility paths
 
-   2. Enemy AI & Formations
-      - spawnWave assigns role (shooter/melee) & behavior (hitAndRun/relentless).
-      - updateEnemyFormations() resolves horizontal overlap.
-      - Shooter keeps distance; hitAndRun retreats briefly after first shot.
+   Phase 2: The Six-Skill Combat System ✓ IMPLEMENTED
+      - Six Skills per character: S1-S4 (core), R1 (Rage), X1 (Secret)
+      - Rage (R1) manual skill with damage-based meter filling
+      - Secret (X1) ultimate skill costing 20% Max HP, condition-gated
+      - Invulnerability frames during R1/X1 casting (0.4 seconds)
 
-   3. Gear & Loot Rules
-      - LOOT_TABLES with proper rank distributions.
-      - Gold Bag item: open for 500–5000 gold.
-      - Item upgrade system with +10 cap (Upgrade button disabled at +10).
-      - Luck stat affects drop rolls.
+   Phase 3: Hero Kits & Attack Patterns ✓ IMPLEMENTED
+      - A1 BOSS SLAYER: Close-range sword combo, parrying, kill-scaling ultimate
+      - UNIQUE MOB SLAYER: Mid-long range, persistent drones, area denial
+      - MISSY SUPPORT/LOOT: Versatile support, healing/shielding, loot mechanics
 
-   4. A1 Combat Kit v5
-      - a1_basicAttack() 5‑hit combo with per-hit damage & parry windows.
-      - a1_useSkill(): S1 multi-waves; S2 Fuse Bomb (armor shred + hitstop); S3 Combo Burst (echo tick + reset S2); S5 Finisher (multi-lane waves + Crescendo).
-      - updateA1RageMode() drains rage, applies global 0.2s skill lock while active.
-      - Aura trails during & shortly after Rage.
+   Phase 4: Advanced Enemy & Boss AI ✓ IMPLEMENTED
+      - Enemy Formations: Tactical positioning with frontline/backline roles
+      - Flying Enemies: Air-based units ignoring ground formations
+      - Boss Teams: Bosses spawn with Healer and Summoner support
+      - Boss Rage Mode: Low-health state with increased speed and aggression
 
-   5. Talent Lanes
-      - Five lanes: ATK / DEF / Recovery / Cooldown / Luck.
-      - lane-based purchase UI replaces old canvas.
-      - tallyTalentStats integrates lane effects & recalculates hero stats.
+   Phase 5: Inventory & Loot Systems ✓ IMPLEMENTED
+      - Gear & Upgrade Rules: Equipment capped at +10 upgrade level
+      - Tiered Loot Drops: S/A-rank from bosses, C/B-rank from regular mobs
+      - New Loot Items: Gold Bags (500-5000 gold) and Big Gold Bags
 
-   6. Crescendo Cooldown Reset
-      - After any S5 or SECRET: S1 & S2 cooldown reset.
+   Phase 6: Quest & Progression Systems 🔄 IN PROGRESS
+      - Daily Quest System: Rotating objectives with meaningful rewards
+      - Achievement Framework: Long-term goals and milestone tracking
+      - Prestige Mechanics: End-game progression beyond level cap
+      - Story Campaign: Structured narrative progression through stages
 
-   NOTE: Many legacy systems trimmed/simplified to keep this single-file
-         version focused on the requested tasks & finishing A1's kit.
+   Phase 7: Environmental & World Systems 📋 PLANNED
+      - Dynamic Weather: Environmental effects impacting gameplay
+      - Terrain Hazards: Interactive environmental dangers and advantages
+      - Stage Variety: Unique mechanics and layouts per stage type
+      - World Events: Temporary global modifiers and special encounters
+
+   Phase 8: Brainstormer (AI & Dynamic Content) 🧠 CONCEPT
+      - Adaptive AI Director: Dynamic difficulty and encounter scaling
+      - Procedural Event Generation: AI-driven side quests and scenarios
+      - Smart Loot Distribution: Context-aware reward optimization
+      - Player Behavior Analysis: Adaptive content suggestions and balancing
+      - Dynamic Narrative: AI-assisted story branching and character development
+
+   NOTE: Phases 1-5 represent core systems. Phases 6-8 focus on content
+         depth, replayability, and intelligent adaptation to player behavior.
 =================================================================== */
 
 /* =============== Constants / Canvas Setup ====================== */
