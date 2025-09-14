@@ -1,0 +1,10 @@
+{
+  "stages": {
+    "s01": {
+      "name": "cave",
+      "layers": {
+        "l2_mid": "assets/bg/s01_cave/bg_s01_cave_l2_mid_320x214_loop_v01.webp"
+      }
+    }
+  }
+}

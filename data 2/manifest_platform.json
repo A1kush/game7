@@ -1,0 +1,9 @@
+{
+  "version": "platform-1.0",
+  "paths": {
+    "img": "assets/img/",
+    "preview": "assets/preview/"
+  },
+  "platforms": [],
+  "ui": []
+}

@@ -1,0 +1,36 @@
+{
+  "version": "1.2.0",
+  "paths": {
+    "img": "assets/img/",
+    "preview": "assets/preview/"
+  },
+  "platforms": [
+    {
+      "key": "platform_semisolid_set",
+      "file": "assets/img/platform_semisolid_set.png",
+      "type": "semisolid_platform_set",
+      "slices": [
+        {
+          "w": 128,
+          "x": 8,
+          "y": 12,
+          "h": 40
+        },
+        {
+          "w": 256,
+          "x": 152,
+          "y": 12,
+          "h": 40
+        },
+        {
+          "w": 384,
+          "x": 424,
+          "y": 12,
+          "h": 40
+        }
+      ],
+      "rim_color": "#00E5FF",
+      "style": "[A1K_STYLE]"
+    }
+  ]
+}

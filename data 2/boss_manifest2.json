@@ -1,0 +1,47 @@
+{
+  "assets/custom/bosses/engine/boss_engine_idle_strip8_256x128_red.png": {
+    "type": "boss",
+    "name": "boss_engine_idle",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "red"
+  },
+  "assets/custom/bosses/engine/boss_engine_walk_strip8_256x128_red.png": {
+    "type": "boss",
+    "name": "boss_engine_walk",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "red"
+  },
+  "assets/custom/bosses/engine/boss_engine_attack_strip8_256x128_red.png": {
+    "type": "boss",
+    "name": "boss_engine_attack",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "red"
+  },
+  "assets/custom/bosses/engine/boss_engine_hurt_strip8_256x128_red.png": {
+    "type": "boss",
+    "name": "boss_engine_hurt",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "red"
+  },
+  "assets/custom/bosses/engine/boss_engine_death_strip8_256x128_red.png": {
+    "type": "boss",
+    "name": "boss_engine_death",
+    "frames": 8,
+    "fps": 12,
+    "loop": false,
+    "pivot": "bottom_center",
+    "variant": "red"
+  }
+}

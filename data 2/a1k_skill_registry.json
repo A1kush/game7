@@ -1,0 +1,17 @@
+{
+  "A1": {
+    "rage": "assets/skills/a1_rage/a1_rage_burst_strip6_96x96.webp",
+    "parry": "assets/skills/a1_parry/a1_parry_ring_64.webp",
+    "slash": "assets/skills/a1_slash/a1_slash_meta.json",
+    "impact": "assets/skills/impact/impact_a1_wave_strip6_48x48.webp",
+    "wave": "assets/skills/a1_wave/a1_wave_icon_64.webp"
+  },
+  "Unique": {
+    "beam": null,
+    "muzzle": null
+  },
+  "Missy": {
+    "trap": null,
+    "decoy": null
+  }
+}

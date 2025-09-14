@@ -1,0 +1,17 @@
+{
+  "version": "3.0.0",
+  "categories": {
+    "icons": {
+      "path": "../assets/ui/",
+      "extensions": ["png", "gif", "webp"],
+      "sprites": [
+        "icon_pet",
+        "icon_vehicle",
+        "icon_gift",
+        "icon_gear",
+        "aura_gear_8"
+      ]
+    }
+  }
+}
+

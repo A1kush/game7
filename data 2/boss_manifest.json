@@ -1,0 +1,47 @@
+{
+  "assets/custom/bosses/wraith/boss_wraith_idle_strip8_256x128_toxic.png": {
+    "type": "boss",
+    "name": "boss_wraith_idle",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "toxic"
+  },
+  "assets/custom/bosses/wraith/boss_wraith_walk_strip8_256x128_toxic.png": {
+    "type": "boss",
+    "name": "boss_wraith_walk",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "toxic"
+  },
+  "assets/custom/bosses/wraith/boss_wraith_attack_strip8_256x128_toxic.png": {
+    "type": "boss",
+    "name": "boss_wraith_attack",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "toxic"
+  },
+  "assets/custom/bosses/wraith/boss_wraith_hurt_strip8_256x128_toxic.png": {
+    "type": "boss",
+    "name": "boss_wraith_hurt",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "toxic"
+  },
+  "assets/custom/bosses/wraith/boss_wraith_death_strip8_256x128_toxic.png": {
+    "type": "boss",
+    "name": "boss_wraith_death",
+    "frames": 8,
+    "fps": 12,
+    "loop": false,
+    "pivot": "bottom_center",
+    "variant": "toxic"
+  }
+}

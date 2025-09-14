@@ -1,0 +1,53 @@
+{
+  "generated": [
+    {
+      "icon": "assets/icons/gift.png",
+      "spritesheet": "assets/spritesheets/gift_8x.png",
+      "gif": "assets/gifs/gift.gif",
+      "frames": 8,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "icon": "assets/icons/pet.png",
+      "spritesheet": "assets/spritesheets/pet_8x.png",
+      "gif": "assets/gifs/pet.gif",
+      "frames": 8,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "icon": "assets/icons/vehicle.png",
+      "spritesheet": "assets/spritesheets/vehicle_8x.png",
+      "gif": "assets/gifs/vehicle.gif",
+      "frames": 8,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "icon": "assets/icons/atk.png",
+      "spritesheet": "assets/spritesheets/atk_8x.png",
+      "gif": "assets/gifs/atk.gif",
+      "frames": 8,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "icon": "assets/icons/def.png",
+      "spritesheet": "assets/spritesheets/def_8x.png",
+      "gif": "assets/gifs/def.gif",
+      "frames": 8,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "icon": "assets/icons/hp.png",
+      "spritesheet": "assets/spritesheets/hp_8x.png",
+      "gif": "assets/gifs/hp.gif",
+      "frames": 8,
+      "w": 96,
+      "h": 96
+    }
+  ],
+  "notes": "Solo-leveling aura vibes, 8-frame glow sprites."
+}

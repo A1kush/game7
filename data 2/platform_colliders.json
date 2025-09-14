@@ -1,0 +1,54 @@
+{
+  "platforms": [
+    {
+      "key": "platform_semisolid_128",
+      "x": 0,
+      "y": 12,
+      "width": 128,
+      "height": 40,
+      "type": "semisolid",
+      "one_way": true,
+      "pivot": "bottom-center"
+    },
+    {
+      "key": "platform_semisolid_256",
+      "x": 0,
+      "y": 12,
+      "width": 256,
+      "height": 40,
+      "type": "semisolid",
+      "one_way": true,
+      "pivot": "bottom-center"
+    },
+    {
+      "key": "platform_semisolid_384",
+      "x": 0,
+      "y": 12,
+      "width": 384,
+      "height": 40,
+      "type": "semisolid",
+      "one_way": true,
+      "pivot": "bottom-center"
+    },
+    {
+      "key": "platform_semisolid_endcap_left_32",
+      "x": 0,
+      "y": 12,
+      "width": 32,
+      "height": 40,
+      "type": "semisolid",
+      "one_way": true,
+      "pivot": "bottom-center"
+    },
+    {
+      "key": "platform_semisolid_endcap_right_32",
+      "x": 0,
+      "y": 12,
+      "width": 32,
+      "height": 40,
+      "type": "semisolid",
+      "one_way": true,
+      "pivot": "bottom-center"
+    }
+  ]
+}

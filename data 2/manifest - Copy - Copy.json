@@ -1,0 +1,12 @@
+{
+  "version": "1.0.1",
+  "icons": {
+    "pet": [ "assets/ui/icon_pet.png", "skills/light_icon.png", "ui/item_slot_common.png" ],
+    "vehicle": [ "assets/ui/icon_vehicle.png", "skills/lightning_icon.png", "ui/item_slot_common.png" ],
+    "gift": [ "assets/ui/icon_gift.png", "skills/earth_icon.png", "ui/item_slot_rare.png" ],
+    "gear": [ "assets/ui/icon_gear.png", "skills/fire_icon.png", "ui/item_slot_epic.png" ]
+  },
+  "vfx": {
+    "aura_gear": [ "assets/ui/aura_gear_8.gif", "spritesheets/hunter_aura_8x.png" ]
+  }
+}

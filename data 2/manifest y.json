@@ -1,0 +1,104 @@
+{
+  "characters": {
+    "a1": {
+      "pivot": {
+        "x": "center",
+        "y": "bottom"
+      },
+      "baseline": {
+        "64": 56,
+        "96": 84
+      },
+      "frameMs": {
+        "idle": 300,
+        "idle_blink_strip4": 220,
+        "run_strip8": 70,
+        "slash_strip6": 55,
+        "hurt_strip3": 80,
+        "dead_strip6": 90,
+        "dash_strip6": 60
+      },
+      "sprites": {
+        "idle": {
+          "64": "assets/characters/a1/a1_dualsword_idle_64.png",
+          "96": "assets/characters/a1/a1_dualsword_idle_96.png",
+          "left_64": "assets/characters/a1/a1_dualsword_idle_64_left.png",
+          "left_96": "assets/characters/a1/a1_dualsword_idle_96_left.png",
+          "64_2x": "assets/characters/a1/a1_dualsword_idle_64@2x.png",
+          "64_3x": "assets/characters/a1/a1_dualsword_idle_64@3x.png",
+          "96_2x": "assets/characters/a1/a1_dualsword_idle_96@2x.png",
+          "96_3x": "assets/characters/a1/a1_dualsword_idle_96@3x.png"
+        },
+        "idle_blink_strip4": {
+          "64": "assets/characters/a1/a1_dualsword_idle_blink_strip4_64.png",
+          "96": "assets/characters/a1/a1_dualsword_idle_blink_strip4_96.png",
+          "left_64": "assets/characters/a1/a1_dualsword_idle_blink_strip4_64_left.png",
+          "left_96": "assets/characters/a1/a1_dualsword_idle_blink_strip4_96_left.png",
+          "64_2x": "assets/characters/a1/a1_dualsword_idle_blink_strip4_64@2x.png",
+          "64_3x": "assets/characters/a1/a1_dualsword_idle_blink_strip4_64@3x.png",
+          "96_2x": "assets/characters/a1/a1_dualsword_idle_blink_strip4_96@2x.png",
+          "96_3x": "assets/characters/a1/a1_dualsword_idle_blink_strip4_96@3x.png"
+        },
+        "run_strip8": {
+          "64": "assets/characters/a1/a1_dualsword_run_strip8_64.png",
+          "96": "assets/characters/a1/a1_dualsword_run_strip8_96.png",
+          "left_64": "assets/characters/a1/a1_dualsword_run_strip8_64_left.png",
+          "left_96": "assets/characters/a1/a1_dualsword_run_strip8_96_left.png",
+          "64_2x": "assets/characters/a1/a1_dualsword_run_strip8_64@2x.png",
+          "64_3x": "assets/characters/a1/a1_dualsword_run_strip8_64@3x.png",
+          "96_2x": "assets/characters/a1/a1_dualsword_run_strip8_96@2x.png",
+          "96_3x": "assets/characters/a1/a1_dualsword_run_strip8_96@3x.png"
+        },
+        "slash_strip6": {
+          "64": "assets/characters/a1/a1_dualsword_slash_strip6_64.png",
+          "96": "assets/characters/a1/a1_dualsword_slash_strip6_96.png",
+          "left_64": "assets/characters/a1/a1_dualsword_slash_strip6_64_left.png",
+          "left_96": "assets/characters/a1/a1_dualsword_slash_strip6_96_left.png",
+          "64_2x": "assets/characters/a1/a1_dualsword_slash_strip6_64@2x.png",
+          "64_3x": "assets/characters/a1/a1_dualsword_slash_strip6_64@3x.png",
+          "96_2x": "assets/characters/a1/a1_dualsword_slash_strip6_96@2x.png",
+          "96_3x": "assets/characters/a1/a1_dualsword_slash_strip6_96@3x.png"
+        },
+        "hurt_strip3": {
+          "64": "assets/characters/a1/a1_dualsword_hurt_strip3_64.png",
+          "96": "assets/characters/a1/a1_dualsword_hurt_strip3_96.png",
+          "left_64": "assets/characters/a1/a1_dualsword_hurt_strip3_64_left.png",
+          "left_96": "assets/characters/a1/a1_dualsword_hurt_strip3_96_left.png",
+          "64_2x": "assets/characters/a1/a1_dualsword_hurt_strip3_64@2x.png",
+          "64_3x": "assets/characters/a1/a1_dualsword_hurt_strip3_64@3x.png",
+          "96_2x": "assets/characters/a1/a1_dualsword_hurt_strip3_96@2x.png",
+          "96_3x": "assets/characters/a1/a1_dualsword_hurt_strip3_96@3x.png"
+        },
+        "dead_strip6": {
+          "64": "assets/characters/a1/a1_dualsword_dead_strip6_64.png",
+          "96": "assets/characters/a1/a1_dualsword_dead_strip6_96.png",
+          "left_64": "assets/characters/a1/a1_dualsword_dead_strip6_64_left.png",
+          "left_96": "assets/characters/a1/a1_dualsword_dead_strip6_96_left.png",
+          "64_2x": "assets/characters/a1/a1_dualsword_dead_strip6_64@2x.png",
+          "64_3x": "assets/characters/a1/a1_dualsword_dead_strip6_64@3x.png",
+          "96_2x": "assets/characters/a1/a1_dualsword_dead_strip6_96@2x.png",
+          "96_3x": "assets/characters/a1/a1_dualsword_dead_strip6_96@3x.png"
+        },
+        "dash_strip6": {
+          "64": "assets/characters/a1/a1_dualsword_dash_strip6_64.png",
+          "96": "assets/characters/a1/a1_dualsword_dash_strip6_96.png",
+          "left_64": "assets/characters/a1/a1_dualsword_dash_strip6_64_left.png",
+          "left_96": "assets/characters/a1/a1_dualsword_dash_strip6_96_left.png",
+          "64_2x": "assets/characters/a1/a1_dualsword_dash_strip6_64@2x.png",
+          "64_3x": "assets/characters/a1/a1_dualsword_dash_strip6_64@3x.png",
+          "96_2x": "assets/characters/a1/a1_dualsword_dash_strip6_96@2x.png",
+          "96_3x": "assets/characters/a1/a1_dualsword_dash_strip6_96@3x.png"
+        }
+      }
+    }
+  },
+  "vfx": {
+    "parry_ring_64": "assets/vfx/a1_parry_ring_64.png",
+    "parry_flash_64": "assets/vfx/a1_parry_flash_64.png",
+    "parry_flash_96": "assets/vfx/a1_parry_flash_96.png",
+    "shadow_wave_strip6_96": "assets/vfx/a1_shadow_wave_strip6_96.png"
+  },
+  "ui": {
+    "skill_S1": "assets/ui/ui_skill_S1.png"
+  }
+}

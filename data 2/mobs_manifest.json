@@ -1,0 +1,29 @@
+{
+  "assets/custom/mobs/m04_miniboss/m04_miniboss_walk_strip8_256x128_cyan.png": {
+    "type": "mob",
+    "name": "m04_miniboss_walk",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "cyan"
+  },
+  "assets/custom/mobs/m04_miniboss/m04_miniboss_attack_strip8_256x128_cyan.png": {
+    "type": "mob",
+    "name": "m04_miniboss_attack",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "cyan"
+  },
+  "assets/custom/mobs/m04_miniboss/m04_miniboss_death_strip8_256x128_cyan.png": {
+    "type": "mob",
+    "name": "m04_miniboss_death",
+    "frames": 8,
+    "fps": 12,
+    "loop": false,
+    "pivot": "bottom_center",
+    "variant": "cyan"
+  }
+}

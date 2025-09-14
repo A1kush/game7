@@ -1,0 +1,47 @@
+{
+  "assets/custom/bosses/arcanist/boss_arcanist_idle_strip8_256x128_purple.png": {
+    "type": "boss",
+    "name": "boss_arcanist_idle",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "purple"
+  },
+  "assets/custom/bosses/arcanist/boss_arcanist_walk_strip8_256x128_purple.png": {
+    "type": "boss",
+    "name": "boss_arcanist_walk",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "purple"
+  },
+  "assets/custom/bosses/arcanist/boss_arcanist_attack_strip8_256x128_purple.png": {
+    "type": "boss",
+    "name": "boss_arcanist_attack",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "purple"
+  },
+  "assets/custom/bosses/arcanist/boss_arcanist_hurt_strip8_256x128_purple.png": {
+    "type": "boss",
+    "name": "boss_arcanist_hurt",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "purple"
+  },
+  "assets/custom/bosses/arcanist/boss_arcanist_death_strip8_256x128_purple.png": {
+    "type": "boss",
+    "name": "boss_arcanist_death",
+    "frames": 8,
+    "fps": 12,
+    "loop": false,
+    "pivot": "bottom_center",
+    "variant": "purple"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "icons": {
+    "ability_point": "icons/ability_point.png",
+    "talent_point": "icons/talent_point.png",
+    "pet_point": "icons/pet_point.png",
+    "vehicle_point": "icons/vehicle_point.png"
+  },
+  "spritesheets": {
+    "ability_point": "spritesheets/ability_point_8x.png",
+    "talent_point": "spritesheets/talent_point_8x.png",
+    "pet_point": "spritesheets/pet_point_8x.png",
+    "vehicle_point": "spritesheets/vehicle_point_8x.png"
+  },
+  "gifs": {
+    "ability_point": "gifs/ability_point.gif",
+    "talent_point": "gifs/talent_point.gif",
+    "pet_point": "gifs/pet_point.gif",
+    "vehicle_point": "gifs/vehicle_point.gif"
+  }
+}

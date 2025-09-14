@@ -1,0 +1,1033 @@
+{
+  "assets": {
+    "assets/skills/a1_slash/a1_slash_meta.json": {
+      "cat": "skills",
+      "group": "a1_slash",
+      "size": 523,
+      "hash": "aa33beb69a9bd0caf4a4e96bc29c158a",
+      "mime": "application/json"
+    },
+    "assets/skills/a1_slash/a1_slash_red_strip6_64x64.webp": {
+      "cat": "skills",
+      "group": "a1_slash",
+      "size": 6196,
+      "hash": "0722afd5f2e3edb709e3e791afe7d93d",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_slash/a1_slash_red_64x64.webp": {
+      "cat": "skills",
+      "group": "a1_slash",
+      "size": 9044,
+      "hash": "873807e1f2d48f49e7289ffeb325d7e2",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_rage/a1_rage_burst_strip6_96x96.webp": {
+      "cat": "skills",
+      "group": "a1_rage",
+      "size": 4382,
+      "hash": "14b220e14cfe9e4c0252d233dd13d0e2",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_rage/a1_rage_burst_strip8_96x96.webp": {
+      "cat": "skills",
+      "group": "a1_rage",
+      "size": 5540,
+      "hash": "4ac4559bad8fad37f488100587e2affe",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_rage/a1_rage_icon_64.webp": {
+      "cat": "skills",
+      "group": "a1_rage",
+      "size": 748,
+      "hash": "d086cbe7c3a918c1034d102be4e2f7cf",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_rage/a1_rage_96.webp": {
+      "cat": "skills",
+      "group": "a1_rage",
+      "size": 9176,
+      "hash": "4b80d32986fa0586b42545bc98dfd8ce",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_rage/a1_rage_256.webp": {
+      "cat": "skills",
+      "group": "a1_rage",
+      "size": 19590,
+      "hash": "e17d6f02c23206693dc5f3f307b12770",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_rage/a1_rage_preview_strip.webp": {
+      "cat": "skills",
+      "group": "a1_rage",
+      "size": 5540,
+      "hash": "4ac4559bad8fad37f488100587e2affe",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_rage/a1_rage_manifest.json": {
+      "cat": "skills",
+      "group": "a1_rage",
+      "size": 949,
+      "hash": "d959727a576cf07ac763ec8cbd1d6ec4",
+      "mime": "application/json"
+    },
+    "assets/skills/a1_parry/a1_parry_ring_64.webp": {
+      "cat": "skills",
+      "group": "a1_parry",
+      "size": 1978,
+      "hash": "10520b31c7a169e4ef6d2d7f8a47be7a",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_parry/a1_parry_ring_strip8_64x64.webp": {
+      "cat": "skills",
+      "group": "a1_parry",
+      "size": 10244,
+      "hash": "ca637eb4321b9dfbeb0c16565b53c9e8",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_parry/a1_parry_icon_64.webp": {
+      "cat": "skills",
+      "group": "a1_parry",
+      "size": 1978,
+      "hash": "10520b31c7a169e4ef6d2d7f8a47be7a",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_parry/a1_parry_64.webp": {
+      "cat": "skills",
+      "group": "a1_parry",
+      "size": 19520,
+      "hash": "57e879bdeecb0b94c53f58e7ab2c02bc",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_parry/a1_parry_256.webp": {
+      "cat": "skills",
+      "group": "a1_parry",
+      "size": 37460,
+      "hash": "6d443b11c8fef4ac4c4d8a476d07d24a",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_parry/a1_parry_preview_strip.webp": {
+      "cat": "skills",
+      "group": "a1_parry",
+      "size": 10244,
+      "hash": "ca637eb4321b9dfbeb0c16565b53c9e8",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_parry/a1_parry_manifest.json": {
+      "cat": "skills",
+      "group": "a1_parry",
+      "size": 898,
+      "hash": "3431f79d9336f18787805fb0f560e51c",
+      "mime": "application/json"
+    },
+    "assets/skills/impact/impact_a1_wave_strip6_48x48.webp": {
+      "cat": "skills",
+      "group": "impact",
+      "size": 11940,
+      "hash": "3365f27b43d13185d78df5378b1dbf6a",
+      "mime": "image/webp"
+    },
+    "assets/skills/impact/impact_a1_wave_strip8_48x48.webp": {
+      "cat": "skills",
+      "group": "impact",
+      "size": 15826,
+      "hash": "b3fbf4e5f37a30a387ea2ed22a8cc127",
+      "mime": "image/webp"
+    },
+    "assets/skills/impact/icon_impact_64.webp": {
+      "cat": "skills",
+      "group": "impact",
+      "size": 3334,
+      "hash": "9bda0fe72c5f9bace114a3e526334772",
+      "mime": "image/webp"
+    },
+    "assets/skills/impact/impact_a1_wave_48.webp": {
+      "cat": "skills",
+      "group": "impact",
+      "size": 18644,
+      "hash": "6db6b31147364b14f426a8bb8cbd8d18",
+      "mime": "image/webp"
+    },
+    "assets/skills/impact/impact_a1_wave_192.webp": {
+      "cat": "skills",
+      "group": "impact",
+      "size": 43198,
+      "hash": "851405ced55505b07f0d0aa65ed3a8c6",
+      "mime": "image/webp"
+    },
+    "assets/skills/impact/preview_impact_strip.webp": {
+      "cat": "skills",
+      "group": "impact",
+      "size": 15826,
+      "hash": "b3fbf4e5f37a30a387ea2ed22a8cc127",
+      "mime": "image/webp"
+    },
+    "assets/skills/wave/icon_wave_64.webp": {
+      "cat": "skills",
+      "group": "wave",
+      "size": 1272,
+      "hash": "57013f9d270e583050c5b9f77d3192f1",
+      "mime": "image/webp"
+    },
+    "assets/skills/wave/preview_mini_wave_strip.webp": {
+      "cat": "skills",
+      "group": "wave",
+      "size": 3176,
+      "hash": "2e1d7a3288a93d392431878840ba7f2f",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/a1_wave_icon_64.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 1282,
+      "hash": "cc96918a6574e9a1db8cdd4c1a8a4597",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/mini_a1_wave_32.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 6148,
+      "hash": "7fd7a404679b4dbeb33b3a0850086770",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/mini_a1_wave_128.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 11228,
+      "hash": "a1548915d4cf3e2ed50aaa665b35e4e0",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/a1_wave_32.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 6920,
+      "hash": "e32a8efd9b4b342a7d9dbba6760a5870",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/a1_wave_128.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 12812,
+      "hash": "c3fe08fb0367c94b0c7845eba7907bac",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/a1_wave_preview_strip.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 3198,
+      "hash": "959752b3c77f78f88cd7c2e91855b4ec",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/a1_wave_impact_manifest.json": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 1381,
+      "hash": "0eb1abf8c269696acad33b3c0bee7b94",
+      "mime": "application/json"
+    },
+    "assets/skills/a1_wave/a1_wave_manifest.json": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 670,
+      "hash": "dbbfc6a9b04148947b3c949ced0dea06",
+      "mime": "application/json"
+    },
+    "assets/skills/a1_wave/mini_a1_wave_strip4_32x32.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 1868,
+      "hash": "da355f1846bfd20b55c915c79859408f",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/mini_a1_wave_strip8_32x32.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 3176,
+      "hash": "2e1d7a3288a93d392431878840ba7f2f",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/a1_wave_strip4_32x32.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 1810,
+      "hash": "f6ee084bcebe4f1d122b324c30845e23",
+      "mime": "image/webp"
+    },
+    "assets/skills/a1_wave/a1_wave_strip8_32x32.webp": {
+      "cat": "skills",
+      "group": "a1_wave",
+      "size": 3198,
+      "hash": "959752b3c77f78f88cd7c2e91855b4ec",
+      "mime": "image/webp"
+    },
+    "assets/vfx/a1k_ui_gear_vfx.meta.json": {
+      "cat": "vfx",
+      "group": "misc",
+      "size": 3764,
+      "hash": "e47d67670197cf414c6bdffd50eb508a",
+      "mime": "application/json"
+    },
+    "assets/vfx/manifest_aura.json": {
+      "cat": "vfx",
+      "group": "misc",
+      "size": 1296,
+      "hash": "9d99c23eb4a1b9bb6b27343ce0ec6ad9",
+      "mime": "application/json"
+    },
+    "assets/vfx/manifest_vfx_glitch.json": {
+      "cat": "vfx",
+      "group": "misc",
+      "size": 406,
+      "hash": "061a23856e5eeab8d14e68fc53c78fc6",
+      "mime": "application/json"
+    },
+    "assets/vfx/manifestaura.json": {
+      "cat": "vfx",
+      "group": "misc",
+      "size": 2856,
+      "hash": "56f86224fcf13e86feecfab5be3dc0ef",
+      "mime": "application/json"
+    },
+    "assets/icons/icon_manifest.json": {
+      "cat": "icons",
+      "group": "misc",
+      "size": 1237,
+      "hash": "758a54e13e70de019f024dc756b741e0",
+      "mime": "application/json"
+    },
+    "assets/ui/testing_guide.md": {
+      "cat": "ui",
+      "group": "misc",
+      "size": 8617,
+      "hash": "00ce40d4f60bbdcb23ccc10f9a5c7dbc",
+      "mime": "text/markdown"
+    },
+    "assets/ui/ui_overhaul_summary.md": {
+      "cat": "ui",
+      "group": "misc",
+      "size": 3609,
+      "hash": "62518917b08bb417b1726a321c7f0bc3",
+      "mime": "text/markdown"
+    },
+    "assets/ui/a1k_enhanced_ui_readme.md": {
+      "cat": "ui",
+      "group": "misc",
+      "size": 6681,
+      "hash": "2aef5522e22b96fa57e590e2d18e4f80",
+      "mime": "text/markdown"
+    },
+    "assets/ui/a1k_ui_integration.md": {
+      "cat": "ui",
+      "group": "misc",
+      "size": 6172,
+      "hash": "c8dcb7d826715f054ca01d237dfdbbc9",
+      "mime": "text/markdown"
+    },
+    "assets/ui/deployment_guide.md": {
+      "cat": "ui",
+      "group": "misc",
+      "size": 6624,
+      "hash": "e72166b019415189ef8023e0d977d82c",
+      "mime": "text/markdown"
+    },
+    "assets/characters/a1_runner_complete_asset_manifest.csv": {
+      "cat": "characters",
+      "group": "misc",
+      "size": 28447,
+      "hash": "699d9f86692c6f63900557d36ddddbef",
+      "mime": "text/csv"
+    },
+    "assets/characters/a1_effects_manifest.json": {
+      "cat": "characters",
+      "group": "misc",
+      "size": 1623,
+      "hash": "7174940e35b83443fd680e8805d15c8c",
+      "mime": "application/json"
+    },
+    "assets/characters/a1_hero_manifest.json": {
+      "cat": "characters",
+      "group": "misc",
+      "size": 1284,
+      "hash": "4749a2f36506f1e9afaacaa0c8adddaf",
+      "mime": "application/json"
+    },
+    "assets/characters/a1k_manifest.json": {
+      "cat": "characters",
+      "group": "misc",
+      "size": 602,
+      "hash": "494d037b7587f7f65fe9f4c6825607ee",
+      "mime": "application/json"
+    },
+    "assets/characters/a1manifest.json": {
+      "cat": "characters",
+      "group": "misc",
+      "size": 5315,
+      "hash": "c9d94391b512ac27ddbb3f4203409db8",
+      "mime": "application/json"
+    },
+    "assets/characters/characters_manifest_a1_idle.json": {
+      "cat": "characters",
+      "group": "misc",
+      "size": 4603,
+      "hash": "5a9050a1f493a2286260274b6d668832",
+      "mime": "application/json"
+    },
+    "assets/characters/missy_mage_manifest.json": {
+      "cat": "characters",
+      "group": "misc",
+      "size": 1314,
+      "hash": "3bf3ae309d2433b24888820686e19211",
+      "mime": "application/json"
+    },
+    "assets/characters/unique_warrior_manifest.json": {
+      "cat": "characters",
+      "group": "misc",
+      "size": 1354,
+      "hash": "e735f0391052516736b2b07e170ec318",
+      "mime": "application/json"
+    },
+    "assets/enemies/boss_manifest.json": {
+      "cat": "enemies",
+      "group": "misc",
+      "size": 1194,
+      "hash": "7f65c60849598cd03ddf97d7b71a1a78",
+      "mime": "application/json"
+    },
+    "assets/enemies/boss_manifest2.json": {
+      "cat": "enemies",
+      "group": "misc",
+      "size": 1174,
+      "hash": "29cb0545fa33960de5237ff3f6640acd",
+      "mime": "application/json"
+    },
+    "assets/enemies/boss_manifest4.json": {
+      "cat": "enemies",
+      "group": "misc",
+      "size": 1199,
+      "hash": "bad38f393fdec7dc2130d9ae3d14e543",
+      "mime": "application/json"
+    },
+    "assets/enemies/boss_manifest7.json": {
+      "cat": "enemies",
+      "group": "misc",
+      "size": 1234,
+      "hash": "b99e920a0ddfb481a25f323975d2b49a",
+      "mime": "application/json"
+    },
+    "assets/enemies/boss_manifest8.json": {
+      "cat": "enemies",
+      "group": "misc",
+      "size": 1194,
+      "hash": "7f65c60849598cd03ddf97d7b71a1a78",
+      "mime": "application/json"
+    },
+    "assets/enemies/enemies_manifest_grunt_walk.json": {
+      "cat": "enemies",
+      "group": "misc",
+      "size": 1316,
+      "hash": "148ca0cc8a3c8aa9c93e42f6b6375fa5",
+      "mime": "application/json"
+    },
+    "assets/projectiles/projectiles_manifest_e_bullet_light.json": {
+      "cat": "projectiles",
+      "group": "misc",
+      "size": 1281,
+      "hash": "4d51424eb60e7acef6ee5ba04164187b",
+      "mime": "application/json"
+    },
+    "assets/tiles/manifest_bg.json": {
+      "cat": "tiles",
+      "group": "misc",
+      "size": 168,
+      "hash": "054a8e0d3fe0287c57bba5c930acc700",
+      "mime": "application/json"
+    },
+    "assets/other/readme.txt": {
+      "cat": "other",
+      "group": "misc",
+      "size": 630,
+      "hash": "2e8e501f11110b3dcdc46d1d638b70d4",
+      "mime": "text/plain"
+    },
+    "assets/other/readme6.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1013,
+      "hash": "67f48fe7e238857535cde232c915952f",
+      "mime": "text/markdown"
+    },
+    "assets/other/readme7.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 6541,
+      "hash": "9363a9fddc467faa12288461c4eaf3dd",
+      "mime": "text/markdown"
+    },
+    "assets/other/structure.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 482,
+      "hash": "7b25ef40d22370e7e5158750b937cdb0",
+      "mime": "text/markdown"
+    },
+    "assets/other/tracker_tickets.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2313,
+      "hash": "4d8aa7dde53d863d72459d11e05566c2",
+      "mime": "text/markdown"
+    },
+    "assets/other/advanced_sprite_config.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 3240,
+      "hash": "6b6876702fad6f0e0403992aabe0ae6b",
+      "mime": "application/json"
+    },
+    "assets/other/animation_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 626,
+      "hash": "20351873cc7041ad7407bcddab8b7115",
+      "mime": "application/json"
+    },
+    "assets/other/asset_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2092,
+      "hash": "30973a14a51b6f9420fc312e257ea6f8",
+      "mime": "application/json"
+    },
+    "assets/other/asset_manifest6.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 280,
+      "hash": "99c66f7e135cf1b81e77246cef8c2a2f",
+      "mime": "application/json"
+    },
+    "assets/other/assets_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2695,
+      "hash": "38a29c433592b2d4eaca37b7681653d2",
+      "mime": "application/json"
+    },
+    "assets/other/attack_effects_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 3345,
+      "hash": "958cb3742521edfcf7eaf11808fa17c7",
+      "mime": "application/json"
+    },
+    "assets/other/complete_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 29160,
+      "hash": "eec8a259532c02914213ba9a86fea48e",
+      "mime": "application/json"
+    },
+    "assets/other/comprehensive_asset_manifest_1.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 5046,
+      "hash": "60423e0dd3c0e88d8d44a33fe0483b15",
+      "mime": "application/json"
+    },
+    "assets/other/config_2.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 589,
+      "hash": "1ce54683a84bda368ded3a3dde3d025b",
+      "mime": "application/json"
+    },
+    "assets/other/config.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 589,
+      "hash": "1ce54683a84bda368ded3a3dde3d025b",
+      "mime": "application/json"
+    },
+    "assets/other/config3.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 589,
+      "hash": "1ce54683a84bda368ded3a3dde3d025b",
+      "mime": "application/json"
+    },
+    "assets/other/dark_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 18089,
+      "hash": "55e9da447f31e7145929ca110641bb9e",
+      "mime": "application/json"
+    },
+    "assets/other/gmanifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 228037,
+      "hash": "0bf85526e681d747fc99d17be45a2041",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_2.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 521,
+      "hash": "e6e7cd506e3c7a1101a6c9c6d94cff80",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_art.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2691,
+      "hash": "59d9f68fdf61fe7078069c17976510e2",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_ch.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1796,
+      "hash": "290353f17f0436c72cfa550e90a8446b",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_er.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 948,
+      "hash": "8c0e48241a9843918e8358d565c7d71a",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_icom.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 394,
+      "hash": "4b5f895024edc778c92168890a13b656",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_im.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2773,
+      "hash": "15bf628b090589f5603745516647f2fb",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_mob.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1300,
+      "hash": "ee3f919750238a34027745d688685d95",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_point.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 641,
+      "hash": "c810f2af363e61ac7ae0396b69ff3fc8",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_r.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1085,
+      "hash": "d7c981ab53cb20162d023968a62103be",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_sk.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2837,
+      "hash": "4df1fcb80df697288e647455dc950425",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_v13.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 24904,
+      "hash": "00f4c430801c11fb71c24ebcab9e8790",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_y.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 5315,
+      "hash": "c9d94391b512ac27ddbb3f4203409db8",
+      "mime": "application/json"
+    },
+    "assets/other/manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 622,
+      "hash": "92bc7c04c8b330779e142959ccc1806f",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_katana_neon_pack.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 997,
+      "hash": "3144d0bcdf33af7f1b8d0955d39cc9bc",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_runtime.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1311,
+      "hash": "7b0f2692dc7f192c557105b98271fe95",
+      "mime": "application/json"
+    },
+    "assets/other/manifest_runtime33.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1419,
+      "hash": "369d5739c0ae0f536768b68cb5211ef5",
+      "mime": "application/json"
+    },
+    "assets/other/manifest3.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 6520,
+      "hash": "0a9422f6014f3c8d557ecd5a5b848867",
+      "mime": "application/json"
+    },
+    "assets/other/manifest4.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 595,
+      "hash": "c6b68b606ed324952cd5fe19960eac00",
+      "mime": "application/json"
+    },
+    "assets/other/manifest4h.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 595,
+      "hash": "c6b68b606ed324952cd5fe19960eac00",
+      "mime": "application/json"
+    },
+    "assets/other/manifest5.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2837,
+      "hash": "4df1fcb80df697288e647455dc950425",
+      "mime": "application/json"
+    },
+    "assets/other/manifest6.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1147,
+      "hash": "6d658e55dadf2f3099820459ea904d03",
+      "mime": "application/json"
+    },
+    "assets/other/manifest7.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1296,
+      "hash": "9d99c23eb4a1b9bb6b27343ce0ec6ad9",
+      "mime": "application/json"
+    },
+    "assets/other/manifestassets.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 794,
+      "hash": "9f623ab1c55bd6090f2c045752808039",
+      "mime": "application/json"
+    },
+    "assets/other/master_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 7307,
+      "hash": "8112bb11eada0cb837118dece0f9e2ce",
+      "mime": "application/json"
+    },
+    "assets/other/mobs_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 729,
+      "hash": "c116496ef5fce5f5d732dd4f5712373c",
+      "mime": "application/json"
+    },
+    "assets/other/plat_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 646,
+      "hash": "ec8464b7e254e3465a792715e197c289",
+      "mime": "application/json"
+    },
+    "assets/other/platform_colliders.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1054,
+      "hash": "25bac15f50a3bc5ee64f1afb913af84d",
+      "mime": "application/json"
+    },
+    "assets/other/sprite_sheet_config.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1576,
+      "hash": "4800caf01e6b38cc8251e68b59ced30a",
+      "mime": "application/json"
+    },
+    "assets/other/test_assets_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1344,
+      "hash": "1c73eab2063bd8976706d9948bd3e4fa",
+      "mime": "application/json"
+    },
+    "assets/other/tier1_manifest.json": {
+      "cat": "other",
+      "group": "misc",
+      "size": 5763,
+      "hash": "3b7cba0d1bfb20ffa7b12f59cbd651ba",
+      "mime": "application/json"
+    },
+    "assets/other/game_images.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 484,
+      "hash": "b930b50f652cb213463d3a3c1b131c04",
+      "mime": "text/markdown"
+    },
+    "assets/other/asset_manifest.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 876,
+      "hash": "3bf120885f25e6adbcb9d895e9437b34",
+      "mime": "text/markdown"
+    },
+    "assets/other/deployment_complete.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2265,
+      "hash": "b9f8fbad5af9297e67d4df6bd57ed4d3",
+      "mime": "text/markdown"
+    },
+    "assets/other/effects_readme.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2272,
+      "hash": "3b6ac71817ed3f6ee63d513aff4e0390",
+      "mime": "text/markdown"
+    },
+    "assets/other/enhanced_features_readme.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 5288,
+      "hash": "1469588606f587ae645df75d44ccbedc",
+      "mime": "text/markdown"
+    },
+    "assets/other/enhanced_features_v2.5.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 7113,
+      "hash": "de88074696e184e06f67d53da40af33f",
+      "mime": "text/markdown"
+    },
+    "assets/other/final_implementation_summary.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 6911,
+      "hash": "cd411029f08ce69ea746c28d79641473",
+      "mime": "text/markdown"
+    },
+    "assets/other/final_summary.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 6020,
+      "hash": "3ed50184264eae14b5b5fb59762f0a94",
+      "mime": "text/markdown"
+    },
+    "assets/other/game_details.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 6574,
+      "hash": "6875eb61af13c761d34c1b72292719a1",
+      "mime": "text/markdown"
+    },
+    "assets/other/implementation_summary.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 3539,
+      "hash": "28619d5b31f58f0a185e0dcbe40d18a6",
+      "mime": "text/markdown"
+    },
+    "assets/other/integration_complete.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 5736,
+      "hash": "d13f5f937751c1948590288c465bf6e2",
+      "mime": "text/markdown"
+    },
+    "assets/other/missing_assets.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 958,
+      "hash": "a6c1e5b24eec3a460cec3a211e7e9b7e",
+      "mime": "text/markdown"
+    },
+    "assets/other/patch_spec.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 1422,
+      "hash": "5ee45ff2851524fd7cce634d9b020b1f",
+      "mime": "text/markdown"
+    },
+    "assets/other/readme.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 7221,
+      "hash": "f5933ba817c35ffe7297d2e1a9ef7f62",
+      "mime": "text/markdown"
+    },
+    "assets/other/readme1.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2525,
+      "hash": "dc1eaef2ee9525e66c8a650bda9a4d74",
+      "mime": "text/markdown"
+    },
+    "assets/other/readme3.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 6652,
+      "hash": "1b157ee1570afd81bee8a6695ebd7c4c",
+      "mime": "text/markdown"
+    },
+    "assets/other/readme4.md": {
+      "cat": "other",
+      "group": "misc",
+      "size": 2525,
+      "hash": "dc1eaef2ee9525e66c8a650bda9a4d74",
+      "mime": "text/markdown"
+    }
+  },
+  "meta": {
+    "converted_to_webp": [
+      [
+        "assets/skills/a1_slash/a1_slash_red_strip6_64x64.png",
+        "assets/skills/a1_slash/a1_slash_red_strip6_64x64.webp"
+      ],
+      [
+        "assets/skills/a1_slash/a1_slash_red_64x64.gif",
+        "assets/skills/a1_slash/a1_slash_red_64x64.webp"
+      ],
+      [
+        "assets/skills/a1_rage/a1_rage_burst_strip6_96x96.png",
+        "assets/skills/a1_rage/a1_rage_burst_strip6_96x96.webp"
+      ],
+      [
+        "assets/skills/a1_rage/a1_rage_burst_strip8_96x96.png",
+        "assets/skills/a1_rage/a1_rage_burst_strip8_96x96.webp"
+      ],
+      [
+        "assets/skills/a1_rage/a1_rage_icon_64.png",
+        "assets/skills/a1_rage/a1_rage_icon_64.webp"
+      ],
+      [
+        "assets/skills/a1_rage/a1_rage_96.gif",
+        "assets/skills/a1_rage/a1_rage_96.webp"
+      ],
+      [
+        "assets/skills/a1_rage/a1_rage_256.gif",
+        "assets/skills/a1_rage/a1_rage_256.webp"
+      ],
+      [
+        "assets/skills/a1_rage/a1_rage_preview_strip.png",
+        "assets/skills/a1_rage/a1_rage_preview_strip.webp"
+      ],
+      [
+        "assets/skills/a1_parry/a1_parry_ring_64.png",
+        "assets/skills/a1_parry/a1_parry_ring_64.webp"
+      ],
+      [
+        "assets/skills/a1_parry/a1_parry_ring_strip8_64x64.png",
+        "assets/skills/a1_parry/a1_parry_ring_strip8_64x64.webp"
+      ],
+      [
+        "assets/skills/a1_parry/a1_parry_icon_64.png",
+        "assets/skills/a1_parry/a1_parry_icon_64.webp"
+      ],
+      [
+        "assets/skills/a1_parry/a1_parry_64.gif",
+        "assets/skills/a1_parry/a1_parry_64.webp"
+      ],
+      [
+        "assets/skills/a1_parry/a1_parry_256.gif",
+        "assets/skills/a1_parry/a1_parry_256.webp"
+      ],
+      [
+        "assets/skills/a1_parry/a1_parry_preview_strip.png",
+        "assets/skills/a1_parry/a1_parry_preview_strip.webp"
+      ],
+      [
+        "assets/skills/impact/impact_a1_wave_strip6_48x48.png",
+        "assets/skills/impact/impact_a1_wave_strip6_48x48.webp"
+      ],
+      [
+        "assets/skills/impact/impact_a1_wave_strip8_48x48.png",
+        "assets/skills/impact/impact_a1_wave_strip8_48x48.webp"
+      ],
+      [
+        "assets/skills/impact/icon_impact_64.png",
+        "assets/skills/impact/icon_impact_64.webp"
+      ],
+      [
+        "assets/skills/impact/impact_a1_wave_48.gif",
+        "assets/skills/impact/impact_a1_wave_48.webp"
+      ],
+      [
+        "assets/skills/impact/impact_a1_wave_192.gif",
+        "assets/skills/impact/impact_a1_wave_192.webp"
+      ],
+      [
+        "assets/skills/impact/preview_impact_strip.png",
+        "assets/skills/impact/preview_impact_strip.webp"
+      ],
+      [
+        "assets/skills/wave/icon_wave_64.png",
+        "assets/skills/wave/icon_wave_64.webp"
+      ],
+      [
+        "assets/skills/wave/preview_mini_wave_strip.png",
+        "assets/skills/wave/preview_mini_wave_strip.webp"
+      ],
+      [
+        "assets/skills/a1_wave/a1_wave_icon_64.png",
+        "assets/skills/a1_wave/a1_wave_icon_64.webp"
+      ],
+      [
+        "assets/skills/a1_wave/mini_a1_wave_32.gif",
+        "assets/skills/a1_wave/mini_a1_wave_32.webp"
+      ],
+      [
+        "assets/skills/a1_wave/mini_a1_wave_128.gif",
+        "assets/skills/a1_wave/mini_a1_wave_128.webp"
+      ],
+      [
+        "assets/skills/a1_wave/a1_wave_32.gif",
+        "assets/skills/a1_wave/a1_wave_32.webp"
+      ],
+      [
+        "assets/skills/a1_wave/a1_wave_128.gif",
+        "assets/skills/a1_wave/a1_wave_128.webp"
+      ],
+      [
+        "assets/skills/a1_wave/a1_wave_preview_strip.png",
+        "assets/skills/a1_wave/a1_wave_preview_strip.webp"
+      ],
+      [
+        "assets/skills/a1_wave/mini_a1_wave_strip4_32x32.png",
+        "assets/skills/a1_wave/mini_a1_wave_strip4_32x32.webp"
+      ],
+      [
+        "assets/skills/a1_wave/mini_a1_wave_strip8_32x32.png",
+        "assets/skills/a1_wave/mini_a1_wave_strip8_32x32.webp"
+      ],
+      [
+        "assets/skills/a1_wave/a1_wave_strip4_32x32.png",
+        "assets/skills/a1_wave/a1_wave_strip4_32x32.webp"
+      ],
+      [
+        "assets/skills/a1_wave/a1_wave_strip8_32x32.png",
+        "assets/skills/a1_wave/a1_wave_strip8_32x32.webp"
+      ]
+    ],
+    "skipped": []
+  }
+}

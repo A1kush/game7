@@ -1,0 +1,17 @@
+{
+  "vfx": {
+    "glitch_cyan": {
+      "strip": "assets/vfx/vfx_glitch_cyan_strip15_128x128.png",
+      "frame_w": 128,
+      "frame_h": 128,
+      "frames": 15,
+      "fps": 18,
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "webp": "assets/vfx/vfx_glitch_cyan_320x214_loop_v01.webp",
+      "notes": "Black keyed to transparent. Use strip for sprite-based VFX; use webp as overlay."
+    }
+  }
+}

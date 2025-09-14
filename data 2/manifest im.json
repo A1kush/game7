@@ -1,0 +1,143 @@
+{
+  "version": "1.1.0",
+  "style": "[A1K_STYLE]",
+  "paths": {
+    "img": "assets/img/",
+    "preview": "assets/preview/",
+    "meta": "assets/meta/"
+  },
+  "projectiles": [
+    {
+      "key": "enemy_bullet_small",
+      "file": "assets/img/vfx_enemy_bullet_small_2x2_128x128.png",
+      "grid": [
+        2,
+        2
+      ],
+      "frame": [
+        64,
+        64
+      ],
+      "hitmask": "assets/img/vfx_enemy_bullet_small_hitmask_2x2_128x128.png",
+      "variants": {
+        "cv": "assets/img/vfx_enemy_bullet_small_cv_2x2_128x128.png"
+      },
+      "anim": {
+        "fps": 14,
+        "durations_ms": [
+          70,
+          70,
+          70,
+          70
+        ],
+        "loop": true
+      },
+      "link": {
+        "anchor_px": [
+          8,
+          32
+        ],
+        "facing": "right"
+      }
+    },
+    {
+      "key": "enemy_beam_lance",
+      "file": "assets/img/vfx_enemy_beam_lance_2x2_128x128.png",
+      "grid": [
+        2,
+        2
+      ],
+      "frame": [
+        64,
+        64
+      ],
+      "hitmask": "assets/img/vfx_enemy_beam_lance_hitmask_2x2_128x128.png",
+      "variants": {
+        "cv": "assets/img/vfx_enemy_beam_lance_cv_2x2_128x128.png"
+      },
+      "anim": {
+        "fps": 12,
+        "durations_ms": [
+          60,
+          80,
+          100,
+          120
+        ],
+        "loop": true
+      },
+      "link": {
+        "anchor_px": [
+          12,
+          32
+        ],
+        "facing": "right"
+      }
+    },
+    {
+      "key": "enemy_rock_shard",
+      "file": "assets/img/vfx_enemy_rock_shard_2x2_128x128.png",
+      "grid": [
+        2,
+        2
+      ],
+      "frame": [
+        64,
+        64
+      ],
+      "hitmask": "assets/img/vfx_enemy_rock_shard_hitmask_2x2_128x128.png",
+      "variants": {
+        "cv": "assets/img/vfx_enemy_rock_shard_cv_2x2_128x128.png"
+      },
+      "anim": {
+        "fps": 11,
+        "durations_ms": [
+          90,
+          90,
+          90,
+          90
+        ],
+        "loop": true
+      },
+      "link": {
+        "anchor_px": [
+          8,
+          32
+        ],
+        "facing": "right"
+      }
+    },
+    {
+      "key": "enemy_energy_orb",
+      "file": "assets/img/vfx_enemy_energy_orb_2x2_128x128.png",
+      "grid": [
+        2,
+        2
+      ],
+      "frame": [
+        64,
+        64
+      ],
+      "hitmask": "assets/img/vfx_enemy_energy_orb_hitmask_2x2_128x128.png",
+      "variants": {
+        "cv": "assets/img/vfx_enemy_energy_orb_cv_2x2_128x128.png"
+      },
+      "anim": {
+        "fps": 10,
+        "durations_ms": [
+          100,
+          120,
+          100,
+          120
+        ],
+        "loop": true
+      },
+      "link": {
+        "anchor_px": [
+          8,
+          32
+        ],
+        "facing": "right"
+      }
+    }
+  ]
+}

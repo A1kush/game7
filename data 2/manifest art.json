@@ -1,0 +1,87 @@
+{
+  "name": "A1K Runner Pet & Vehicle Art Pack",
+  "version": "1.0.0",
+  "generated": "2025-09-08T20:20:08.560001",
+  "description": "Programmatically generated art assets for A1K Runner enhanced UI system",
+  "assets": {
+    "vfx": {
+      "pet_bolt_cyan_strip6_64x64.png": {
+        "type": "animation_strip",
+        "frames": 6,
+        "size": "64x64",
+        "description": "Cyan energy bolt projectile for pets"
+      },
+      "pet_bolt_purple_strip6_64x64.png": {
+        "type": "animation_strip",
+        "frames": 6,
+        "size": "64x64",
+        "description": "Purple lightning bolt projectile for pets"
+      },
+      "pet_claw_red_strip6_64x64.png": {
+        "type": "animation_strip",
+        "frames": 6,
+        "size": "64x64",
+        "description": "Red claw slash effect for melee pets"
+      },
+      "pet_bubble_purple_strip6_64x64.png": {
+        "type": "animation_strip",
+        "frames": 6,
+        "size": "64x64",
+        "description": "Purple bubble projectile with trailing effect"
+      },
+      "pet_rock_chip_strip6_64x64.png": {
+        "type": "animation_strip",
+        "frames": 6,
+        "size": "64x64",
+        "description": "Spinning rock projectile with dust trail"
+      },
+      "pet_feather_slash_strip6_64x64.png": {
+        "type": "animation_strip",
+        "frames": 6,
+        "size": "64x64",
+        "description": "Wind slash effect with floating feathers"
+      }
+    },
+    "ui": {
+      "veh_icon_bike_64.png": {
+        "type": "static_icon",
+        "size": "64x64",
+        "description": "Bike vehicle icon (1 seat, speed boost)"
+      },
+      "veh_icon_motorcycle_64.png": {
+        "type": "static_icon",
+        "size": "64x64",
+        "description": "Motorcycle vehicle icon (2 seats, balanced)"
+      },
+      "veh_icon_car_64.png": {
+        "type": "static_icon",
+        "size": "64x64",
+        "description": "Car vehicle icon (3 seats, armor boost)"
+      },
+      "veh_icon_fusion_64.png": {
+        "type": "static_icon",
+        "size": "64x64",
+        "description": "Fusion vehicle icon (3 seats, special abilities)"
+      }
+    }
+  },
+  "integration": {
+    "vfx_sheets": {
+      "format": "horizontal_strip",
+      "frame_width": 64,
+      "frame_height": 64,
+      "frame_count": 6,
+      "usage": "Use with VFX.spawn() system in gameplay-pets-vehicles.js"
+    },
+    "ui_icons": {
+      "format": "single_image",
+      "size": "64x64",
+      "usage": "Reference in VEH_TYPES configuration for button icons"
+    }
+  },
+  "stats": {
+    "total_files": 10,
+    "total_vfx_frames": 36,
+    "total_ui_icons": 4
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "players": {
+    "A1": {
+      "run": "assets/anim/clear/a1_run.gif",
+      "attack": "assets/anim/clear/a1_attack.gif",
+      "idle": "assets/anim/clear/a1_idle.gif",
+      "hurt": "assets/anim/clear/a1_hurt.gif",
+      "dead": "assets/anim/clear/a1_dead.gif",
+      "revive": "assets/anim/clear/a1_revive.gif"
+    },
+    "Unique": {
+      "run": "assets/anim/clear/unique_run.gif",
+      "attack": "assets/anim/clear/unique_attack.gif",
+      "idle": "assets/anim/clear/unique_idle.gif",
+      "hurt": "assets/anim/clear/unique_hurt.gif",
+      "dead": "assets/anim/clear/unique_dead.gif",
+      "revive": "assets/anim/clear/unique_revive.gif"
+    },
+    "Missy": {
+      "run": "assets/anim/clear/missy_run.gif",
+      "attack": "assets/anim/clear/missy_attack.gif",
+      "idle": "assets/anim/clear/missy_idle.gif",
+      "hurt": "assets/anim/clear/missy_hurt.gif",
+      "dead": "assets/anim/clear/missy_dead.gif",
+      "revive": "assets/anim/clear/missy_revive.gif"
+    }
+  },
+  "pets": {
+    "slotA": {
+      "run": "assets/anim/clear/pet_run.gif",
+      "attack": "assets/anim/clear/pet_attack.gif"
+    }
+  },
+  "vehicles": {
+    "bike": {
+      "run": "assets/anim/clear/vehicle_run.gif",
+      "attack": "assets/anim/clear/vehicle_attack.gif"
+    }
+  },
+  "meta": {
+    "sprite_height": 144,
+    "y_offset": -5,
+    "per_hero_scale": {
+      "A1": 1.1,
+      "Unique": 1.0,
+      "Missy": 1.0
+    }
+  }
+}

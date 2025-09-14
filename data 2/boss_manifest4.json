@@ -1,0 +1,47 @@
+{
+  "assets/custom/bosses/crusher/boss_crusher_idle_strip8_256x128_cyan.png": {
+    "type": "boss",
+    "name": "boss_crusher_idle",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "cyan"
+  },
+  "assets/custom/bosses/crusher/boss_crusher_walk_strip8_256x128_cyan.png": {
+    "type": "boss",
+    "name": "boss_crusher_walk",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "cyan"
+  },
+  "assets/custom/bosses/crusher/boss_crusher_attack_strip8_256x128_cyan.png": {
+    "type": "boss",
+    "name": "boss_crusher_attack",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "cyan"
+  },
+  "assets/custom/bosses/crusher/boss_crusher_hurt_strip8_256x128_cyan.png": {
+    "type": "boss",
+    "name": "boss_crusher_hurt",
+    "frames": 8,
+    "fps": 12,
+    "loop": true,
+    "pivot": "bottom_center",
+    "variant": "cyan"
+  },
+  "assets/custom/bosses/crusher/boss_crusher_death_strip8_256x128_cyan.png": {
+    "type": "boss",
+    "name": "boss_crusher_death",
+    "frames": 8,
+    "fps": 12,
+    "loop": false,
+    "pivot": "bottom_center",
+    "variant": "cyan"
+  }
+}
