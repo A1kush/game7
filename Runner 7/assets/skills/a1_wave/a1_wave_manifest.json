@@ -1,0 +1,31 @@
+{
+  "label": "SKILL_A1_WAVE",
+  "name": "Sword Wave Projectile",
+  "primary_sheet": "projectiles/a1_wave_strip4_32x32.png",
+  "alt_sheet": "projectiles/a1_wave_strip8_32x32.png",
+  "icon": "icons/a1_wave_icon_64.png",
+  "gifs": {
+    "small": "gifs/a1_wave_32.gif",
+    "large": "gifs/a1_wave_128.gif"
+  },
+  "frame_size": [
+    32,
+    32
+  ],
+  "frames_primary": 4,
+  "frames_alt": 8,
+  "pivot": [
+    16,
+    16
+  ],
+  "colors": {
+    "core": "#FF3B3B",
+    "rim_cyan": "#00E5FF",
+    "rim_purple": "#A78BFA",
+    "spark": "#FFFFFF"
+  },
+  "notes": [
+    "Projectile travels right; use additive blend if available.",
+    "Clean silhouette; no particles behind."
+  ]
+}

@@ -1,0 +1,975 @@
+{
+  "name": "A1K Runner Complete Art Pack",
+  "version": "2.0.0",
+  "style": "Chibi + DBZ \u00d7 Solo Leveling Aura",
+  "description": "Complete asset pack with pets, equipment, and vehicles",
+  "generated": "2025-09-09T08:02:35.497643",
+  "assets": {
+    "pets": {
+      "wolf_C": {
+        "file": "assets/pets/pet_wolf_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "wolf",
+        "rank": "C"
+      },
+      "wolf_B": {
+        "file": "assets/pets/pet_wolf_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "wolf",
+        "rank": "B"
+      },
+      "wolf_A": {
+        "file": "assets/pets/pet_wolf_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "wolf",
+        "rank": "A"
+      },
+      "wolf_S": {
+        "file": "assets/pets/pet_wolf_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "wolf",
+        "rank": "S"
+      },
+      "wolf_SS": {
+        "file": "assets/pets/pet_wolf_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "wolf",
+        "rank": "SS"
+      },
+      "dragon_C": {
+        "file": "assets/pets/pet_dragon_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "dragon",
+        "rank": "C"
+      },
+      "dragon_B": {
+        "file": "assets/pets/pet_dragon_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "dragon",
+        "rank": "B"
+      },
+      "dragon_A": {
+        "file": "assets/pets/pet_dragon_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "dragon",
+        "rank": "A"
+      },
+      "dragon_S": {
+        "file": "assets/pets/pet_dragon_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "dragon",
+        "rank": "S"
+      },
+      "dragon_SS": {
+        "file": "assets/pets/pet_dragon_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "dragon",
+        "rank": "SS"
+      },
+      "cat_C": {
+        "file": "assets/pets/pet_cat_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "cat",
+        "rank": "C"
+      },
+      "cat_B": {
+        "file": "assets/pets/pet_cat_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "cat",
+        "rank": "B"
+      },
+      "cat_A": {
+        "file": "assets/pets/pet_cat_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "cat",
+        "rank": "A"
+      },
+      "cat_S": {
+        "file": "assets/pets/pet_cat_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "cat",
+        "rank": "S"
+      },
+      "cat_SS": {
+        "file": "assets/pets/pet_cat_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "cat",
+        "rank": "SS"
+      },
+      "bird_C": {
+        "file": "assets/pets/pet_bird_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "bird",
+        "rank": "C"
+      },
+      "bird_B": {
+        "file": "assets/pets/pet_bird_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "bird",
+        "rank": "B"
+      },
+      "bird_A": {
+        "file": "assets/pets/pet_bird_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "bird",
+        "rank": "A"
+      },
+      "bird_S": {
+        "file": "assets/pets/pet_bird_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "bird",
+        "rank": "S"
+      },
+      "bird_SS": {
+        "file": "assets/pets/pet_bird_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "bird",
+        "rank": "SS"
+      },
+      "shadow_pet_C": {
+        "file": "assets/pets/pet_shadow_pet_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_pet",
+        "rank": "C"
+      },
+      "shadow_pet_B": {
+        "file": "assets/pets/pet_shadow_pet_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_pet",
+        "rank": "B"
+      },
+      "shadow_pet_A": {
+        "file": "assets/pets/pet_shadow_pet_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_pet",
+        "rank": "A"
+      },
+      "shadow_pet_S": {
+        "file": "assets/pets/pet_shadow_pet_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_pet",
+        "rank": "S"
+      },
+      "shadow_pet_SS": {
+        "file": "assets/pets/pet_shadow_pet_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_pet",
+        "rank": "SS"
+      },
+      "gremlin_C": {
+        "file": "assets/pets/pet_gremlin_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "gremlin",
+        "rank": "C"
+      },
+      "gremlin_B": {
+        "file": "assets/pets/pet_gremlin_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "gremlin",
+        "rank": "B"
+      },
+      "gremlin_A": {
+        "file": "assets/pets/pet_gremlin_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "gremlin",
+        "rank": "A"
+      },
+      "gremlin_S": {
+        "file": "assets/pets/pet_gremlin_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "gremlin",
+        "rank": "S"
+      },
+      "gremlin_SS": {
+        "file": "assets/pets/pet_gremlin_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "gremlin",
+        "rank": "SS"
+      },
+      "shadow_fox_C": {
+        "file": "assets/pets/pet_shadow_fox_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_fox",
+        "rank": "C"
+      },
+      "shadow_fox_B": {
+        "file": "assets/pets/pet_shadow_fox_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_fox",
+        "rank": "B"
+      },
+      "shadow_fox_A": {
+        "file": "assets/pets/pet_shadow_fox_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_fox",
+        "rank": "A"
+      },
+      "shadow_fox_S": {
+        "file": "assets/pets/pet_shadow_fox_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_fox",
+        "rank": "S"
+      },
+      "shadow_fox_SS": {
+        "file": "assets/pets/pet_shadow_fox_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "shadow_fox",
+        "rank": "SS"
+      },
+      "angel_fox_C": {
+        "file": "assets/pets/pet_angel_fox_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "angel_fox",
+        "rank": "C"
+      },
+      "angel_fox_B": {
+        "file": "assets/pets/pet_angel_fox_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "angel_fox",
+        "rank": "B"
+      },
+      "angel_fox_A": {
+        "file": "assets/pets/pet_angel_fox_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "angel_fox",
+        "rank": "A"
+      },
+      "angel_fox_S": {
+        "file": "assets/pets/pet_angel_fox_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "angel_fox",
+        "rank": "S"
+      },
+      "angel_fox_SS": {
+        "file": "assets/pets/pet_angel_fox_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "angel_fox",
+        "rank": "SS"
+      },
+      "crystal_cat_C": {
+        "file": "assets/pets/pet_crystal_cat_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "crystal_cat",
+        "rank": "C"
+      },
+      "crystal_cat_B": {
+        "file": "assets/pets/pet_crystal_cat_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "crystal_cat",
+        "rank": "B"
+      },
+      "crystal_cat_A": {
+        "file": "assets/pets/pet_crystal_cat_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "crystal_cat",
+        "rank": "A"
+      },
+      "crystal_cat_S": {
+        "file": "assets/pets/pet_crystal_cat_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "crystal_cat",
+        "rank": "S"
+      },
+      "crystal_cat_SS": {
+        "file": "assets/pets/pet_crystal_cat_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "crystal_cat",
+        "rank": "SS"
+      },
+      "drone_C": {
+        "file": "assets/pets/pet_drone_c_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "drone",
+        "rank": "C"
+      },
+      "drone_B": {
+        "file": "assets/pets/pet_drone_b_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "drone",
+        "rank": "B"
+      },
+      "drone_A": {
+        "file": "assets/pets/pet_drone_a_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "drone",
+        "rank": "A"
+      },
+      "drone_S": {
+        "file": "assets/pets/pet_drone_s_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "drone",
+        "rank": "S"
+      },
+      "drone_SS": {
+        "file": "assets/pets/pet_drone_ss_strip8_64x64.png",
+        "frames": 8,
+        "size": "64x64",
+        "type": "spritesheet",
+        "species": "drone",
+        "rank": "SS"
+      }
+    },
+    "equipment": {
+      "helmet_common": {
+        "file": "assets/equipment/equip_helmet_common_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "helmet",
+        "rarity": "common"
+      },
+      "helmet_uncommon": {
+        "file": "assets/equipment/equip_helmet_uncommon_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "helmet",
+        "rarity": "uncommon"
+      },
+      "helmet_rare": {
+        "file": "assets/equipment/equip_helmet_rare_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "helmet",
+        "rarity": "rare"
+      },
+      "helmet_epic": {
+        "file": "assets/equipment/equip_helmet_epic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "helmet",
+        "rarity": "epic"
+      },
+      "helmet_legendary": {
+        "file": "assets/equipment/equip_helmet_legendary_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "helmet",
+        "rarity": "legendary"
+      },
+      "helmet_mythic": {
+        "file": "assets/equipment/equip_helmet_mythic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "helmet",
+        "rarity": "mythic"
+      },
+      "armor_common": {
+        "file": "assets/equipment/equip_armor_common_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "armor",
+        "rarity": "common"
+      },
+      "armor_uncommon": {
+        "file": "assets/equipment/equip_armor_uncommon_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "armor",
+        "rarity": "uncommon"
+      },
+      "armor_rare": {
+        "file": "assets/equipment/equip_armor_rare_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "armor",
+        "rarity": "rare"
+      },
+      "armor_epic": {
+        "file": "assets/equipment/equip_armor_epic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "armor",
+        "rarity": "epic"
+      },
+      "armor_legendary": {
+        "file": "assets/equipment/equip_armor_legendary_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "armor",
+        "rarity": "legendary"
+      },
+      "armor_mythic": {
+        "file": "assets/equipment/equip_armor_mythic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "armor",
+        "rarity": "mythic"
+      },
+      "boots_common": {
+        "file": "assets/equipment/equip_boots_common_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "boots",
+        "rarity": "common"
+      },
+      "boots_uncommon": {
+        "file": "assets/equipment/equip_boots_uncommon_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "boots",
+        "rarity": "uncommon"
+      },
+      "boots_rare": {
+        "file": "assets/equipment/equip_boots_rare_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "boots",
+        "rarity": "rare"
+      },
+      "boots_epic": {
+        "file": "assets/equipment/equip_boots_epic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "boots",
+        "rarity": "epic"
+      },
+      "boots_legendary": {
+        "file": "assets/equipment/equip_boots_legendary_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "boots",
+        "rarity": "legendary"
+      },
+      "boots_mythic": {
+        "file": "assets/equipment/equip_boots_mythic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "boots",
+        "rarity": "mythic"
+      },
+      "weapon_sword_common": {
+        "file": "assets/equipment/equip_weapon_sword_common_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_sword",
+        "rarity": "common"
+      },
+      "weapon_sword_uncommon": {
+        "file": "assets/equipment/equip_weapon_sword_uncommon_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_sword",
+        "rarity": "uncommon"
+      },
+      "weapon_sword_rare": {
+        "file": "assets/equipment/equip_weapon_sword_rare_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_sword",
+        "rarity": "rare"
+      },
+      "weapon_sword_epic": {
+        "file": "assets/equipment/equip_weapon_sword_epic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_sword",
+        "rarity": "epic"
+      },
+      "weapon_sword_legendary": {
+        "file": "assets/equipment/equip_weapon_sword_legendary_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_sword",
+        "rarity": "legendary"
+      },
+      "weapon_sword_mythic": {
+        "file": "assets/equipment/equip_weapon_sword_mythic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_sword",
+        "rarity": "mythic"
+      },
+      "weapon_bow_common": {
+        "file": "assets/equipment/equip_weapon_bow_common_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_bow",
+        "rarity": "common"
+      },
+      "weapon_bow_uncommon": {
+        "file": "assets/equipment/equip_weapon_bow_uncommon_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_bow",
+        "rarity": "uncommon"
+      },
+      "weapon_bow_rare": {
+        "file": "assets/equipment/equip_weapon_bow_rare_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_bow",
+        "rarity": "rare"
+      },
+      "weapon_bow_epic": {
+        "file": "assets/equipment/equip_weapon_bow_epic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_bow",
+        "rarity": "epic"
+      },
+      "weapon_bow_legendary": {
+        "file": "assets/equipment/equip_weapon_bow_legendary_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_bow",
+        "rarity": "legendary"
+      },
+      "weapon_bow_mythic": {
+        "file": "assets/equipment/equip_weapon_bow_mythic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "weapon_bow",
+        "rarity": "mythic"
+      },
+      "accessory_ring_common": {
+        "file": "assets/equipment/equip_accessory_ring_common_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_ring",
+        "rarity": "common"
+      },
+      "accessory_ring_uncommon": {
+        "file": "assets/equipment/equip_accessory_ring_uncommon_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_ring",
+        "rarity": "uncommon"
+      },
+      "accessory_ring_rare": {
+        "file": "assets/equipment/equip_accessory_ring_rare_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_ring",
+        "rarity": "rare"
+      },
+      "accessory_ring_epic": {
+        "file": "assets/equipment/equip_accessory_ring_epic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_ring",
+        "rarity": "epic"
+      },
+      "accessory_ring_legendary": {
+        "file": "assets/equipment/equip_accessory_ring_legendary_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_ring",
+        "rarity": "legendary"
+      },
+      "accessory_ring_mythic": {
+        "file": "assets/equipment/equip_accessory_ring_mythic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_ring",
+        "rarity": "mythic"
+      },
+      "accessory_amulet_common": {
+        "file": "assets/equipment/equip_accessory_amulet_common_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_amulet",
+        "rarity": "common"
+      },
+      "accessory_amulet_uncommon": {
+        "file": "assets/equipment/equip_accessory_amulet_uncommon_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_amulet",
+        "rarity": "uncommon"
+      },
+      "accessory_amulet_rare": {
+        "file": "assets/equipment/equip_accessory_amulet_rare_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_amulet",
+        "rarity": "rare"
+      },
+      "accessory_amulet_epic": {
+        "file": "assets/equipment/equip_accessory_amulet_epic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_amulet",
+        "rarity": "epic"
+      },
+      "accessory_amulet_legendary": {
+        "file": "assets/equipment/equip_accessory_amulet_legendary_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_amulet",
+        "rarity": "legendary"
+      },
+      "accessory_amulet_mythic": {
+        "file": "assets/equipment/equip_accessory_amulet_mythic_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "equipment_type": "accessory_amulet",
+        "rarity": "mythic"
+      }
+    },
+    "vehicles": {
+      "hoverboard_C": {
+        "file": "assets/vehicles/veh_hoverboard_c_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "hoverboard",
+        "rank": "C"
+      },
+      "hoverboard_B": {
+        "file": "assets/vehicles/veh_hoverboard_b_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "hoverboard",
+        "rank": "B"
+      },
+      "hoverboard_A": {
+        "file": "assets/vehicles/veh_hoverboard_a_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "hoverboard",
+        "rank": "A"
+      },
+      "hoverboard_S": {
+        "file": "assets/vehicles/veh_hoverboard_s_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "hoverboard",
+        "rank": "S"
+      },
+      "hoverboard_SS": {
+        "file": "assets/vehicles/veh_hoverboard_ss_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "hoverboard",
+        "rank": "SS"
+      },
+      "jetpack_C": {
+        "file": "assets/vehicles/veh_jetpack_c_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jetpack",
+        "rank": "C"
+      },
+      "jetpack_B": {
+        "file": "assets/vehicles/veh_jetpack_b_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jetpack",
+        "rank": "B"
+      },
+      "jetpack_A": {
+        "file": "assets/vehicles/veh_jetpack_a_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jetpack",
+        "rank": "A"
+      },
+      "jetpack_S": {
+        "file": "assets/vehicles/veh_jetpack_s_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jetpack",
+        "rank": "S"
+      },
+      "jetpack_SS": {
+        "file": "assets/vehicles/veh_jetpack_ss_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jetpack",
+        "rank": "SS"
+      },
+      "turbo_board_C": {
+        "file": "assets/vehicles/veh_turbo_board_c_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "turbo_board",
+        "rank": "C"
+      },
+      "turbo_board_B": {
+        "file": "assets/vehicles/veh_turbo_board_b_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "turbo_board",
+        "rank": "B"
+      },
+      "turbo_board_A": {
+        "file": "assets/vehicles/veh_turbo_board_a_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "turbo_board",
+        "rank": "A"
+      },
+      "turbo_board_S": {
+        "file": "assets/vehicles/veh_turbo_board_s_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "turbo_board",
+        "rank": "S"
+      },
+      "turbo_board_SS": {
+        "file": "assets/vehicles/veh_turbo_board_ss_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "turbo_board",
+        "rank": "SS"
+      },
+      "jet_sled_C": {
+        "file": "assets/vehicles/veh_jet_sled_c_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jet_sled",
+        "rank": "C"
+      },
+      "jet_sled_B": {
+        "file": "assets/vehicles/veh_jet_sled_b_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jet_sled",
+        "rank": "B"
+      },
+      "jet_sled_A": {
+        "file": "assets/vehicles/veh_jet_sled_a_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jet_sled",
+        "rank": "A"
+      },
+      "jet_sled_S": {
+        "file": "assets/vehicles/veh_jet_sled_s_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jet_sled",
+        "rank": "S"
+      },
+      "jet_sled_SS": {
+        "file": "assets/vehicles/veh_jet_sled_ss_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "jet_sled",
+        "rank": "SS"
+      },
+      "mech_bike_C": {
+        "file": "assets/vehicles/veh_mech_bike_c_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "mech_bike",
+        "rank": "C"
+      },
+      "mech_bike_B": {
+        "file": "assets/vehicles/veh_mech_bike_b_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "mech_bike",
+        "rank": "B"
+      },
+      "mech_bike_A": {
+        "file": "assets/vehicles/veh_mech_bike_a_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "mech_bike",
+        "rank": "A"
+      },
+      "mech_bike_S": {
+        "file": "assets/vehicles/veh_mech_bike_s_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "mech_bike",
+        "rank": "S"
+      },
+      "mech_bike_SS": {
+        "file": "assets/vehicles/veh_mech_bike_ss_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "mech_bike",
+        "rank": "SS"
+      },
+      "red_street_car_C": {
+        "file": "assets/vehicles/veh_red_street_car_c_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "red_street_car",
+        "rank": "C"
+      },
+      "red_street_car_B": {
+        "file": "assets/vehicles/veh_red_street_car_b_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "red_street_car",
+        "rank": "B"
+      },
+      "red_street_car_A": {
+        "file": "assets/vehicles/veh_red_street_car_a_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "red_street_car",
+        "rank": "A"
+      },
+      "red_street_car_S": {
+        "file": "assets/vehicles/veh_red_street_car_s_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "red_street_car",
+        "rank": "S"
+      },
+      "red_street_car_SS": {
+        "file": "assets/vehicles/veh_red_street_car_ss_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "red_street_car",
+        "rank": "SS"
+      },
+      "sky_rider_C": {
+        "file": "assets/vehicles/veh_sky_rider_c_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "sky_rider",
+        "rank": "C"
+      },
+      "sky_rider_B": {
+        "file": "assets/vehicles/veh_sky_rider_b_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "sky_rider",
+        "rank": "B"
+      },
+      "sky_rider_A": {
+        "file": "assets/vehicles/veh_sky_rider_a_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "sky_rider",
+        "rank": "A"
+      },
+      "sky_rider_S": {
+        "file": "assets/vehicles/veh_sky_rider_s_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "sky_rider",
+        "rank": "S"
+      },
+      "sky_rider_SS": {
+        "file": "assets/vehicles/veh_sky_rider_ss_64.png",
+        "size": "64x64",
+        "type": "icon",
+        "vehicle_type": "sky_rider",
+        "rank": "SS"
+      }
+    },
+    "stats": {
+      "generation_time": "2025-09-09T08:02:35.497643",
+      "total_files": 127
+    }
+  },
+  "integration": {
+    "pet_system": {
+      "positioning": "beside/above/around owner based on species",
+      "lifecycle": "2min duration, 100 HP, cooldowns",
+      "triggers": "auto-activate on Skill 3/4/5",
+      "power_tiers": "C/B: 10-30%, A-SS: 40-50%"
+    },
+    "equipment_system": {
+      "ui": "drag-drop, character tabs, live stats",
+      "rarities": "common to mythic with glow effects"
+    },
+    "vehicle_system": {
+      "mounting": "on top/inside, fuel system",
+      "types": "hoverboard, jetpack with rank progression"
+    }
+  },
+  "file_count": 127
+}

@@ -1,0 +1,72 @@
+{
+  "style_token": "[A1K_STYLE]",
+  "paths": {
+    "gear": [
+      "assets_pack/assets/gear/icons/gear_acc_charm.png",
+      "assets_pack/assets/gear/icons/gear_acc_charm_A.png",
+      "assets_pack/assets/gear/icons/gear_acc_charm_B.png",
+      "assets_pack/assets/gear/icons/gear_acc_charm_C.png",
+      "assets_pack/assets/gear/icons/gear_acc_charm_S.png",
+      "assets_pack/assets/gear/icons/gear_acc_ring.png",
+      "assets_pack/assets/gear/icons/gear_acc_ring_A.png",
+      "assets_pack/assets/gear/icons/gear_acc_ring_B.png",
+      "assets_pack/assets/gear/icons/gear_acc_ring_C.png",
+      "assets_pack/assets/gear/icons/gear_acc_ring_S.png",
+      "assets_pack/assets/gear/icons/gear_armor_chest.png",
+      "assets_pack/assets/gear/icons/gear_armor_chest_A.png",
+      "assets_pack/assets/gear/icons/gear_armor_chest_B.png",
+      "assets_pack/assets/gear/icons/gear_armor_chest_C.png",
+      "assets_pack/assets/gear/icons/gear_armor_chest_S.png",
+      "assets_pack/assets/gear/icons/gear_armor_helm.png",
+      "assets_pack/assets/gear/icons/gear_armor_helm_A.png",
+      "assets_pack/assets/gear/icons/gear_armor_helm_B.png",
+      "assets_pack/assets/gear/icons/gear_armor_helm_C.png",
+      "assets_pack/assets/gear/icons/gear_armor_helm_S.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p1.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p10.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p2.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p3.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p4.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p5.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p6.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p7.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p8.png",
+      "assets_pack/assets/gear/icons/gear_weapon_sword_A1_p9.png"
+    ],
+    "ui": [
+      "assets_pack/assets/ui/icons/ui_badge_boss_kill.png",
+      "assets_pack/assets/ui/icons/ui_badge_perfect.png",
+      "assets_pack/assets/ui/icons/ui_badge_stage_clear.png",
+      "assets_pack/assets/ui/icons/ui_btn_auto.png",
+      "assets_pack/assets/ui/icons/ui_btn_pause.png",
+      "assets_pack/assets/ui/icons/ui_btn_speed.png",
+      "assets_pack/assets/ui/icons/ui_skill_S1.png",
+      "assets_pack/assets/ui/icons/ui_skill_S2.png",
+      "assets_pack/assets/ui/icons/ui_skill_S3.png",
+      "assets_pack/assets/ui/icons/ui_status_bleed.png",
+      "assets_pack/assets/ui/icons/ui_status_burn.png",
+      "assets_pack/assets/ui/icons/ui_status_freeze.png",
+      "assets_pack/assets/ui/icons/ui_status_shock.png"
+    ],
+    "vfx": [
+      "assets_pack/assets/vfx/sprites/vfx_dash_smear_2x2_128x128.png",
+      "assets_pack/assets/vfx/sprites/vfx_explosion_small_2x2_128x128.png",
+      "assets_pack/assets/vfx/sprites/vfx_field_barrier_2x4_256x128.png",
+      "assets_pack/assets/vfx/sprites/vfx_hit_spark_2x2_128x128.png",
+      "assets_pack/assets/vfx/sprites/vfx_warning_line_2x2_128x128.png"
+    ],
+    "previews": [
+      "assets_pack/assets/preview/vfx_dash_smear_256.gif",
+      "assets_pack/assets/preview/vfx_dash_smear_64.gif",
+      "assets_pack/assets/preview/vfx_explosion_small_256.gif",
+      "assets_pack/assets/preview/vfx_explosion_small_64.gif",
+      "assets_pack/assets/preview/vfx_field_barrier_256.gif",
+      "assets_pack/assets/preview/vfx_field_barrier_64.gif",
+      "assets_pack/assets/preview/vfx_hit_spark_256.gif",
+      "assets_pack/assets/preview/vfx_hit_spark_64.gif",
+      "assets_pack/assets/preview/vfx_warning_line_256.gif",
+      "assets_pack/assets/preview/vfx_warning_line_64.gif"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "photos": {
+    "BG_mid": "assets/photos/BG_mid.gif",
+    "BG_ground": "assets/photos/BG_ground.gif"
+  },
+  "icons": [
+    "assets/icons/canonical/acc1.png",
+    "assets/icons/canonical/acc2.png",
+    "assets/icons/canonical/armor.png",
+    "assets/icons/canonical/boots.png",
+    "assets/icons/canonical/coin.png",
+    "assets/icons/canonical/explosive.png",
+    "assets/icons/canonical/gift_box.png",
+    "assets/icons/canonical/key.png",
+    "assets/icons/canonical/pet.png",
+    "assets/icons/canonical/potion.png",
+    "assets/icons/canonical/ranged.png",
+    "assets/icons/canonical/shield.png",
+    "assets/icons/canonical/weapon.png"
+  ],
+  "sources": {
+    "archive_zip_present": true,
+    "data_zip_present": true
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "name": "Mech Bike",
+  "type": "vehicle",
+  "style_token": "[A1K_STYLE]",
+  "icon": {
+    "file": "assets/vehicles/mech_bike/icon/vehicle_mech_bike.png",
+    "size": [
+      256,
+      256
+    ]
+  },
+  "animations": {
+    "idle": {
+      "file": "assets/vehicles/mech_bike/sprites/vehicle_mech_bike_sprite.png",
+      "grid": {
+        "rows": 2,
+        "cols": 4,
+        "frame_w": 64,
+        "frame_h": 64,
+        "frames": 8
+      },
+      "fps": 8,
+      "loop": true
+    },
+    "walk": {
+      "file": "assets/vehicles/mech_bike/sprites/vehicle_mech_bike_walk_2x4_256x128.png",
+      "grid": {
+        "rows": 2,
+        "cols": 4,
+        "frame_w": 64,
+        "frame_h": 64,
+        "frames": 8
+      },
+      "fps": 9,
+      "loop": true
+    },
+    "attack": {
+      "file": "assets/vehicles/mech_bike/sprites/vehicle_mech_bike_attack_2x4_256x128.png",
+      "grid": {
+        "rows": 2,
+        "cols": 4,
+        "frame_w": 64,
+        "frame_h": 64,
+        "frames": 8
+      },
+      "fps": 10,
+      "loop": false
+    }
+  },
+  "orientation": "side-view right-facing",
+  "pivot": {
+    "bottom_center_px": [
+      32,
+      56
+    ]
+  },
+  "safe_box": {
+    "w": 224,
+    "h": 112,
+    "origin_px": [
+      16,
+      8
+    ]
+  },
+  "ground_line_y": 112,
+  "notes": "Wheels aligned to ground; cyan hub glow; compact readable silhouette; aura tight to silhouette, no drop shadows."
+}

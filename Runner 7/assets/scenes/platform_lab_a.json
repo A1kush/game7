@@ -1,0 +1,36 @@
+{
+  "name": "Platform Lab A \u2014 basic spacing",
+  "platforms": [
+    {
+      "type": "semisolid",
+      "x": 100,
+      "y": 0,
+      "width": 128
+    },
+    {
+      "type": "semisolid",
+      "x": 280,
+      "y": -20,
+      "width": 256
+    },
+    {
+      "type": "lift",
+      "x": 520,
+      "y": -10,
+      "amp": 40,
+      "periodMs": 900
+    },
+    {
+      "type": "crumble",
+      "x": 720,
+      "y": 0,
+      "respawnMs": 2500
+    },
+    {
+      "type": "blinker",
+      "x": 900,
+      "y": -6,
+      "phaseOffset": 0
+    }
+  ]
+}

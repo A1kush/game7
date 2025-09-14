@@ -1,0 +1,35 @@
+{
+  "label": "SKILL_A1_PARRY",
+  "name": "Parry Ring",
+  "paths": {
+    "single": "vfx/a1_parry_ring_64.png",
+    "spritesheet": "vfx/a1_parry_ring_strip8_64x64.png",
+    "icon": "icons/a1_parry_icon_64.png",
+    "gifs": {
+      "small": "gifs/a1_parry_64.gif",
+      "large": "gifs/a1_parry_256.gif"
+    },
+    "preview": "previews/a1_parry_preview_strip.png",
+    "manifest": "manifest/a1_parry_manifest.json",
+    "index_html": "index.html"
+  },
+  "frame_size": [
+    64,
+    64
+  ],
+  "frames": 8,
+  "pivot": [
+    32,
+    32
+  ],
+  "style": "[A1K_STYLE] thin cyan ring with micro spark ticks; crisp 1-px outline; transparent PNGs",
+  "colors": {
+    "ring_cyan": "#00E5FF",
+    "spark": "#FFFFFF",
+    "accent": "#A78BFA"
+  },
+  "notes": [
+    "Use single-frame for instant parry hit; play 8f loop for held parry window.",
+    "Keep additive blend if engine supports for ring and ticks."
+  ]
+}

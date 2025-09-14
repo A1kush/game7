@@ -1,0 +1,49 @@
+{
+  "name": "Platform Lab B \u2014 dense/hazard test",
+  "platforms": [
+    {
+      "type": "semisolid",
+      "x": 80,
+      "y": 30,
+      "width": 384
+    },
+    {
+      "type": "lift",
+      "x": 220,
+      "y": 20,
+      "amp": 56,
+      "periodMs": 700
+    },
+    {
+      "type": "crumble",
+      "x": 380,
+      "y": 28,
+      "respawnMs": 1800
+    },
+    {
+      "type": "blinker",
+      "x": 500,
+      "y": 22,
+      "phaseOffset": 180
+    },
+    {
+      "type": "lift",
+      "x": 650,
+      "y": 18,
+      "amp": 36,
+      "periodMs": 600
+    },
+    {
+      "type": "crumble",
+      "x": 780,
+      "y": 26,
+      "respawnMs": 3000
+    },
+    {
+      "type": "blinker",
+      "x": 920,
+      "y": 24,
+      "phaseOffset": 90
+    }
+  ]
+}

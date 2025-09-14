@@ -1,0 +1,37 @@
+{
+  "label": "SKILL_A1_RAGE",
+  "name": "Rage Burst",
+  "paths": {
+    "primary": "vfx/a1_rage_burst_strip6_96x96.png",
+    "alt": "vfx/a1_rage_burst_strip8_96x96.png",
+    "icon": "icons/a1_rage_icon_64.png",
+    "gifs": {
+      "small": "gifs/a1_rage_96.gif",
+      "large": "gifs/a1_rage_256.gif"
+    },
+    "preview": "previews/a1_rage_preview_strip.png",
+    "manifest": "manifest/a1_rage_manifest.json",
+    "index_html": "index.html"
+  },
+  "frame_size": [
+    96,
+    96
+  ],
+  "frames_primary": 6,
+  "frames_alt": 8,
+  "pivot": [
+    48,
+    84
+  ],
+  "style": "[A1K_STYLE] upward flare with red pops and cyan shards; crisp pixel edges; transparent PNGs",
+  "colors": {
+    "red": "#FF3B3B",
+    "cyan": "#00E5FF",
+    "purple": "#A78BFA",
+    "white": "#FFFFFF"
+  },
+  "notes": [
+    "Use the 6-frame strip in-game for timing; 8f is a smoother variant.",
+    "Spawn at actor feet baseline; play upwards; additive blend if available."
+  ]
+}

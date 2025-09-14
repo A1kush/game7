@@ -1,0 +1,67 @@
+{
+  "name": "Sky Rider",
+  "type": "vehicle",
+  "style_token": "[A1K_STYLE]",
+  "icon": {
+    "file": "assets/vehicles/sky_rider/icon/vehicle_sky_rider.png",
+    "size": [
+      256,
+      256
+    ]
+  },
+  "animations": {
+    "idle": {
+      "file": "assets/vehicles/sky_rider/sprites/vehicle_sky_rider_sprite.png",
+      "grid": {
+        "rows": 2,
+        "cols": 4,
+        "frame_w": 64,
+        "frame_h": 64,
+        "frames": 8
+      },
+      "fps": 8,
+      "loop": true
+    },
+    "walk": {
+      "file": "assets/vehicles/sky_rider/sprites/vehicle_sky_rider_walk_2x4_256x128.png",
+      "grid": {
+        "rows": 2,
+        "cols": 4,
+        "frame_w": 64,
+        "frame_h": 64,
+        "frames": 8
+      },
+      "fps": 9,
+      "loop": true
+    },
+    "attack": {
+      "file": "assets/vehicles/sky_rider/sprites/vehicle_sky_rider_attack_2x4_256x128.png",
+      "grid": {
+        "rows": 2,
+        "cols": 4,
+        "frame_w": 64,
+        "frame_h": 64,
+        "frames": 8
+      },
+      "fps": 10,
+      "loop": false
+    }
+  },
+  "orientation": "side-view right-facing; winglets angled slightly up",
+  "pivot": {
+    "bottom_center_px": [
+      32,
+      56
+    ]
+  },
+  "safe_box": {
+    "w": 224,
+    "h": 112,
+    "origin_px": [
+      16,
+      8
+    ]
+  },
+  "ground_line_y": 112,
+  "notes": "Cyan engine underglow; subtle hover; no background particles; DBZ \u00d7 Solo-Leveling aura tight to silhouette."
+}
