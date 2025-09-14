@@ -1,0 +1,9 @@
+# Place sound assets here
+# Supported formats: WAV, MP3, OGG
+
+# Example structure:
+# - music/
+#   - background.mp3
+# - sfx/
+#   - jump.wav
+#   - explosion.wav

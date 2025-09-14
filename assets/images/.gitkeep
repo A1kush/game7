@@ -1,0 +1,9 @@
+# Place image assets here
+# Supported formats: PNG, JPG, GIF
+
+# Example structure:
+# - sprites/
+#   - player.png
+#   - enemies/
+# - backgrounds/
+# - ui/

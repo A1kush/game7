@@ -1,0 +1,8 @@
+# Place data files here
+# Supported formats: JSON, XML, CSV
+
+# Example structure:
+# - levels/
+#   - level1.json
+# - configs/
+# - saves/
