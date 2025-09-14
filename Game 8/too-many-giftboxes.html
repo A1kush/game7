@@ -203,6 +203,7 @@
         <div class="btn-round small" id="btnShield">Shield</div>
         <div class="btn-round small" id="btnJump">Jump</div>
         <div class="btn-round big" id="btnShoot"><b>•</b></div>
+        <div class="btn-round small" id="btnAction" title="Context Action">ACT</div>
       </div>
       <div class="col">
         <div class="btn-round small" id="btnSwitch2">Switch</div>
@@ -379,6 +380,34 @@ function updateEnemyFormations(){
 function applyEnemyBehavior(e, dt){
   if(!e.role) return;
   const L=leader();
+  
+  // Flying enemy behaviors
+  if(e.isFlying){
+    // Sine wave movement for flyers
+    e.y = e.originalY + Math.sin(performance.now()*0.003)*50;
+    
+    if(e.behavior === 'aerial'){
+      // Maintain distance and occasionally dive bomb
+      if(e.diveBombCD){
+        e.diveBombCD -= dt*1000;
+        if(e.diveBombCD <= 0 && Math.abs(L.x - e.x) < 300){
+          // Initiate dive bomb
+          e.vy = 300; // Dive down fast
+          e.vx *= 2;  // Speed up horizontally
+          e.diveBombCD = 5000 + Math.random()*3000; // Reset CD
+          e._diveBombing = true;
+          setTimeout(()=>{
+            e._diveBombing = false;
+            e.vy = Math.sin(performance.now()*0.002)*0.1; // Return to sine wave
+            e.vx /= 2; // Return to normal speed
+          }, 1500);
+        }
+      }
+    }
+    return; // Skip ground behaviors for flying enemies
+  }
+  
+  // Ground enemy behaviors
   if(e.role==='shooter'){
     // Maintain distance ~240px
     const dist=L.x - e.x;
@@ -386,6 +415,7 @@ function applyEnemyBehavior(e, dt){
     if(dist>desired+40) e.x+=Math.min(120*dt,(dist-desired)*0.5*dt);
     if(dist<desired-40) e.x-=Math.min(120*dt,(desired-dist)*0.5*dt);
   }
+  
   if(e.behavior==='hitAndRun'){
     if(e._justFired && !e._retreating){
       e._retreating=true; e._retreatT=1200;
@@ -394,6 +424,57 @@ function applyEnemyBehavior(e, dt){
       e._retreatT-=dt*1000;
       e.x+=160*dt; // move right
       if(e._retreatT<=0){e._retreating=false; e._justFired=false;}
+    }
+  } else if(e.behavior==='berserker'){
+    // New berserker behavior: charge faster when low HP
+    const hpRatio = e.hp / e.max;
+    if(hpRatio < 0.5){
+      e.vx = Math.min(-0.8, e.vx * 1.5); // Speed up when damaged
+    }
+  } else if(e.behavior==='boss_pattern'){
+    // Boss specific behaviors
+    if(!e.rageMode && e.hp < e.max * e.rageTrigger){
+      e.rageMode = true;
+      e.vx *= 1.5; // Speed up in rage
+      e.fireCD *= 0.6; // Fire faster
+      addFloater(e.x, e.y-50, 'RAGE MODE!', '#ff4d4f');
+    }
+    
+    // Boss skills
+    if(e.skillCD){
+      e.skillCD -= dt*1000;
+      if(e.skillCD <= 0){
+        useBossSkill(e);
+        e.skillCD = 4000 + Math.random()*2000;
+      }
+    }
+  } else if(e.behavior==='support'){
+    // Support behaviors for healer/summoner
+    if(e.role === 'healer' && e.healCD){
+      e.healCD -= dt*1000;
+      if(e.healCD <= 0 && e.boss && e.boss.hp < e.boss.max){
+        // Heal the boss
+        const healAmount = Math.round(e.boss.max * 0.15);
+        e.boss.hp = Math.min(e.boss.max, e.boss.hp + healAmount);
+        addFloater(e.boss.x, e.boss.y-50, '+'+healAmount+' HP', '#36c777');
+        addCast(e.x, e.y, '#36c777');
+        e.healCD = 3000 + Math.random()*2000;
+      }
+    } else if(e.role === 'summoner' && e.summonCD){
+      e.summonCD -= dt*1000;
+      if(e.summonCD <= 0){
+        // Summon minions
+        for(let i=0;i<2;i++){
+          st.enemies.push({
+            kind:'summoned_minion',
+            x:e.x+50+i*40, y:laneY(i%3),
+            hp:60, max:60, vx:-0.3, fireCD:1200,
+            role:'melee', behavior:'relentless'
+          });
+        }
+        addCast(e.x, e.y, '#ff9aa8');
+        e.summonCD = 6000 + Math.random()*3000;
+      }
     }
   }
 }
@@ -1229,28 +1310,426 @@ function triggerRageFor(p){
 
 /* ================== Spawn Wave & Enemies ================== */
 function spawnWave(){
-  // Simple: spawn number based on stage/wave
-  const count = 10 + Math.floor(Math.random()*6) + st.wave;
+  // Enhanced spawning with flying enemies and better variety
+  const count = 8 + Math.floor(Math.random()*5) + st.wave;
+  const flyingChance = Math.min(0.4, 0.1 + st.stage * 0.05); // Increases with stage
+  
   for(let i=0;i<count;i++){
     const hp=80 + st.stage*40 + st.wave*10;
+    const isFlying = Math.random() < flyingChance;
+    
     const e={
-      kind:'mob',
+      kind: isFlying ? 'flyer' : 'mob',
       x:DESIGN_W+40+i*40,
-      y:laneY(i%3),
+      y: isFlying ? (200 + Math.random()*200) : laneY(i%3), // Flying enemies at variable height
       hp:hp, max:hp,
-      vx:-0.25 - 0.01*st.stage,
-      fireCD:800+Math.random()*600
+      vx: isFlying ? (-0.15 - 0.008*st.stage) : (-0.25 - 0.01*st.stage),
+      vy: isFlying ? (Math.sin(performance.now()*0.002 + i)*0.1) : 0, // Flying sine wave movement
+      fireCD:800+Math.random()*600,
+      isFlying: isFlying,
+      originalY: isFlying ? (200 + Math.random()*200) : laneY(i%3) // Store original Y for sine wave
     };
-    // Assign role & behavior
-    e.role = Math.random()<0.5?'shooter':'melee';
-    e.behavior = Math.random()<0.35?'hitAndRun':'relentless';
+    
+    // Enhanced role & behavior assignment
+    if(isFlying){
+      e.role = 'shooter'; // Flying enemies are primarily shooters
+      e.behavior = 'aerial'; // Special aerial behavior
+      e.hp = Math.round(e.hp * 0.8); // Flying enemies have less HP but harder to hit
+      e.max = e.hp;
+      e.diveBombCD = 3000 + Math.random()*2000; // Can dive bomb occasionally
+    } else {
+      e.role = Math.random()<0.6?'shooter':'melee'; // More shooters in later waves
+      e.behavior = Math.random()<0.35?'hitAndRun':'relentless';
+      
+      // Enhanced ground behaviors
+      if(st.stage >= 3 && Math.random() < 0.2){
+        e.behavior = 'berserker'; // New berserker type for late game
+        e.hp = Math.round(e.hp * 1.5);
+        e.max = e.hp;
+        e.vx *= 1.8;
+      }
+    }
+    
     st.enemies.push(e);
   }
-  // Mini-boss chance
+  
+  // Mini-boss chance enhanced
   if(st.wave>=5 && st.wave<=7 && Math.random()<0.4){
     const hp=600+st.stage*120;
     const m={kind:'miniboss',x:DESIGN_W-120,y:laneY(1),hp,max:hp,vx:-0.15,fireCD:600,role:'shooter',behavior:'relentless'};
     st.enemies.push(m);
+  }
+  
+  // Boss wave every 10 waves
+  if(st.wave === 10){
+    spawnBoss();
+  }
+}
+
+/* ================== Boss Spawning ================== */
+function spawnBoss(){
+  const bossHP = 2000 + st.stage * 800;
+  const boss = {
+    kind: 'boss',
+    x: DESIGN_W - 200,
+    y: laneY(1),
+    hp: bossHP,
+    max: bossHP,
+    vx: -0.05,
+    fireCD: 400,
+    role: 'boss',
+    behavior: 'boss_pattern',
+    rageMode: false,
+    rageTrigger: 0.3, // Activates rage at 30% HP
+    skills: ['boss_slam', 'boss_barrage', 'boss_summon'],
+    lastSkill: 0,
+    skillCD: 5000
+  };
+  
+  // Boss team: add healer and summoner according to blueprint
+  const healer = {
+    kind: 'boss_healer',
+    x: DESIGN_W - 100,
+    y: laneY(0),
+    hp: 400 + st.stage * 100,
+    max: 400 + st.stage * 100,
+    vx: -0.08,
+    role: 'healer',
+    behavior: 'support',
+    healCD: 2000,
+    boss: boss // Reference to boss for healing
+  };
+  
+  const summoner = {
+    kind: 'boss_summoner',
+    x: DESIGN_W - 100,
+    y: laneY(2),
+    hp: 350 + st.stage * 80,
+    max: 350 + st.stage * 80,
+    vx: -0.08,
+    role: 'summoner',
+    behavior: 'support',
+    summonCD: 4000
+  };
+  
+  st.enemies.push(boss, healer, summoner);
+  st.bossAlive = true;
+  st.bossHP = boss.hp;
+  st.bossMax = boss.max;
+}
+
+/* ================== Boss Skills System ================== */
+function useBossSkill(boss){
+  if(!boss.skills || boss.skills.length === 0) return;
+  
+  const skill = boss.skills[Math.floor(Math.random() * boss.skills.length)];
+  
+  switch(skill){
+    case 'boss_slam':
+      // Ground slam that hits all lanes
+      addCast(boss.x, boss.y, '#ff4d4f');
+      setTimeout(()=>{
+        for(let lane=0; lane<3; lane++){
+          st.shots.push({
+            kind:'boss_slam', x:boss.x-100, y:laneY(lane), vx:0, vy:0,
+            dmg:Math.round(30 + st.stage*8), life:500, aoe:150,
+            color:'#ff4d4f', ownerId:'boss'
+          });
+        }
+        addImpact(boss.x-100, boss.y, '#ff4d4f');
+      }, 800);
+      break;
+      
+    case 'boss_barrage':
+      // Rapid fire projectiles
+      addCast(boss.x, boss.y, '#ff6aa8');
+      for(let i=0;i<8;i++){
+        setTimeout(()=>{
+          st.eShots.push({
+            x:boss.x-20, y:boss.y-20, vx:-400-Math.random()*200, 
+            vy:(Math.random()-0.5)*200, life:3000,
+            dmg:12+st.stage*2, color:'#ff6aa8'
+          });
+        }, i*100);
+      }
+      break;
+      
+    case 'boss_summon':
+      // Summon reinforcements
+      addCast(boss.x, boss.y, '#8b00ff');
+      for(let i=0;i<3;i++){
+        st.enemies.push({
+          kind:'boss_minion',
+          x:boss.x+100+i*40, y:laneY(i),
+          hp:120, max:120, vx:-0.2, fireCD:1000,
+          role:'melee', behavior:'relentless'
+        });
+      }
+      break;
+  }
+}
+
+/* ================== Universal Action Button System ================== */
+function performContextAction(){
+  const L = leader();
+  if(!L || L.isDefeated) return;
+  
+  // Check for nearby interactables in priority order
+  const nearbyItems = findNearbyInteractables(L);
+  
+  if(nearbyItems.chests.length > 0){
+    // Open nearest chest carefully
+    const chest = nearbyItems.chests[0];
+    openChest(chest);
+    updateActionButtonText();
+  } else if(nearbyItems.vehicles.length > 0){
+    // Enter nearest vehicle
+    const vehicle = nearbyItems.vehicles[0];
+    enterVehicle(L, vehicle);
+    updateActionButtonText();
+  } else if(nearbyItems.pets.length > 0){
+    // Pick up pet
+    const pet = nearbyItems.pets[0];
+    pickupPet(L, pet);
+    updateActionButtonText();
+  } else if(nearbyItems.throwables.length > 0){
+    // Pick up and throw item
+    const item = nearbyItems.throwables[0];
+    throwItem(L, item);
+    updateActionButtonText();
+  } else {
+    // Default action: basic attack
+    basicAttackAction(L);
+  }
+}
+
+function findNearbyInteractables(player){
+  const range = 80;
+  const result = {chests: [], vehicles: [], pets: [], throwables: []};
+  
+  // Check pickups for chests, pets, etc.
+  for(const pickup of st.pickups){
+    const dist = Math.hypot(pickup.x - player.x, pickup.y - player.y);
+    if(dist < range){
+      if(pickup.kind === 'chest') result.chests.push(pickup);
+      else if(pickup.kind === 'pet') result.pets.push(pickup);
+      else if(pickup.throwable) result.throwables.push(pickup);
+    }
+  }
+  
+  // Check for vehicles (if implemented)
+  if(st.vehicles){
+    for(const vehicle of st.vehicles){
+      const dist = Math.hypot(vehicle.x - player.x, vehicle.y - player.y);
+      if(dist < range) result.vehicles.push(vehicle);
+    }
+  }
+  
+  return result;
+}
+
+function updateActionButtonText(){
+  const L = leader();
+  if(!L || L.isDefeated) return;
+  
+  const nearby = findNearbyInteractables(L);
+  const btn = document.getElementById('btnAction');
+  
+  if(nearby.chests.length > 0){
+    btn.textContent = 'OPEN';
+    btn.title = 'Open Chest';
+  } else if(nearby.vehicles.length > 0){
+    btn.textContent = 'RIDE';
+    btn.title = 'Enter Vehicle';
+  } else if(nearby.pets.length > 0){
+    btn.textContent = 'PET';
+    btn.title = 'Pickup Pet';
+  } else if(nearby.throwables.length > 0){
+    btn.textContent = 'GRAB';
+    btn.title = 'Throw Item';
+  } else {
+    btn.textContent = 'ACT';
+    btn.title = 'Context Action';
+  }
+}
+
+/* ================== Basic Pet System ================== */
+function pickupPet(player, petPickup){
+  // Add pet to player's collection
+  if(!st.activePets) st.activePets = [];
+  
+  const pet = {
+    id: Math.random(),
+    name: petPickup.petName || 'Companion',
+    x: player.x - 40,
+    y: player.y - 20,
+    hp: 50,
+    hpMax: 50,
+    owner: player.id,
+    ai: 'follow',
+    fireCD: 1500,
+    reviveCD: 0
+  };
+  
+  st.activePets.push(pet);
+  
+  // Remove pickup
+  const idx = st.pickups.indexOf(petPickup);
+  if(idx >= 0) st.pickups.splice(idx, 1);
+  
+  notify('Pet acquired: ' + pet.name, '#00ff88');
+}
+
+/* ================== Basic Vehicle System ================== */
+function enterVehicle(player, vehicle){
+  if(vehicle.riders && vehicle.riders.length >= vehicle.maxRiders) {
+    notify('Vehicle is full!', '#ff7a6a');
+    return;
+  }
+  
+  if(!vehicle.riders) vehicle.riders = [];
+  vehicle.riders.push(player.id);
+  player._riding = vehicle;
+  
+  notify(player.id + ' entered vehicle', '#6aa8ff');
+}
+
+function exitVehicle(player){
+  if(!player._riding) return;
+  
+  const vehicle = player._riding;
+  const idx = vehicle.riders.indexOf(player.id);
+  if(idx >= 0) vehicle.riders.splice(idx, 1);
+  
+  player._riding = null;
+  notify(player.id + ' exited vehicle', '#6aa8ff');
+}
+
+/* ================== Throwable System ================== */
+function throwItem(player, item){
+  // Create projectile from thrown item
+  st.shots.push({
+    kind: 'thrown_item',
+    x: player.x + 20,
+    y: player.y - 30,
+    vx: 400,
+    vy: -100,
+    dmg: 25,
+    life: 2000,
+    w: 20,
+    h: 20,
+    color: '#ffaa00',
+    gravity: true,
+    ownerId: player.id
+  });
+  
+  // Remove from pickups
+  const idx = st.pickups.indexOf(item);
+  if(idx >= 0) st.pickups.splice(idx, 1);
+  
+  notify('Item thrown!', '#ffaa00');
+}
+
+/* ================== Pet AI System ================== */
+function updatePets(dtMs){
+  if(!st.activePets) return;
+  
+  for(const pet of st.activePets){
+    if(pet.hp <= 0){
+      if(pet.reviveCD > 0){
+        pet.reviveCD -= dtMs;
+        if(pet.reviveCD <= 0){
+          pet.hp = pet.hpMax;
+          addFloater(pet.x, pet.y-30, 'Pet Revived!', '#36c777');
+        }
+      }
+      continue;
+    }
+    
+    // Find owner
+    const owner = st.players.find(p => p.id === pet.owner);
+    if(!owner || owner.isDefeated) continue;
+    
+    // Pet AI behaviors
+    if(pet.ai === 'follow'){
+      // Follow owner at distance
+      const targetX = owner.x - 60;
+      const targetY = owner.y - 40;
+      
+      pet.x += (targetX - pet.x) * 0.15;
+      pet.y += (targetY - pet.y) * 0.15;
+      
+      // Pet combat
+      if(pet.fireCD > 0) pet.fireCD -= dtMs;
+      if(pet.fireCD <= 0){
+        const nearestEnemy = findNearestEnemyToPet(pet);
+        if(nearestEnemy && Math.hypot(nearestEnemy.x - pet.x, nearestEnemy.y - pet.y) < 200){
+          // Pet shoots at enemy
+          const ang = Math.atan2(nearestEnemy.y - pet.y, nearestEnemy.x - pet.x);
+          st.shots.push({
+            x: pet.x, y: pet.y, vx: Math.cos(ang)*400, vy: Math.sin(ang)*400,
+            dmg: 15, life: 1500, color: '#00ff88', ownerId: pet.owner
+          });
+          pet.fireCD = 1500;
+        }
+      }
+    }
+  }
+  
+  // Remove dead pets that have no revive left
+  st.activePets = st.activePets.filter(pet => pet.hp > 0 || pet.reviveCD > 0);
+}
+
+function findNearestEnemyToPet(pet){
+  let nearest = null;
+  let bestDist = Infinity;
+  
+  for(const e of st.enemies){
+    if(e.hp <= 0) continue;
+    const dist = Math.hypot(e.x - pet.x, e.y - pet.y);
+    if(dist < bestDist){
+      bestDist = dist;
+      nearest = e;
+    }
+  }
+  return nearest;
+}
+
+/* ================== Helper Functions ================== */
+function openChest(chest){
+  // Simple chest opening - grants random loot
+  const lootRoll = Math.random();
+  if(lootRoll < 0.6){
+    // Equipment
+    const item = rollLoot('mobChest');
+    if(item) addItemToBag(item);
+  } else if(lootRoll < 0.9){
+    // Gold
+    const gold = 100 + Math.floor(Math.random()*200);
+    st.gold += gold;
+    updateCurrencies();
+    notify('+' + gold + ' Gold', '#ffd56a');
+  } else {
+    // Special items
+    st.giftKeys++;
+    updateCurrencies();
+    notify('+1 Gift Key', '#ff9aa8');
+  }
+  
+  // Remove chest
+  const idx = st.pickups.indexOf(chest);
+  if(idx >= 0) st.pickups.splice(idx, 1);
+  
+  notify('Chest opened!', '#6aa8ff');
+}
+
+function basicAttackAction(player){
+  // Enhanced basic attack
+  if(player.id === 'A1'){
+    a1_basicAttack(player);
+  } else {
+    // Generic basic attack for other characters
+    melee(player, 32, 38, Math.round(player.dmg * 0.8));
   }
 }
 
@@ -1320,6 +1799,7 @@ document.getElementById('btnSwitch2').onclick=()=>{
 document.getElementById('btnRage').onclick=()=>triggerRageFor(leader());
 document.getElementById('btnShield').onclick=()=>{ if(!st._shieldOn){ st._shieldOn=true; st._shieldT=2500;} };
 document.getElementById('btnJump').onclick=()=>jumpAll();
+document.getElementById('btnAction').onclick=()=>performContextAction();
 document.getElementById('btnShoot').onpointerdown=()=>hold.shoot=true;
 document.getElementById('btnShoot').onpointerup=()=>hold.shoot=false;
 document.getElementById('btnS1').onclick=()=> useSkillWrapper(leader(),'S1');
@@ -1471,6 +1951,12 @@ function update(dt){
     if(e.hp<=0) continue;
     // Basic move
     e.x += (e.vx||0)*DESIGN_W*dt;
+    
+    // Flying enemy movement
+    if(e.isFlying && !e._diveBombing){
+      e.y += (e.vy||0)*DESIGN_H*dt;
+    }
+    
     // Behavior
     applyEnemyBehavior(e,dt);
     if(e.fireCD!=null){
@@ -1481,6 +1967,13 @@ function update(dt){
       }
     }
   }
+  updateEnemyFormations();
+  
+  // Update pets
+  updatePets(dtMs);
+  
+  // Update action button context
+  updateActionButtonText();
   updateEnemyFormations();
 
   // Player shots
