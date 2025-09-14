@@ -1,0 +1,289 @@
+<!-- ================== Section 1: Player Facing + Draw Flip ================== -->
+<script>
+(function addPlayerFacing(){
+  if (window._playerFacingPatched) return;
+  window._playerFacingPatched = true;
+
+  // Initialize facing on players
+  for (const p of st.players) {
+    if (p.facing == null) p.facing = 1; // 1 = right, -1 = left
+    p._lastAtkT = 0;
+  }
+
+  // Utility: update facing toward nearest threat (front priority)
+  window.updatePlayerFacing = function(){
+    const foes = st.enemies.filter(e => e.hp > 0);
+    if (!foes.length) return;
+    for (const p of st.players){
+      // pick nearest enemy by distance
+      let best = null, bestD = 1e9;
+      for (const e of foes){
+        const d = Math.abs(e.x - p.x);
+        if (d < bestD){ bestD = d; best = e; }
+      }
+      if (best){
+        p.facing = (best.x >= p.x) ? 1 : -1;
+      }
+    }
+  };
+
+  // Patch draw() to flip player sprite/rect when facing left
+  const _oldDraw = window.draw;
+  window.draw = function(){
+    _oldDraw();
+    if (!ctx) return;
+    // Re-draw players on top with facing (simple override: just mirror body highlight)
+    for (const p of st.players){
+      // add simple eye / direction indicator
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.scale(p.facing, 1);
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillRect(-12, -52, 24, 6);
+      ctx.restore();
+    }
+  };
+})();
+</script>
+
+<!-- ================== Section 2: Improved Enemy Role Behavior ================== -->
+<script>
+(function improvedEnemyRoles(){
+  if (window._enemyRolePatch) return;
+  window._enemyRolePatch = true;
+
+  const SHOOTER_DIST = { min: 250, max: 320 };  // preferred band from leader
+  const SHOOTER_STOP_BAND = 30;                 // slack inside which shooter stops
+  const MELEE_MIN_DIST = 60;                    // desired approach distance
+  const MELEE_TOO_CLOSE = 36;                   // if closer than this, back up a bit
+  const EDGE_PADDING = 60;                      // keep enemies inside screen
+  const RETREAT_SPEED = 220;
+  const SHOOTER_MOVE_SPEED = 140;
+  const MELEE_MOVE_SPEED = 200;
+
+  function ensureRole(e){
+    if (e.role) return;
+    const r = Math.random();
+    if (r < 0.55) e.role = 'melee';
+    else e.role = 'shooter';
+    e.behavior = (Math.random() < 0.25) ? 'hitAndRun' : 'relentless';
+    e.state = 'engage';
+    e.retreatT = 0;
+  }
+
+  window.enemyRoleBehaviorTick = function(dtMs){
+    const L = st.players[st.leader];
+    if (!L) return;
+    for (const e of st.enemies){
+      if (e.hp <= 0) continue;
+      if (e.kind !== 'mob' && e.kind !== 'boss_add' && !(e.kind && e.kind.startsWith('boss'))) continue;
+      ensureRole(e);
+
+      // Basic retreat countdown
+      if (e.retreatT && e.retreatT > 0){
+        e.retreatT -= dtMs;
+        if (e.retreatT <= 0){
+          e.retreatT = 0;
+          e.state = 'engage';
+        }
+      }
+
+      const dist = e.x - L.x;
+
+      if (e.role === 'shooter'){
+        // Maintain distance band
+        if (e.state === 'retreat'){
+          e.x += (dist > 0 ? 1 : -1) * SHOOTER_MOVE_SPEED * st.dt; // keep moving away
+        } else {
+          if (Math.abs(dist) < SHOOTER_DIST.min){
+            // back up
+            e.x += (dist > 0 ? 1 : -1) * SHOOTER_MOVE_SPEED * st.dt;
+          } else if (Math.abs(dist) > SHOOTER_DIST.max){
+            // move closer
+            e.x -= (dist > 0 ? 1 : -1) * SHOOTER_MOVE_SPEED * st.dt;
+          } else {
+            // inside band -> stop
+            // zero vx for accuracy
+            e.vx = 0;
+          }
+        }
+        // hitAndRun: after firing (handled in enemyShoot patch below) they enter retreat
+      } else {
+        // Melee
+        if (Math.abs(dist) > MELEE_MIN_DIST){
+          // approach
+          e.x -= (dist > 0 ? 1 : -1) * MELEE_MOVE_SPEED * st.dt;
+        } else {
+          // In melee range
+            if (Math.abs(dist) < MELEE_TOO_CLOSE){
+              // too close -> back up a little
+              e.x += (dist > 0 ? 1 : -1) * MELEE_MOVE_SPEED * 0.5 * st.dt;
+            }
+        }
+        if (e.state === 'retreat'){
+          // Slight retreat if flagged
+          e.x += (dist > 0 ? 1 : -1) * RETREAT_SPEED * st.dt;
+        }
+      }
+
+      // Clamp inside screen
+      if (e.x < EDGE_PADDING) e.x = EDGE_PADDING;
+      if (e.x > DESIGN_W - EDGE_PADDING) e.x = DESIGN_W - EDGE_PADDING;
+    }
+  };
+
+  // Hook enemyShoot to start retreat for hitAndRun shooters
+  const _enemyShoot = window.enemyShoot;
+  window.enemyShoot = function(e, homing){
+    _enemyShoot(e, homing);
+    if (e.role === 'shooter' && e.behavior === 'hitAndRun'){
+      e.state = 'retreat';
+      e.retreatT = 700 + Math.random()*500;
+    } else if (e.role === 'melee' && e.behavior === 'hitAndRun'){
+      e.state = 'retreat';
+      e.retreatT = 500 + Math.random()*400;
+    }
+  };
+})();
+</script>
+
+<!-- ================== Section 3: Vision-Based Universal Basic Attacks ================== -->
+<script>
+(function universalBasics(){
+  if (window._universalBasicsPatch) return;
+  window._universalBasicsPatch = true;
+
+  // Config
+  const BASIC_CFG = {
+    A1:   { baseCD: 340, combo: [1.0,1.1,1.25,1.45,1.7] },
+    Unique:{ baseCD: 900, variance: 400, mult: 1.35 },
+    Missy:{ pattern: ['S','S','P','P'], slashCD: 280, pistolCD: 420 }
+  };
+
+  function canSeeEnemy(p){
+    return st.enemies.some(e => e.hp > 0 && Math.abs(e.y - p.y) < 120);
+  }
+
+  function doA1Basic(p){
+    p._combo = (p._combo||0)+1;
+    if (p._combo > BASIC_CFG.A1.combo.length) p._combo = 1;
+    const mult = BASIC_CFG.A1.combo[p._combo-1];
+    const dmg = Math.round((p.dmg||20) * mult * (st.devDmgBoost||1));
+    melee(p, 40 + p._combo*2, 44, dmg);
+    addCrescent(p.x + (p.facing*24), p.y - 36, p.facing, '#ff4d4f');
+    if (p._combo === BASIC_CFG.A1.combo.length){
+      wave(p, 1.0, '#ff7a6a', Math.round((p.dmg||20)*1.0*(st.devDmgBoost||1)));
+    }
+    p._basicTimer = BASIC_CFG.A1.baseCD;
+  }
+
+  function doUniqueBasic(p){
+    const t = nearestEnemy(p) || { x: p.x + p.facing*320, y: p.y };
+    const ang = Math.atan2(t.y - (p.y-40), t.x - (p.x+10));
+    const sp = 540;
+    const dmg = Math.round((p.dmg||18) * BASIC_CFG.Unique.mult * (st.devDmgBoost||1));
+    st.shots.push({
+      kind:'unique_big',
+      x:p.x+10, y:p.y-40,
+      vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
+      speed:sp, dmg, life:1800, homing:true,
+      ownerId:p.id, pierce:2, mobMult:1, bossMult:0.8
+    });
+    p._basicTimer = BASIC_CFG.Unique.baseCD + Math.random()* (BASIC_CFG.Unique.variance||0);
+  }
+
+  function doMissyBasic(p){
+    p._patIdx = (p._patIdx||0)+1;
+    const step = BASIC_CFG.Missy.pattern[(p._patIdx-1) % BASIC_CFG.Missy.pattern.length];
+    if (step === 'S'){
+      const dmg = Math.round((p.dmg||18) * 1.1 * (st.devDmgBoost||1));
+      melee(p, 34, 42, dmg);
+      addAfterImage(p.x, p.y, '#ff8c6a');
+      p._basicTimer = BASIC_CFG.Missy.slashCD;
+    } else {
+      const t = nearestEnemy(p) || { x: p.x + p.facing*260, y: p.y };
+      const ang = Math.atan2(t.y - (p.y-40), t.x - (p.x+10));
+      const sp = 600;
+      const dmg = Math.round((p.dmg||18) * 0.95 * (st.devDmgBoost||1));
+      st.shots.push({
+        kind:'missy_pistol',
+        x:p.x+10, y:p.y-40,
+        vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
+        speed:sp, dmg, life:1400, homing:true, ownerId:p.id
+      });
+      p._basicTimer = BASIC_CFG.Missy.pistolCD;
+    }
+  }
+
+  window.playerBasicsTick = function(dtMs){
+    updatePlayerFacing(); // update orientation
+    const enemiesPresent = st.enemies.some(e=>e.hp>0);
+    if (!enemiesPresent) return;
+    for (const p of st.players){
+      p._basicTimer = (p._basicTimer==null) ? 0 : p._basicTimer - dtMs;
+      if (p._basicTimer > 0) continue;
+      if (!canSeeEnemy(p)) { p._basicTimer = 100; continue; }
+      if (p.id === 'A1') doA1Basic(p);
+      else if (p.id === 'Unique') doUniqueBasic(p);
+      else if (p.id === 'Missy') doMissyBasic(p);
+      else {
+        // fallback generic melee
+        melee(p, 32, 40, Math.round((p.dmg||15)*(st.devDmgBoost||1)));
+        p._basicTimer = 500;
+      }
+    }
+  };
+})();
+</script>
+
+<!-- ================== Section 4: Ensure S4 Button Visible + Placeholder ================== -->
+<script>
+(function ensureS4(){
+  const b = document.getElementById('btnS4');
+  if (b){
+    b.style.display = 'flex';
+    if (!b._wired){
+      b._wired = true;
+      b.onclick = ()=>{
+        const h = st.players[st.leader];
+        addFloater(h.x, h.y-60, 'S4 (placeholder)', '#a8b7ce');
+        // (Optionally trigger a temp buff so you can verify button works)
+        st._atkBuffT = Math.max(st._atkBuffT||0, 6000);
+      };
+    }
+  }
+})();
+</script>
+
+<!-- ================== Section 5: Dev Damage Boost & Wave Safety ================== -->
+<script>
+(function devBoostAndWaveSafety(){
+  if (window._devBoostPatch) return;
+  window._devBoostPatch = true;
+
+  // Optional test multiplier: set st.devDmgBoost in console (default 1.0)
+  st.devDmgBoost = st.devDmgBoost || 1.6; // slight boost by default for easier testing
+
+  // Safety: if no living enemies for >2s but wave not advanced, advance
+  let emptyAccum = 0;
+  window.safetyWaveProgressCheck = function(){
+    const alive = st.enemies.some(e=>e.hp>0);
+    if (!alive){
+      emptyAccum += st.dt*1000;
+      if (emptyAccum > 2000){
+        emptyAccum = 0;
+        // trigger wave clear logic if not already
+        if (st.enemies.length === 0){
+          st.waveClearT = 0;
+          // Force spawn next wave / boss
+          if (!st.bossAlive){
+            advanceWave();
+          }
+        }
+      }
+    } else {
+      emptyAccum = 0;
+    }
+  };
+})();
+</script>

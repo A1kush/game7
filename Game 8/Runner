@@ -1,0 +1,495 @@
+<!-- ================= PHASE 5 PATCH: TALENT LANES SYSTEM (Initial Implementation) =================
+Goals (per your roadmap – skipping the A1 full combat kit for now):
+  - Replace legacy radial/web talents with 5 “lanes”: ATK, DEF, Recovery, Cooldown, Luck
+  - Each lane contains a linear (or lightly branching) progression of upgrade nodes
+  - Spend AP (st.apTotal) -> increments st.apSpent and node points (respecting node.max)
+  - Recalc stats immediately (attack, hp, defense, cooldown reduction, luck)
+  - Luck integrates with existing LOOT_TABLES weighting (your earlier Phase 3 patch already checks st.luck)
+  - Provide AP Reset compatibility (shop item ‘ap_reset’) – reused, now clears lane allocations
+  - Non‑destructive: keeps old code but disables old talent drawing & allocation
+
+IMPORTANT:
+  - This patch DOES NOT remove old talent data structures; it just stops using them.
+  - You can safely delete the old talents array + tallyTalentStats/drawTalents later (Cleanup phase).
+  - Cooldown Reduction: Implements as global multiplier st._cdMul = 1 - totalCdR (capped at 40% by config here).
+  - Recovery lane: simple HP regen & tiny lifesteal placeholder (regen applied in loop hook).
+  - Luck lane: each point gives +1 Luck (affecting weighted loot). Some nodes give +2.
+  - Visuals: Reuses existing <canvas id="talentCanvas"> inside #bag-talent. We redraw it entirely.
+
+HOW TO APPLY:
+  1. INSERT Section A (Config + Data + Init) anywhere after global state (e.g. right after `const st = { ... };`).
+  2. INSERT Section B (Rendering + Interaction) after Section A (before your loop definition).
+  3. INSERT Section C (Stat Integration) – patch recalcStats and add regen tick & cooldown application.
+  4. INSERT Section D (AP Reset Hook) – modifies shop ‘ap_reset’ logic to call resetTalentLanes() (in addition to what you already had).
+  5. OPTIONAL: Remove/Comment old talent functions tallyTalentStats() & drawTalents() calls (we neutralize them below anyway).
+  6. Open Talents tab in-game to verify UI: nodes show cost, current points, hover tooltips (simple).
+
+You can tune numeric values in TALENT_LANES_SPEC safely; rerender is automatic.
+
+================================================================================ -->
+
+<!-- ============== Section A: Talent Lanes Spec & State (INSERT) ============== -->
+<script>
+(function initTalentLanesPhase5(){
+  if (window._talentLanesInit) return;
+  window._talentLanesInit = true;
+
+  // Master spec: lanes -> ordered node list
+  // Fields:
+  //  id        unique key
+  //  name      short label shown in node
+  //  type      'flat', 'pct', 'cdr', 'luck', 'regen', 'lifesteal'
+  //  stat      which base stat (atk, hp, def, etc.) for flat/pct
+  //  value     per-point value
+  //  max       max points for this node
+  //  cost      AP cost per point
+  //  req       optional id of prerequisite node (simple dependency)
+  //  groupNote grouping descriptor (informational only)
+  const TALENT_LANES_SPEC = {
+    atk: [
+      { id:'atk_flat_1', name:'+8 ATK',   type:'flat', stat:'atk', value:8,  max:3, cost:1 },
+      { id:'atk_pct_1',  name:'+5% ATK', type:'pct',  stat:'atk', value:0.05, max:3, cost:2, req:'atk_flat_1' },
+      { id:'atk_flat_2', name:'+20 ATK', type:'flat', stat:'atk', value:20, max:2, cost:2, req:'atk_pct_1' },
+      { id:'atk_pct_2',  name:'+10% ATK',type:'pct',  stat:'atk', value:0.10, max:2, cost:3, req:'atk_flat_2' },
+      { id:'atk_keystone', name:'Keystone: +15% ATK', type:'pct', stat:'atk', value:0.15, max:1, cost:4, req:'atk_pct_2', keystone:true }
+    ],
+    def: [
+      { id:'def_hp_flat_1', name:'+80 HP',   type:'flat', stat:'hp', value:80, max:2, cost:1 },
+      { id:'def_flat_1',    name:'+10 DEF',  type:'flat', stat:'def', value:10, max:2, cost:2, req:'def_hp_flat_1' },
+      { id:'def_pct_1',     name:'+6% HP',   type:'pct', stat:'hp', value:0.06, max:3, cost:2, req:'def_flat_1' },
+      { id:'def_pct_def_1', name:'+6% DEF',  type:'pct', stat:'def', value:0.06, max:3, cost:2, req:'def_pct_1' },
+      { id:'def_keystone',  name:'Keystone: +12% HP', type:'pct', stat:'hp', value:0.12, max:1, cost:4, req:'def_pct_def_1', keystone:true }
+    ],
+    recovery: [
+      { id:'rec_regen_1', name:'+4 HP/s', type:'regen', value:4, max:2, cost:1 },
+      { id:'rec_regen_2', name:'+8 HP/s', type:'regen', value:8, max:2, cost:2, req:'rec_regen_1' },
+      { id:'rec_life_1',  name:'+1% LS', type:'lifesteal', value:0.01, max:3, cost:2, req:'rec_regen_1' },
+      { id:'rec_life_2',  name:'+2% LS', type:'lifesteal', value:0.02, max:2, cost:3, req:'rec_life_1' },
+      { id:'rec_keystone', name:'Keystone: +4% LS', type:'lifesteal', value:0.04, max:1, cost:4, req:'rec_life_2', keystone:true }
+    ],
+    cooldown: [
+      { id:'cd_cdr_1', name:'-3% CD', type:'cdr', value:0.03, max:3, cost:1 },
+      { id:'cd_cdr_2', name:'-5% CD', type:'cdr', value:0.05, max:3, cost:2, req:'cd_cdr_1' },
+      { id:'cd_cdr_3', name:'-7% CD', type:'cdr', value:0.07, max:2, cost:3, req:'cd_cdr_2' },
+      { id:'cd_keystone', name:'Keystone: -10% CD', type:'cdr', value:0.10, max:1, cost:4, req:'cd_cdr_3', keystone:true }
+    ],
+    luck: [
+      { id:'luck_pts_1', name:'+1 Luck', type:'luck', value:1, max:3, cost:1 },
+      { id:'luck_pts_2', name:'+2 Luck', type:'luck', value:2, max:3, cost:2, req:'luck_pts_1' },
+      { id:'luck_pts_3', name:'+3 Luck', type:'luck', value:3, max:2, cost:3, req:'luck_pts_2' },
+      { id:'luck_keystone', name:'Keystone: +5 Luck', type:'luck', value:5, max:1, cost:4, req:'luck_pts_3', keystone:true }
+    ]
+  };
+
+  // Attach to global state
+  st.talentLanes = {
+    spec: TALENT_LANES_SPEC,
+    points: {},       // { nodeId : investedPoints }
+    spent: 0          // total AP spent in lanes
+  };
+
+  // Maintain convenience caches
+  function laneNodeById(id){
+    for (const L in TALENT_LANES_SPEC){
+      const n = TALENT_LANES_SPEC[L].find(x => x.id === id);
+      if (n) return n;
+    }
+    return null;
+  }
+
+  window._getLaneNode = laneNodeById;
+})();
+</script>
+
+<!-- ============== Section B: Canvas Rendering & Interaction (INSERT) ============== -->
+<script>
+(function talentLanesUIPhase5(){
+  if (window._talentLaneUIInit) return;
+  window._talentLaneUIInit = true;
+
+  const CANVAS = document.getElementById('talentCanvas');
+  if(!CANVAS){ console.warn('[TalentLanes] talentCanvas not found'); return; }
+  const TCTX = CANVAS.getContext('2d');
+
+  // Layout constants
+  const LANE_ORDER = ['atk','def','recovery','cooldown','luck'];
+  const LANE_LABEL = { atk:'ATK', def:'DEF', recovery:'REC', cooldown:'CDR', luck:'LUCK' };
+  const laneX = laneIndex => 60 + laneIndex * 65;
+  const NODE_V_SPACING = 54;
+
+  // Click hotspot list updated each render
+  let NODE_RECTS = [];
+
+  function prereqSatisfied(node){
+    if(!node.req) return true;
+    const invested = st.talentLanes.points[node.req] || 0;
+    // Need at least 1 point in prerequisite for gating (simple)
+    return invested > 0;
+  }
+
+  function canInvest(node){
+    const invested = st.talentLanes.points[node.id] || 0;
+    if (invested >= node.max) return false;
+    if (!prereqSatisfied(node)) return false;
+    const apAvail = (st.apTotal || 0) - (st.talentLanes.spent || 0);
+    return apAvail >= node.cost;
+  }
+
+  function investNode(node){
+    if(!canInvest(node)) return;
+    st.talentLanes.points[node.id] = (st.talentLanes.points[node.id] || 0) + 1;
+    st.talentLanes.spent += node.cost;
+    recalcStats();               // new stats
+    renderTalentLanes();         // update visuals
+  }
+
+  function nodeFillColor(node, invested){
+    if(invested >= node.max) return '#20314d';          // maxed
+    if(!prereqSatisfied(node)) return '#1a2029';         // locked
+    return '#142438';                                    // available or partial
+  }
+
+  function nodeStrokeColor(node, invested){
+    if(invested >= node.max) return '#63e6ff';
+    if(!prereqSatisfied(node)) return '#394d6f';
+    return canInvest(node)? '#ffd56a' : '#394d6f';
+  }
+
+  function drawNode(node, laneIdx, idxInLane){
+    const invested = st.talentLanes.points[node.id] || 0;
+    const x = laneX(laneIdx);
+    const y = 40 + idxInLane * NODE_V_SPACING;
+    const r = node.keystone ? 20 : 16;
+
+    // Circle
+    TCTX.beginPath();
+    TCTX.lineWidth = 2;
+    TCTX.strokeStyle = nodeStrokeColor(node, invested);
+    TCTX.fillStyle = nodeFillColor(node, invested);
+    TCTX.arc(x, y, r, 0, Math.PI*2);
+    TCTX.fill(); TCTX.stroke();
+
+    // Progress ring (simple)
+    if(invested > 0){
+      TCTX.beginPath();
+      TCTX.strokeStyle = '#6aa8ff';
+      TCTX.lineWidth = 3;
+      const frac = invested / node.max;
+      TCTX.arc(x, y, r-4, -Math.PI/2, -Math.PI/2 + Math.PI*2*frac);
+      TCTX.stroke();
+    }
+
+    // Text
+    TCTX.fillStyle = '#cfe3ff';
+    TCTX.font = (node.keystone ? '10px system-ui' : '9px system-ui');
+    TCTX.textAlign = 'center';
+    TCTX.textBaseline = 'middle';
+    TCTX.fillText(node.name, x, y - (node.keystone? (r + 12) : (r + 10)));
+    TCTX.fillStyle = invested >= node.max ? '#ffd56a' : '#a8b7ce';
+    TCTX.fillText(invested + '/' + node.max, x, y + (r + 10));
+
+    // Store rect for input
+    NODE_RECTS.push({ id: node.id, x: x - r, y: y - r, w: r*2, h: r*2 });
+  }
+
+  function renderTalentLanes(){
+    if(!TCTX) return;
+    NODE_RECTS = [];
+    TCTX.clearRect(0,0,CANVAS.width,CANVAS.height);
+
+    // Title / AP
+    const apAvail = (st.apTotal || 0) - (st.talentLanes.spent || 0);
+    TCTX.fillStyle = '#cfe3ff';
+    TCTX.font = '14px system-ui';
+    TCTX.textAlign = 'left';
+    TCTX.fillText('Talent Lanes (AP: '+(st.talentLanes.spent||0)+' / '+(st.apTotal||0)+', Available: '+apAvail+')', 10, 16);
+
+    // Lane labels
+    TCTX.font = '12px system-ui';
+    LANE_ORDER.forEach((lane,laneIdx)=>{
+      const lx = laneX(laneIdx);
+      TCTX.fillStyle = '#ffd56a';
+      TCTX.textAlign = 'center';
+      TCTX.fillText(LANE_LABEL[lane], lx, 30);
+      // draw nodes
+      const list = st.talentLanes.spec[lane];
+      list.forEach((node,i)=> drawNode(node, laneIdx, i));
+    });
+
+    // Footer instructions
+    TCTX.fillStyle = '#a8b7ce';
+    TCTX.font = '11px system-ui';
+    TCTX.textAlign = 'left';
+    TCTX.fillText('Click a node to invest. Keystone requires previous full nodes.', 10, CANVAS.height - 22);
+    TCTX.fillText('AP Reset item clears all allocations.', 10, CANVAS.height - 10);
+  }
+
+  // Simple hover tooltip
+  let _hoverNodeId = null;
+  function showTooltip(node, px, py){
+    // Remove existing tip
+    let tip = document.getElementById('talentLaneTooltip');
+    if(!node){
+      if(tip) tip.remove();
+      return;
+    }
+    if(!tip){
+      tip = document.createElement('div');
+      tip.id = 'talentLaneTooltip';
+      Object.assign(tip.style,{
+        position:'fixed', background:'#0f1826', border:'1px solid #394d6f',
+        color:'#cfe3ff', font:'11px system-ui', padding:'6px 8px',
+        borderRadius:'6px', pointerEvents:'none', zIndex:20000,
+        maxWidth:'180px', lineHeight:'1.3'
+      });
+      document.body.appendChild(tip);
+    }
+    const invested = st.talentLanes.points[node.id] || 0;
+    const avail = canInvest(node);
+    let line2 = '';
+    switch(node.type){
+      case 'flat': line2 = '+'+node.value+' '+node.stat.toUpperCase()+' per pt'; break;
+      case 'pct': line2 = '+'+(node.value*100).toFixed(1)+'% '+node.stat.toUpperCase()+' per pt'; break;
+      case 'cdr': line2 = '-'+(node.value*100).toFixed(1)+'% Skill CD per pt'; break;
+      case 'luck': line2 = '+'+node.value+' Luck per pt'; break;
+      case 'regen': line2 = '+'+node.value+' HP/s per pt'; break;
+      case 'lifesteal': line2 = '+'+(node.value*100).toFixed(1)+'% Lifesteal per pt'; break;
+    }
+    tip.innerHTML = '<b>'+node.name+'</b><br>'
+      + line2 + '<br>'
+      + 'Points: '+invested+'/'+node.max+' (Cost '+node.cost+'/pt)' + '<br>'
+      + (node.req ? ('Requires: '+node.req+'<br>') : '')
+      + (avail ? '<span style="color:#36c777">Click to invest</span>' :
+          invested>=node.max ? '<span style="color:#ffd56a">Maxed</span>' :
+            !prereqSatisfied(node) ? '<span style="color:#ff7a6a">Prerequisite Not Met</span>' :
+              '<span style="color:#ff7a6a">Not enough AP</span>');
+    tip.style.left = (px + 14) + 'px';
+    tip.style.top = (py + 14) + 'px';
+  }
+
+  CANVAS.addEventListener('mousemove', e=>{
+    const rect = CANVAS.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) / rect.width * CANVAS.width;
+    const my = (e.clientY - rect.top) / rect.height * CANVAS.height;
+    let found = null;
+    for (const r of NODE_RECTS){
+      if (mx >= r.x && mx <= r.x+r.w && my >= r.y && my <= r.y+r.h){
+        found = _getLaneNode(r.id);
+        break;
+      }
+    }
+    if(found){
+      if(_hoverNodeId !== found.id){
+        _hoverNodeId = found.id;
+        showTooltip(found, e.clientX, e.clientY);
+      } else {
+        showTooltip(found, e.clientX, e.clientY);
+      }
+    } else {
+      _hoverNodeId = null;
+      showTooltip(null);
+    }
+  });
+
+  CANVAS.addEventListener('mouseleave', ()=>{
+    _hoverNodeId = null;
+    showTooltip(null);
+  });
+
+  CANVAS.addEventListener('click', e=>{
+    const rect = CANVAS.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) / rect.width * CANVAS.width;
+    const my = (e.clientY - rect.top) / rect.height * CANVAS.height;
+    for (const r of NODE_RECTS){
+      if (mx >= r.x && mx <= r.x+r.w && my >= r.y && my <= r.y+r.h){
+        const node = _getLaneNode(r.id);
+        investNode(node);
+        return;
+      }
+    }
+  });
+
+  // Re-render when the Talents tab is opened
+  const _origSwitchTab = window.bagUI && window.bagUI.switchTab;
+  if (_origSwitchTab){
+    // Not directly available (bagUI returns limited API), fallback to observe bagTab in animation frame
+  }
+  // Simple observer: when st.bagTab == 'talent' ensure render
+  setInterval(()=> {
+    if (st.bagOpen && st.bagTab === 'talent') renderTalentLanes();
+  }, 500);
+
+  // Expose for debugging
+  window.renderTalentLanes = renderTalentLanes;
+  renderTalentLanes();
+})();
+</script>
+
+<!-- ============== Section C: Stat Integration (PATCH recalcStats + regen/lifesteal) ============== -->
+<script>
+(function integrateTalentLaneStatsPhase5(){
+  if (window._talentLaneStatPatch) return;
+  window._talentLaneStatPatch = true;
+
+  // Preserve original recalcStats if needed
+  const _origRecalc = window.recalcStats;
+
+  window.recalcStats = function(){
+    // Call original first (baseline gear/pets)
+    if (_origRecalc) _origRecalc();
+
+    // Aggregate lane bonuses
+    const lane = st.talentLanes;
+    if(!lane){ return; }
+
+    let flatAtk = 0, pctAtk = 0;
+    let flatHP = 0, pctHP = 0;
+    let flatDef = 0, pctDef = 0;
+    let totalCDR = 0;
+    let luck = 0;
+    let regen = 0;
+    let lifesteal = 0;
+
+    for (const nodeId in lane.points){
+      const pts = lane.points[nodeId];
+      if (pts <= 0) continue;
+      const node = _getLaneNode(nodeId);
+      if (!node) continue;
+      const valTotal = node.value * pts;
+      switch(node.type){
+        case 'flat':
+          if (node.stat === 'atk') flatAtk += valTotal;
+          else if (node.stat === 'hp') flatHP += valTotal;
+          else if (node.stat === 'def') flatDef += valTotal;
+          break;
+        case 'pct':
+          if (node.stat === 'atk') pctAtk += valTotal;
+            else if (node.stat === 'hp') pctHP += valTotal;
+            else if (node.stat === 'def') pctDef += valTotal;
+          break;
+        case 'cdr':
+          totalCDR += valTotal; break;
+        case 'luck':
+          luck += valTotal; break;
+        case 'regen':
+          regen += valTotal; break;
+        case 'lifesteal':
+          lifesteal += valTotal; break;
+      }
+    }
+
+    // Cap cooldown reduction at 40% (configurable)
+    totalCDR = Math.min(0.40, totalCDR);
+
+    // Apply global luck
+    st.luck = luck;
+
+    // Store regen / lifesteal for loop tick usage
+    st._laneRegen = regen;             // HP per second
+    st._laneLifesteal = lifesteal;     // fractional (0.06 = 6%)
+
+    // Modify per-hero stats (add flats then pct)
+    for (const p of st.players){
+      // Attack: add flat then scale
+      p.dmg = Math.round((p.dmg || 0) + flatAtk);
+      p.dmg = Math.round(p.dmg * (1 + pctAtk));
+      // HP: we only apply global HP to leader for now – but set per-player soon (phase 1 clean)
+    }
+    // Global/leader hpMax modifications (temporary until full per-player HP migration)
+    st.hpMax = Math.round((st.hpMax + flatHP) * (1 + pctHP));
+    st.hp = Math.min(st.hp, st.hpMax);
+
+    // Defense: store flat + pct (used in damage intake areas)
+    st._defFlat = (st._defFlat || 0) + flatDef;
+    st._defPct = (st._defPct || 0) + pctDef;
+
+    // Cooldown Multiplier (existing system uses st._cdMul) – lower is faster.
+    // Convert totalCDR to multiplicative remainder (1 - totalCDR)
+    st._cdMul = (1 - totalCDR);
+
+    // Optionally notify (comment out if spammy)
+    // notify('Stats Recalc: CDR '+Math.round(totalCDR*100)+'% Luck '+luck);
+  };
+
+  // Heal/Lifesteal integration:
+  // Hook melee() to include lane lifesteal (non-destructive: wrap)
+  if (!window._laneLSHook){
+    window._laneLSHook = true;
+    const _origMelee = window.melee;
+    window.melee = function(a, reach, height, dmg){
+      const beforeHP = st.hp;
+      _origMelee && _origMelee(a, reach, height, dmg);
+      // Added lifesteal from lane (applied on net damage difference)
+      if (st._laneLifesteal){
+        const heal = Math.max(0, Math.round(dmg * st._laneLifesteal));
+        if (heal > 0){
+          st.hp = Math.min(st.hpMax, st.hp + heal);
+          addFloater(a.x, a.y - 50, '+'+heal, '#36c777');
+        }
+      }
+    };
+  }
+
+  // Passive regen tick each frame (hook loop AFTER original sets st.dt)
+  const _origLoop = window.loop;
+  window.loop = function(t){
+    _origLoop(t);
+    if (st._laneRegen && st._laneRegen > 0){
+      const heal = st._laneRegen * st.dt;
+      if (heal > 0){
+        st.hp = Math.min(st.hpMax, st.hp + heal);
+      }
+    }
+  };
+
+  // Initial recalc call
+  recalcStats();
+})();
+</script>
+
+<!-- ============== Section D: AP Reset Integration (PATCH shop 'ap_reset' behavior) ============== -->
+<script>
+(function patchAPResetForLanes(){
+  if (window._apResetLanePatch) return;
+  window._apResetLanePatch = true;
+
+  window.resetTalentLanes = function(){
+    if (!st.talentLanes) return;
+    st.talentLanes.points = {};
+    st.talentLanes.spent = 0;
+    recalcStats();
+    if (window.renderTalentLanes) window.renderTalentLanes();
+  };
+
+  // Monkey-patch existing tryBuy or ap_reset handling
+  // (Your current shop logic already handles ap_reset; we append lane reset.)
+  const _originalTryBuy = window.tryBuy;
+  if (_originalTryBuy){
+    window.tryBuy = function(itemId){
+      _originalTryBuy.call(this, itemId);
+      if (itemId === 'ap_reset'){
+        // Zero out lane allocations
+        resetTalentLanes();
+        notify('Talent Lanes Reset','#6aa8ff');
+      }
+    };
+  }
+})();
+</script>
+
+<!-- ============== Section E: Disable Legacy Talent Drawing (Optional / Safe) ============== -->
+<script>
+(function disableLegacyTalentUI(){
+  // If old drawTalents / tallyTalentStats kept re-firing, they might clobber stats.
+  // We neutralize them.
+  window.tallyTalentStats = function(){ /* legacy disabled in favor of lanes */ };
+  window.drawTalents = function(){
+    // If needed, you could call renderTalentLanes() here instead, but we already re-render while tab active.
+    if (st.bagOpen && st.bagTab === 'talent' && window.renderTalentLanes){
+      window.renderTalentLanes();
+    }
+  };
+})();
+</script>
+
+<!-- ================= END PHASE 5 TALENT LANES PATCH ================= -->

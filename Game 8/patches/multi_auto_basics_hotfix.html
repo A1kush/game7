@@ -1,0 +1,63 @@
+<script>
+/* ==== Multi-Hero AUTO Basics Hotfix v1 ====
+   Independent per-hero basic loops when st.auto = true.
+   A1: 5-hit loop (scales damage per stage)
+   Unique: 2–3 powerful homing piercing bullets (1.0–2.0s CD)
+   Missy: Sword, Sword, Pistol, Pistol pattern
+   Safe to remove later when full combat refactor lands.
+*/
+(function(){
+  if (window._multiAutoBasics) return;
+  window._multiAutoBasics = true;
+
+  const A1_COMBO = [1.00, 1.18, 1.35, 1.60, 1.90];  // simple scaling
+  const A1_BASE_CD = 260; // ms per swing (roughly 3.8 swings/sec then wave on 5th)
+  const UNIQUE_CFG = { cdMin: 1000, cdMax: 2000, dmgMul: 1.50, pierceMin: 2, pierceMax: 4 };
+  const MISSY_CFG = { slashCD: 300, pistolCD: 480, pistolDmgMul: 0.95, slashDmgMul: 1.10 };
+
+  function nearestEnemySimple(px, py){
+    let best=null, bd=1e9;
+    for(const e of st.enemies){
+      if(e.hp > 0){
+        const d = Math.abs(e.x - px) + Math.abs(e.y - py);
+        if(d < bd){ bd = d; best = e; }
+      }
+    }
+    return best;
+  }
+
+  function a1Basic(p){
+    p._a1Stage = (p._a1Stage || 0) + 1;
+    if (p._a1Stage > A1_COMBO.length) p._a1Stage = 1;
+    const mult = A1_COMBO[p._a1Stage - 1];
+    const dmg = Math.round(p.dmg * mult);
+    melee(p, 40 + p._a1Stage * 2, 44, dmg);
+    addCrescent(p.x + 28, p.y - 38, 1, '#ff4d4f');
+    // simple finisher wave
+    if (p._a1Stage === A1_COMBO.length) {
+      wave(p, 1.0, '#ff7a6a', Math.round(p.dmg * 1.05));
+    }
+    p._basicTimer = A1_BASE_CD;
+  }
+
+  function uniqueBasic(p){
+    const cfg = UNIQUE_CFG;
+    const shots = cfg.pierceMin + Math.floor(Math.random()*(cfg.pierceMax - cfg.pierceMin + 1));
+    const t = nearestEnemySimple(p.x, p.y) || { x: p.x + 320, y: p.y };
+    const ang = Math.atan2(t.y - (p.y - 40), t.x - (p.x + 10));
+    const baseDmg = Math.round(p.dmg * cfg.dmgMul);
+    const speed = 620;
+    for (let i=0;i<shots;i++){
+      const spread = (i - (shots-1)/2) * 0.12;
+      st.shots.push({
+        kind:'unique_auto',
+        x:p.x+10, y:p.y-40,
+        vx:Math.cos(ang+spread)*speed,
+        vy:Math.sin(ang+spread)*speed,
+        speed,
+        dmg: baseDmg,
+        life:1700,
+        homing:true,
+        homingTurn: 420,
+        pierce: shots, // pierce scales with shot count (2-4)
+        ownerId

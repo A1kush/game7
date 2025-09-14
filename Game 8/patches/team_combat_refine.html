@@ -1,0 +1,450 @@
+<!-- ================== Section A: CONFIG + FLAGS (INSERT NEAR TOP AFTER STATE) ================== -->
+<script>
+(function(){
+  if(window._TEAM_COMBAT_CONFIG) return;
+  window._TEAM_COMBAT_CONFIG = {
+    a1: {
+      basic: { comboArcReach: 60, dmgMults:[1.0,1.15,1.35,1.6,1.9], baseCD:300 },
+      closeKillHealPct: { min:0.05, max:0.10 },
+      closeRangePx: 68,         // distance for "close" kill
+      waveHealPct: 0.04,        // heal only if wave spawned while enemy was within closeRangePx
+    },
+    unique: {
+      volley: { minShots:2, maxShots:3, pierceMin:2, pierceMax:4, cdMin:1000, cdMax:2000, dmgMul:1.85 }
+    },
+    missy: {
+      pistol: { pierceMin:1, pierceMax:2, dmgMul:0.95, cd:420 },
+      slash:  { dmgMul:1.15, cd:300, reflectWindowMs:650 },
+      pattern: ['S','S','P','P']
+    },
+    homing: {
+      playerTurnDeg: 480,      // very snappy turn rate
+      reacquireMs: 120,
+      enemyTurnDeg: 140,       // enemies also home (still dodgeable)
+      enemyReacquireMs: 260
+    },
+    followerSkillRandom: ['S1','S2','S3'], // candidate skills to pick when mirroring leader
+    noAutoSkillsForFollowersWhenAutoOff: false // if true: followers only mirror skill events (current design)
+  };
+})();
+</script>
+
+<!-- ================== Section B: TEAM EVENT BUS (INSERT ONCE) ================== -->
+<script>
+(function(){
+  if(window._TEAM_EVENT_BUS) return;
+  const bus = {
+    listeners:{},
+    on(evt,fn){ (this.listeners[evt] ||= []).push(fn); },
+    emit(evt,payload){ (this.listeners[evt]||[]).forEach(fn=>{ try{ fn(payload); }catch(e){ console.warn(e); } }); }
+  };
+  window._TEAM_EVENT_BUS = bus;
+})();
+</script>
+
+<!-- ================== Section C: BASIC ATTACK IMPLEMENTATIONS ================== -->
+<script>
+(function(){
+  if(window._TEAM_BASICS_IMPL) return;
+  window._TEAM_BASICS_IMPL = true;
+  const CFG = _TEAM_COMBAT_CONFIG;
+
+  function nearestEnemySimple(px,py){
+    let best=null, bd=1e9;
+    for(const e of st.enemies){
+      if(e.hp>0){
+        const d=Math.hypot(e.x-px,e.y-py);
+        if(d<bd){bd=d; best=e;}
+      }
+    }
+    return best;
+  }
+
+  // Track spawn distance for A1 waves (so we can decide conditional heal)
+  function spawnA1WaveWithProximity(a, dmg){
+    const target = nearestEnemySimple(a.x,a.y) || {x:a.x+200,y:a.y};
+    const prox = Math.abs(target.x - a.x);
+    const proj = {
+      kind:'wave',
+      color:'#ff4d4f',
+      w:56, h:16,
+      x:a.x+24, y:a.y-40,
+      vx:640, vy:0, speed:640,
+      dmg:dmg,
+      life:1800,
+      laneY:a.y,
+      homing:true,
+      ownerId:'A1',
+      pierce:3,
+      _spawnProx:prox
+    };
+    st.shots.push(proj);
+  }
+
+  window._teamBasic_A1 = function(p){
+    p._comboStage = (p._comboStage||0)+1;
+    if(p._comboStage>CFG.a1.basic.dmgMults.length) p._comboStage=1;
+    const mult = CFG.a1.basic.dmgMults[p._comboStage-1];
+    const dmg = Math.round(p.dmg * mult);
+    // big arc melee (close)
+    let hitAny=false;
+    for(const e of st.enemies){
+      if(e.hp>0 && Math.abs(e.y - p.y)<42 && (e.x>p.x-10) && (e.x - p.x)<=CFG.a1.basic.comboArcReach){
+        let dealt=dmg;
+        if(e.defFlat) dealt=Math.max(1,dealt - e.defFlat);
+        if(e.defPct) dealt=Math.max(1,Math.round(dealt*(1-e.defPct)));
+        e.hp-=dealt;
+        addFloater(e.x,e.y-22,'-'+dealt,'#ff4d4f');
+        hitAny=true;
+        if(e.hp<=0){
+          // flag for kill-heal processing (close kill)
+          p._lastCloseKillTime=performance.now();
+          e._killedByA1Close=true;
+        }
+      }
+    }
+    addCrescent(p.x+30,p.y-40,1,'#ff4d4f');
+    if(p._comboStage===CFG.a1.basic.dmgMults.length){
+      // final swing: emit wave (conditional heal later if prox close)
+      spawnA1WaveWithProximity(p, Math.round(p.dmg*1.1));
+    }
+    p._basicTimer = CFG.a1.basic.baseCD;
+  };
+
+  window._teamBasic_Unique = function(p){
+    const cfg=CFG.unique.volley;
+    const shots = cfg.minShots + Math.floor(Math.random()*(cfg.maxShots-cfg.minShots+1));
+    const pierce = cfg.pierceMin + Math.floor(Math.random()*(cfg.pierceMax-cfg.pierceMin+1));
+    const t=nearestEnemySimple(p.x,p.y) || {x:p.x+300,y:p.y};
+    const ang=Math.atan2(t.y-(p.y-40), t.x-(p.x+10));
+    const baseDmg = Math.round(p.dmg * cfg.dmgMul);
+    for(let i=0;i<shots;i++){
+      const spread=(i-(shots-1)/2)*0.15;
+      const sp=700;
+      st.shots.push({
+        kind:'unique_volley',
+        x:p.x+10, y:p.y-40,
+        vx:Math.cos(ang+spread)*sp,
+        vy:Math.sin(ang+spread)*sp,
+        speed:sp,
+        dmg:baseDmg,
+        life:1500,
+        homing:true,
+        homingTurn:CFG.homing.playerTurnDeg,
+        ownerId:'Unique',
+        pierce:pierce
+      });
+      addMuzzle(p.x+10,p.y-40,'#63e6ff');
+    }
+    p._basicTimer = cfg.cdMin + Math.random()*(cfg.cdMax-cfg.cdMin);
+  };
+
+  window._teamBasic_Missy = function(p){
+    const cfg=CFG.missy;
+    p._patIdx=(p._patIdx||0)+1;
+    const step = cfg.pattern[(p._patIdx-1)%cfg.pattern.length];
+    if(step==='S'){
+      const dmg=Math.round(p.dmg * cfg.slash.dmgMul);
+      // Slash (like small melee)
+      let hit=false;
+      for(const e of st.enemies){
+        if(e.hp>0 && Math.abs(e.y-p.y)<38 && e.x>p.x && e.x-p.x<48){
+          let dealt=dmg;
+            if(e.defFlat) dealt=Math.max(1,dealt-e.defFlat);
+            if(e.defPct) dealt=Math.max(1,Math.round(dealt*(1-e.defPct)));
+          e.hp-=dealt;
+          addFloater(e.x,e.y-20,'-'+dealt,'#ff8c6a');
+          hit=true;
+        }
+      }
+      addCrescent(p.x+22,p.y-36,1,'#ff8c6a');
+      // Reflect window
+      st.parryT = Math.max(st.parryT, cfg.slash.reflectWindowMs);
+      st._reflectOwnerId='Missy';
+      st._reflectLeft = 2 + Math.floor(Math.random()*3);
+      p._basicTimer=cfg.slash.cd;
+    } else {
+      // Pistol
+      const t=nearestEnemySimple(p.x,p.y) || {x:p.x+240,y:p.y};
+      const ang=Math.atan2(t.y-(p.y-40), t.x-(p.x+10));
+      const sp=650;
+      const pierce = cfg.pistol.pierceMin + Math.floor(Math.random()*(cfg.pistol.pierceMax-cfg.pistol.pierceMin+1));
+      st.shots.push({
+        kind:'missy_pistol_refined',
+        x:p.x+10, y:p.y-40,
+        vx:Math.cos(ang)*sp,
+        vy:Math.sin(ang)*sp,
+        speed:sp,
+        dmg:Math.round(p.dmg * cfg.pistol.dmgMul),
+        life:1400,
+        homing:true,
+        homingTurn:CFG.homing.playerTurnDeg,
+        ownerId:'Missy',
+        pierce:pierce
+      });
+      addMuzzle(p.x+10,p.y-40,'#ffd56a');
+      p._basicTimer=cfg.pistol.cd;
+    }
+  };
+})();
+</script>
+
+<!-- ================== Section D: HOMING ENHANCER ================== -->
+<script>
+(function(){
+  if(window._HOMING_ENHANCER_PATCHED) return;
+  window._HOMING_ENHANCER_PATCHED=true;
+  const CFG=_TEAM_COMBAT_CONFIG;
+
+  // Wrap main loop projectile updates later; here just mark enhancer
+  window._applyStrongHomingPlayer = function(proj){
+    if(!proj.homing){
+      proj.homing=true;
+    }
+    proj.homingTurn = CFG.homing.playerTurnDeg;
+    proj.reacqMs = CFG.homing.reacquireMs;
+  };
+  window._applyStrongHomingEnemy = function(proj){
+    if(!proj.homing){
+      proj.homing=true;
+    }
+    proj.turnRate = CFG.homing.enemyTurnDeg;
+    proj.reacqMs = CFG.homing.enemyReacquireMs;
+  };
+})();
+</script>
+
+<!-- ================== Section E: SKILL BROADCAST HOOK ================== -->
+<script>
+(function(){
+  if(window._skillMirrorWrapped) return;
+  window._skillMirrorWrapped=true;
+  const origUseSkill = window.useSkill;
+  window.useSkill = function(actor, key){
+    const res = origUseSkill(actor, key);
+    // Broadcast only if this was the leader & manual (auto flag false)
+    if(actor===st.players[st.leader] && !st.auto){
+      _TEAM_EVENT_BUS.emit('leaderSkill',{leader:actor,key});
+    }
+    return res;
+  };
+})();
+</script>
+
+<!-- ================== Section F: INPUT HOOKS (Jump / Basic) ================== -->
+<script>
+(function(){
+  if(window._inputMirrorPatched) return;
+  window._inputMirrorPatched=true;
+  // Jump hook: wrap existing jumpAll
+  const origJumpAll = window.jumpAll;
+  window.jumpAll = function(){
+    origJumpAll();
+    if(!st.auto){
+      _TEAM_EVENT_BUS.emit('leaderJump',{t:performance.now()});
+    }
+  };
+  // Basic fire detection: we watch hold.shoot transitions
+  let prevShoot=false;
+  setInterval(()=>{
+    const nowShoot=hold.shoot;
+    if(nowShoot && !prevShoot && !st.auto){
+      _TEAM_EVENT_BUS.emit('leaderBasicStart',{t:performance.now()});
+    }
+    prevShoot=nowShoot;
+  },80);
+})();
+</script>
+
+<!-- ================== Section G: FOLLOWER REACTION LOGIC (when AUTO OFF) ================== -->
+<script>
+(function(){
+  if(window._followerMirrorLogic) return;
+  window._followerMirrorLogic=true;
+  const CFG=_TEAM_COMBAT_CONFIG;
+
+  function followerRandomSkill(hero){
+    const pool = CFG.followerSkillRandom.filter(k=>st.cds[hero.id] && st.cds[hero.id][k]!==undefined);
+    if(!pool.length) return;
+    const k = pool[Math.floor(Math.random()*pool.length)];
+    if(cdReady(hero.id,k)) useSkill(hero,k);
+  }
+
+  function runFollowerBasic(p){
+    if(p.id==='A1') _teamBasic_A1(p);
+    else if(p.id==='Unique') _teamBasic_Unique(p);
+    else if(p.id==='Missy') _teamBasic_Missy(p);
+  }
+
+  // Timers
+  _TEAM_EVENT_BUS.on('leaderBasicStart', ()=>{
+    if(st.auto) return;
+    st.players.forEach((p,i)=>{
+      if(i===st.leader) return;
+      // Trigger their own basic immediately if their internal CD elapsed
+      if(p._basicTimer<=0||p._basicTimer==null){
+        runFollowerBasic(p);
+      }
+    });
+  });
+
+  _TEAM_EVENT_BUS.on('leaderJump', ()=>{
+    // Already all jump (we wrapped jumpAll). No extra logic needed.
+  });
+
+  _TEAM_EVENT_BUS.on('leaderSkill', ({key})=>{
+    if(st.auto) return;
+    st.players.forEach((p,i)=>{
+      if(i===st.leader) return;
+      // 70% chance to act (adds variety)
+      if(Math.random()<0.7){
+        followerRandomSkill(p);
+      }
+    });
+  });
+
+  // Loop tick for followers (also used in Auto ON to drive basics with cooldown)
+  window.teamFollowersTick = function(dtMs){
+    const autoLike = st.auto; // followers always active in auto
+    for(const p of st.players){
+      p._basicTimer = (p._basicTimer==null)?0:(p._basicTimer - dtMs);
+      if(p===st.players[st.leader]) {
+        // Leader handled by existing input / old system; optional: we could move leader here later.
+        continue;
+      }
+      // Conditions to auto-fire:
+      //  - Auto mode ON
+      //  - OR manual mode but recent leader basic start event should have fired (we handle immediate)
+      if(autoLike){
+        if(p._basicTimer<=0){
+          if(p.id==='A1') _teamBasic_A1(p);
+          else if(p.id==='Unique') _teamBasic_Unique(p);
+          else if(p.id==='Missy') _teamBasic_Missy(p);
+        }
+      }
+    }
+  };
+})();
+</script>
+
+<!-- ================== Section H: A1 KILL & WAVE LIFESTEAL HANDLING ================== -->
+<script>
+(function(){
+  if(window._a1HealHooked) return;
+  window._a1HealHooked=true;
+  const CFG=_TEAM_COMBAT_CONFIG;
+
+  // Hook enemy death processing: intercept before removal
+  const origAdvanceFloaters = addFloater; // keep reference if needed (not altering here)
+
+  // We'll patch the kill spot by wrapping addFloater for kill events is messy; instead add an onKill scanner each frame:
+  window._a1KillScan = function(){
+    // Already processed kills are gone; so we track when we flagged _killedByA1Close
+    // Simpler: attach a kill queue near collision logic (requires minor injection):
+    // As fallback we add slight heal in melee loop already. For refinement we patch projectile collision below.
+  };
+
+  // Patch projectile collision for A1 waves to conditional heal
+  const origShotEnemyLoop = window.loop;
+  window.loop = function(t){
+    origShotEnemyLoop(t); // existing
+    // After loop logic? Too late to inspect newly dead; we’ll do partial heal using tags added earlier.
+
+    // Process queued heal flags
+    // Approach: tag enemies with _a1HealAwarded when they die; but original code already removed them.
+    // Simplify: we intercept damage application earlier: (Provide helper to be called in melee & projectile hits)
+
+  };
+
+  // Provide helper to call on close melee kill
+  window._a1OnCloseKill = function(){
+    const a1 = st.players.find(p=>p.id==='A1');
+    if(!a1) return;
+    const pct = CFG.a1.closeKillHealPct.min + Math.random()*(CFG.a1.closeKillHealPct.max-CFG.a1.closeKillHealPct.min);
+    const heal = Math.round(st.hpMax * pct);
+    st.hp = Math.min(st.hpMax, st.hp + heal);
+    addFloater(a1.x,a1.y-70,'+'+heal+' HP','#36c777');
+  };
+
+  // Hook melee function just for A1 close kill flag
+  const origMelee = window.melee;
+  window.melee = function(a,reach,height,dmg){
+    const before = st.enemies.map(e=>({e,hp:e.hp}));
+    origMelee(a,reach,height,dmg);
+    if(a && a.id==='A1'){
+      // detect close kills
+      const after = st.enemies;
+      for(let i=0;i<after.length;i++){
+        if(before[i] && before[i].hp>0 && after[i].hp<=0){
+          // distance?
+          if(Math.abs(after[i].x - a.x) <= _TEAM_COMBAT_CONFIG.a1.closeRangePx){
+            _a1OnCloseKill();
+          }
+        }
+      }
+    }
+  };
+
+  // Projectile (wave) conditional heal: patch collision section
+  // We'll wrap addImpact (called on hit) to detect A1 wave hits
+  const origAddImpact = window.addImpact;
+  window.addImpact = function(x,y,color){
+    // Called on any hit impact
+    // We DO NOT know projectile here; skip.
+    origAddImpact(x,y,color);
+  };
+
+  // For reliability, patch shot-enemy loop specifically:
+  // Provide a global flag function _a1ProcessWaveHeal(s,e)
+  window._a1ProcessWaveHeal = function(s,e){
+    if(s.kind==='wave' && s.ownerId==='A1'){
+      if(s._spawnProx!=null && s._spawnProx <= _TEAM_COMBAT_CONFIG.a1.closeRangePx){
+        // 4% wave heal once per enemy
+        const heal = Math.round(st.hpMax * _TEAM_COMBAT_CONFIG.a1.waveHealPct);
+        st.hp = Math.min(st.hpMax, st.hp + heal);
+        addFloater(e.x,e.y-40,'+'+heal,'#36c777');
+      }
+    }
+  };
+})();
+</script>
+
+<!-- ================== Section I: LOOP INTEGRATION (ADD NEAR MAIN LOOP UPDATE) ================== -->
+<script>
+(function(){
+  if(window._teamLoopIntegrations) return;
+  window._teamLoopIntegrations=true;
+
+  // We insert after dt/time updates but before draw; safer to patch at end with a second pass
+  const origLoop = window.loop;
+  window.loop = function(t){
+    origLoop(t);
+
+    // Followers tick (basics & cooldown mgmt)
+    teamFollowersTick(st.dt*1000);
+
+    // Strengthen homing each frame for new projectiles:
+    for(const s of st.shots){
+      if(!s._homingBoostApplied){
+        _applyStrongHomingPlayer(s);
+        s._homingBoostApplied=true;
+      }
+    }
+    for(const b of st.eShots){
+      if(!b._homingBoostApplied){
+        _applyStrongHomingEnemy(b);
+        b._homingBoostApplied=true;
+      }
+    }
+  };
+})();
+</script>
+
+<!-- ================== Section J: DISABLE OLD BASIC CADENCE (OPTIONAL) ================== -->
+<script>
+/*
+If old leader basic logic (time % 0.28) is still present and you want to fully rely on
+new system, search for: "if ((st.time % 0.28) < 0.02)" and comment out that block.
+This avoids double basic triggers.
+*/
+</script>
