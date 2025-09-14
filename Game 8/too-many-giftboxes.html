@@ -88,6 +88,19 @@
   .lane-node button:disabled{opacity:.4;cursor:not-allowed}
   #talentSummary{margin-top:6px;font-size:11px;color:#9baec8;line-height:1.4;white-space:pre-wrap}
   .upgrade-btn[disabled]{opacity:.4;cursor:not-allowed}
+  /* Team Status UI */
+  .team-status{display:flex;gap:8px;pointer-events:auto;flex-wrap:nowrap}
+  .hero-portrait{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px;min-width:48px;text-align:center}
+  .hero-portrait.leader{border-color:var(--hp);box-shadow:0 0 8px rgba(54,199,119,.3)}
+  .hero-portrait.defeated{opacity:.5;border-color:#ff4d4f}
+  .hero-icon{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:2px}
+  .hero-hp-bar{position:relative;height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-bottom:2px}
+  .hero-hp-fill{position:absolute;inset:0;background:linear-gradient(90deg,var(--hp),var(--hp2));transform-origin:left center}
+  .hero-status{font-size:8px;color:var(--muted);min-height:10px}
+  .hero-portrait.defeated .hero-status{color:#ff4d4f}
+  /* Secret Gauge */
+  .secret-gauge{position:relative;width:40px;height:8px;background:var(--panel2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin:0 auto 4px}
+  .secret-fill{position:absolute;inset:0;background:linear-gradient(90deg,#ff6aa8,#ffaa00);transform-origin:left center}
 </style>
 </head>
 <body>
@@ -97,6 +110,23 @@
   <!-- HUD -->
   <div class="hud">
     <div class="pill" id="stagePill">Stage 1 • Wave 1/10 • Kills 0</div>
+    <div class="team-status" id="teamStatus">
+      <div class="hero-portrait" id="heroA1">
+        <div class="hero-icon">A1</div>
+        <div class="hero-hp-bar"><div class="hero-hp-fill"></div></div>
+        <div class="hero-status"></div>
+      </div>
+      <div class="hero-portrait" id="heroUnique">
+        <div class="hero-icon">U</div>
+        <div class="hero-hp-bar"><div class="hero-hp-fill"></div></div>
+        <div class="hero-status"></div>
+      </div>
+      <div class="hero-portrait" id="heroMissy">
+        <div class="hero-icon">M</div>
+        <div class="hero-hp-bar"><div class="hero-hp-fill"></div></div>
+        <div class="hero-status"></div>
+      </div>
+    </div>
     <div class="bar"><div class="fill hp" id="hpFill"></div></div>
     <div class="bar"><div class="fill mp" id="mpFill"></div></div>
     <div class="bar" style="min-width:260px;position:relative">
@@ -210,6 +240,7 @@
         <div class="btn-round small" id="btnS1">S1</div>
         <div class="btn-round small" id="btnS2">S2</div>
         <div class="btn-round small" id="btnS3">S3</div>
+        <div class="btn-round small" id="btnS4">S4</div>
         <div class="btn-round small" id="btnS5" title="A1 Finisher">S5</div>
         <div class="btn-round small" id="btnX1" title="A1 Secret Skill">X1</div>
       </div>
@@ -281,18 +312,21 @@ const st = {
   players:[
     { id:'A1', x:200, y:DESIGN_H-160, lane:0, vx:0, vy:0,
       hpMax:100, hp:100, isDefeated:false, reviveT:0,
-      dmgBase:20, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0 },
+      dmgBase:20, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0,
+      secretGauge:0, secretMax:100 },
     { id:'Unique', x:240, y:DESIGN_H-130, lane:1, vx:0, vy:0,
       hpMax:100, hp:100, isDefeated:false, reviveT:0,
-      dmgBase:18, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0 },
+      dmgBase:18, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0,
+      secretGauge:0, secretMax:100 },
     { id:'Missy', x:220, y:DESIGN_H-100, lane:2, vx:0, vy:0,
       hpMax:100, hp:100, isDefeated:false, reviveT:0,
-      dmgBase:18, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0 },
+      dmgBase:18, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0,
+      secretGauge:0, secretMax:100 },
   ],
   leader:0,
   enemies:[], shots:[], eShots:[], pickups:[], effects:[],
   bossAlive:false, bossHP:0, bossMax:1,
-  cds:{ 'A1':{S1:0,S2:0,S3:0,S5:0,X1:0}, 'Unique':{S1:0,S2:0,S3:0,S5:0,X1:0}, 'Missy':{S1:0,S2:0,S3:0,S5:0,X1:0}},
+  cds:{ 'A1':{S1:0,S2:0,S3:0,S4:0,S5:0,X1:0}, 'Unique':{S1:0,S2:0,S3:0,S4:0,S5:0,X1:0}, 'Missy':{S1:0,S2:0,S3:0,S4:0,S5:0,X1:0}},
   // Inventory / Gear
   inv:[], invRows:4,
   equippedGear:{weapon:null,armor:null,acc1:null,acc2:null},
@@ -312,6 +346,68 @@ function $(q){return document.querySelector(q);}
 function notify(msg,color){const wrap=notifWrap();const d=document.createElement('div');d.className='toast';if(color)d.style.color=color;d.textContent=msg;wrap.appendChild(d);setTimeout(()=>{d.style.transition='opacity .4s';d.style.opacity=0;setTimeout(()=>d.remove(),400);},1400);}
 let _notifEl=null;function notifWrap(){if(!_notifEl){_notifEl=document.createElement('div');_notifEl.id='notifWrap';document.body.appendChild(_notifEl);}return _notifEl;}
 function addFloater(x,y,txt,color){st.effects.push({x,y,txt,color,vy:-0.25,life:800});}
+
+/* ================= Team Status UI ================= */
+function updateTeamStatusUI(){
+  const teamStatus = document.getElementById('teamStatus');
+  if(!teamStatus) return;
+  
+  st.players.forEach((p, i) => {
+    const heroId = p.id.toLowerCase();
+    const portrait = document.getElementById('hero' + p.id);
+    if(!portrait) return;
+    
+    // Update leader indicator
+    portrait.classList.toggle('leader', i === st.leader);
+    
+    // Update defeated state
+    portrait.classList.toggle('defeated', p.isDefeated);
+    
+    // Update HP bar
+    const hpFill = portrait.querySelector('.hero-hp-fill');
+    if(hpFill) {
+      const ratio = p.hp / p.hpMax;
+      hpFill.style.transform = `scaleX(${ratio})`;
+    }
+    
+    // Update status text
+    const statusEl = portrait.querySelector('.hero-status');
+    if(statusEl) {
+      if(p.isDefeated) {
+        const reviveTime = Math.ceil(p.reviveT / 1000);
+        statusEl.textContent = reviveTime > 0 ? `${reviveTime}s` : 'DOWNED';
+      } else if(p.rageOn) {
+        statusEl.textContent = 'RAGE';
+      } else {
+        statusEl.textContent = 'OK';
+      }
+    }
+  });
+}
+
+function updateSecretGaugeUI(){
+  const L = leader();
+  if(!L) return;
+  
+  // Update X1 button visibility based on conditions
+  const x1Btn = document.getElementById('btnX1');
+  if(x1Btn) {
+    const canUseSecret = L.secretGauge >= L.secretMax && 
+                        (st.bossAlive || L.hp <= L.hpMax * 0.5);
+    x1Btn.style.display = canUseSecret ? 'flex' : 'none';
+    x1Btn.style.opacity = cdReady(L.id, 'X1') ? '1' : '0.5';
+  }
+}
+
+function fillSecretGauge(player, amount) {
+  if(!player || player.isDefeated) return;
+  player.secretGauge = Math.min(player.secretMax, player.secretGauge + amount);
+  
+  // Visual feedback when gauge fills
+  if(player.secretGauge >= player.secretMax) {
+    addFloater(player.x, player.y - 60, 'SECRET READY!', '#ffaa00');
+  }
+}
 
 /* ================= Team HP Helpers ================= */
 function leader(){return st.players[st.leader];}
@@ -959,14 +1055,25 @@ function a1_useSkill(a,key){
   if(st._globalSkillLock>0) return;
   a._castInvT=Math.max(a._castInvT||0,3000);
   st._shieldOn=true; st._shieldT=Math.max(st._shieldT||0,2000);
+  
   if(key==='S1'){
+    // S1 (Umbral Crescent) - Enhanced with 1% Max HP damage and reset on kill
     const swings=5;
+    let totalKills = 0;
+    
     for(let i=0;i<swings;i++){
       setTimeout(()=>{
-        melee(a,40,44, Math.round(a.dmg*1.0));
+        const killed = meleeWithTracking(a, 40, 44, Math.round(a.dmg*1.0), 0.01); // 1% max HP damage
+        totalKills += killed;
         if(i%2===1) wave(a,0.9,'#ff7a6a');
         // micro hitstop feel
         st._hitstop=Math.max(st._hitstop||0,30);
+        
+        // Reset S1 cooldown on kill
+        if(killed > 0 && st.cds[a.id]) {
+          st.cds[a.id].S1 = 0;
+          addFloater(a.x, a.y-70, 'S1 RESET!', '#ffaa00');
+        }
       }, i*90);
     }
     st.parryT=Math.max(st.parryT,600);
@@ -998,7 +1105,7 @@ function a1_useSkill(a,key){
       return;
     }
     
-    // Consume HP
+    // Consume HP over 2 seconds
     a.hp -= hpCost;
     addFloater(a.x, a.y - 30, '-' + hpCost + ' HP', '#ff4d4f');
     
@@ -1013,38 +1120,85 @@ function a1_useSkill(a,key){
     // Crescendo Reset
     if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
   } else if(key==='X1'){
-    // X1 (Astral Sever EX) - Secret Skill: Full-screen cross-slash, costs 20% Max HP
+    // X1 (Astral Sever EX) - Secret Skill: Enhanced with kill scaling
+    if(a.secretGauge < a.secretMax) {
+      notify('Secret gauge not ready!', '#ff4d4f');
+      return;
+    }
+    
     const hpCost = Math.round(a.hpMax * 0.20);
     if(a.hp <= hpCost) {
       notify('Not enough HP for Astral Sever!', '#ff4d4f');
       return;
     }
     
-    // Consume HP
+    // Consume HP over 2 seconds and reset secret gauge
     a.hp -= hpCost;
+    a.secretGauge = 0;
     addFloater(a.x, a.y - 30, '-' + hpCost + ' HP', '#ff4d4f');
+    
+    // Kill scaling: size and damage increase at 2, 4, 6 kills
+    const killBonus = Math.floor(st.kills / 2) * 0.5; // 50% bonus per 2 kills
+    const baseSize = 80;
+    const scaledSize = baseSize + (killBonus * 20);
     
     // Full-screen cross-slash effect
     addCast(a.x, a.y, '#ffaa00');
     
+    // Calculate boss damage (10% current boss HP)
+    const bossDamage = st.bossAlive ? Math.round(st.bossHP * 0.1) : 0;
+    const totalDamage = Math.round(a.dmg * (10 + killBonus)) + bossDamage;
+    
     // Horizontal slash
     st.shots.push({
       kind:'astral_sever_h', x:0, y:a.y, vx:0, vy:0,
-      dmg:Math.round(a.dmg*10 + (st.bossHP * 0.1)), life:800, 
-      w:DESIGN_W, h:80, color:'#ffaa00', pierce:99, ownerId:'A1'
+      dmg:totalDamage, life:800, 
+      w:DESIGN_W, h:scaledSize, color:'#ffaa00', pierce:99, ownerId:'A1'
     });
     
     // Vertical slash
     st.shots.push({
       kind:'astral_sever_v', x:a.x, y:0, vx:0, vy:0,
-      dmg:Math.round(a.dmg*10 + (st.bossHP * 0.1)), life:800,
-      w:80, h:DESIGN_H, color:'#ffaa00', pierce:99, ownerId:'A1'
+      dmg:totalDamage, life:800,
+      w:scaledSize, h:DESIGN_H, color:'#ffaa00', pierce:99, ownerId:'A1'
     });
     
     // Crescendo Reset (Secret Skill)
     if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+    
+    // Visual feedback for scaling
+    if(killBonus > 0) {
+      addFloater(a.x, a.y-90, `EMPOWERED x${1+killBonus}!`, '#ffaa00');
+    }
   }
   startCD(a.id,key);
+}
+
+// Enhanced melee with max HP damage and kill tracking
+function meleeWithTracking(a, reach, height, dmg, maxHPPercent = 0) {
+  let kills = 0;
+  for(const e of st.enemies){
+    if(e.hp>0 && e.x>a.x && (e.x-a.x)<=reach && Math.abs(e.y-a.y)<=height/2){
+      let real=dmg;
+      
+      // Add % max HP damage
+      if(maxHPPercent > 0) {
+        real += Math.round(e.max * maxHPPercent);
+      }
+      
+      if(e.armorShredDebuff) real=Math.round(real*(1+e.armorShredDebuff));
+      e.hp-=real;
+      addFloater(e.x,e.y-20,'-'+real,'#ff7a6a');
+      if(e.hp<=0) {
+        onEnemyKilled(e);
+        kills++;
+      }
+    }
+  }
+  if(kills > 0) addImpact(a.x+reach/2,a.y-40,'#ff7a6a');
+  // Parry window synergy
+  st.parryT=Math.max(st.parryT,500);
+  return kills;
 }
 
 /* =================== UNIQUE Combat Kit (MOB SLAYER) =================== */
@@ -1066,21 +1220,24 @@ function unique_useSkill(a,key){
       }, i*100);
     }
   } else if(key==='S2'){
-    // S2 (Drone Command): Summon/heal drones
-    if(!a._drones) a._drones = [];
-    if(a._drones.length < 2){
-      // Summon new drone
-      a._drones.push({
-        x:a.x+40, y:a.y-60, hp:100, hpMax:100, atk:1.0,
-        targetX:a.x+40, targetY:a.y-60, fireCD:800
-      });
-      addCast(a.x+40,a.y-60,'#00ff88');
-    } else {
-      // Heal and buff existing drones
-      a._drones.forEach(drone => {
-        drone.hp = Math.min(drone.hpMax, drone.hp + 30);
-        drone.atk = Math.min(2.0, drone.atk + 0.1);
-        addFloater(drone.x, drone.y-20, '+30 HP', '#36c777');
+    // S2 (Harmonic Field): Team haste/drop buff + assistance modules
+    addCast(a.x,a.y,'#00ff88');
+    
+    // Grant team-wide buff
+    st.players.forEach(p => {
+      if(!p.isDefeated) {
+        p._hasteBuff = 8000; // 8 second haste
+        p._dropBuff = 8000;  // 8 second improved drops
+        addFloater(p.x, p.y-50, 'HASTE+LUCK!', '#00ff88');
+      }
+    });
+    
+    // Spawn assistance modules
+    for(let i=0;i<3;i++){
+      st.shots.push({
+        kind:'unique_module', x:a.x+60+(i*80), y:a.y-60, vx:0, vy:0,
+        hp:40, life:12000, w:30, h:30, color:'#00ff88',
+        assistCD:1200, lastAssist:0, ownerId:'Unique'
       });
     }
   } else if(key==='S3'){
@@ -1093,6 +1250,28 @@ function unique_useSkill(a,key){
       w:200, h:60, color:'#ff6aa8', ownerId:'Unique'
     };
     st.shots.push(beam);
+  } else if(key==='S4'){
+    // S4 (Stellar Annihilator): Hold-to-charge persistent beam
+    if(!a._stellarCharging) {
+      a._stellarCharging = true;
+      a._stellarCharge = 0;
+      a._stellarMaxCharge = 2500; // 2.5 seconds max charge
+      addCast(a.x, a.y, '#6aa8ff');
+      notify('Hold S4 to charge Stellar Annihilator');
+      
+      // Start charging effect
+      a._stellarChargingInterval = setInterval(() => {
+        if(a._stellarCharging && a._stellarCharge < a._stellarMaxCharge) {
+          a._stellarCharge += 100;
+          // Visual charging effect
+          if(a._stellarCharge % 500 === 0) {
+            addCast(a.x, a.y, '#6aa8ff');
+          }
+        }
+      }, 100);
+    }
+    
+    // Note: Release logic will be handled in key-up event
   } else if(key==='S5'){
     // S5 (Drone Overdrive): Kamikaze drones, costs 30% Current HP
     const hpCost = Math.round(a.hp * 0.30);
@@ -1118,6 +1297,11 @@ function unique_useSkill(a,key){
     if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
   } else if(key==='X1'){
     // X1 (Prismatic Cataclysm): Persistent energy lattice, costs 20% Max HP
+    if(a.secretGauge < a.secretMax) {
+      notify('Secret gauge not ready!', '#ff4d4f');
+      return;
+    }
+    
     const hpCost = Math.round(a.hpMax * 0.20);
     if(a.hp <= hpCost) {
       notify('Not enough HP for Cataclysm!', '#ff4d4f');
@@ -1125,6 +1309,7 @@ function unique_useSkill(a,key){
     }
     
     a.hp -= hpCost;
+    a.secretGauge = 0;
     addFloater(a.x, a.y-30, '-'+hpCost+' HP', '#ff4d4f');
     
     // Create persistent lattice
@@ -1141,6 +1326,35 @@ function unique_useSkill(a,key){
   startCD(a.id,key);
 }
 
+// Handle S4 release for Unique
+function unique_releaseStellarAnnihilator(a) {
+  if(!a._stellarCharging) return;
+  
+  a._stellarCharging = false;
+  if(a._stellarChargingInterval) {
+    clearInterval(a._stellarChargingInterval);
+    a._stellarChargingInterval = null;
+  }
+  
+  const chargeRatio = Math.min(1, a._stellarCharge / a._stellarMaxCharge);
+  const beamDuration = 300 + (chargeRatio * 2200); // 0.3s to 2.5s
+  const beamDamage = Math.round(a.dmg * (1 + chargeRatio * 4)); // 1x to 5x damage
+  
+  // Create the persistent beam
+  st.shots.push({
+    kind:'unique_stellar_beam', x:a.x+40, y:a.y-40, vx:0, vy:0,
+    dmg:Math.round(beamDamage * 0.1), // Damage per tick
+    life:beamDuration, w:400, h:80, color:'#6aa8ff',
+    persistent:true, tickRate:50, ownerId:'Unique'
+  });
+  
+  addCast(a.x, a.y, '#6aa8ff');
+  notify(`Stellar Beam: ${Math.round(chargeRatio*100)}% charged!`);
+  
+  // Reset charge
+  a._stellarCharge = 0;
+}
+
 /* =================== MISSY Combat Kit (SUPPORT/LOOT) =================== */
 function missy_useSkill(a,key){
   if(!cdReady(a.id,key)) return;
@@ -1148,17 +1362,22 @@ function missy_useSkill(a,key){
   a._castInvT=Math.max(a._castInvT||0,2000);
   
   if(key==='S1'){
-    // S1 (Lucky Charm Volley): Fast poke that marks enemies
+    // S1 (Lucky Charm Volley): Fast poke that marks enemies and adds clovers
     addCast(a.x,a.y,'#ffd56a');
     for(let i=0;i<3;i++){
       setTimeout(()=>{
         st.shots.push({
           kind:'missy_charm', x:a.x+15, y:a.y-35, vx:800, vy:(i-1)*50,
           dmg:Math.round(a.dmg*1.2), life:1500, w:16, h:16,
-          color:'#ffd56a', mark:true, ownerId:'Missy'
+          color:'#ffd56a', mark:true, addClover:true, ownerId:'Missy'
         });
       }, i*120);
     }
+    
+    // Add clover to Missy's state
+    if(!a._clovers) a._clovers = 0;
+    a._clovers = Math.min(10, a._clovers + 1); // Max 10 clovers
+    addFloater(a.x, a.y-70, `Clover x${a._clovers}`, '#ffd56a');
   } else if(key==='S2'){
     // S2 (Winged Aegis v2): Dome that reflects and heals
     addCast(a.x,a.y,'#36c777');
@@ -1177,15 +1396,48 @@ function missy_useSkill(a,key){
       }
     });
   } else if(key==='S3'){
-    // S3 (Neko Dominion v2): Summon Maneki guardians
+    // S3 (Neko Dominion v2): Summon Maneki guardians that taunt
     addCast(a.x,a.y,'#ff9aa8');
     for(let i=0;i<2;i++){
       st.shots.push({
         kind:'missy_maneki', x:a.x+50+(i*100), y:a.y, vx:0, vy:0,
-        hp:80, life:12000, w:40, h:60, color:'#ff9aa8',
-        taunt:true, pullRadius:150, ownerId:'Missy'
+        hp:80, hpMax:80, life:12000, w:40, h:60, color:'#ff9aa8',
+        taunt:true, pullRadius:150, tauntCD:2000, ownerId:'Missy'
       });
     }
+  } else if(key==='S4'){
+    // S4 (Clover Burst): Consumes clovers for powerful effects
+    if(!a._clovers || a._clovers === 0) {
+      notify('Need clovers for Clover Burst!', '#ff4d4f');
+      return;
+    }
+    
+    const cloverCount = a._clovers;
+    a._clovers = 0; // Consume all clovers
+    
+    // Effects scale with clover count
+    const goldGain = cloverCount * 50;
+    const healAmount = Math.round(cloverCount * 0.05 * a.hpMax);
+    
+    // Grant gold and healing
+    st.gold += goldGain;
+    st.players.forEach(p => {
+      if(!p.isDefeated) {
+        p.hp = Math.min(p.hpMax, p.hp + healAmount);
+        addFloater(p.x, p.y-30, '+'+healAmount+' HP', '#36c777');
+      }
+    });
+    
+    // Create luck burst that affects drops
+    st.shots.push({
+      kind:'missy_clover_burst', x:a.x, y:a.y-40, vx:0, vy:0,
+      life:5000, w:300, h:300, color:'#ffd56a', aoe:300,
+      luckMultiplier:1 + (cloverCount * 0.2), ownerId:'Missy'
+    });
+    
+    updateCurrencies();
+    addFloater(a.x, a.y-60, `+${goldGain} Gold!`, '#ffd56a');
+    addFloater(a.x, a.y-90, `${cloverCount} Clovers Used!`, '#ffd56a');
   } else if(key==='S5'){
     // S5 (Sacrificial Gambit): Costs 25% team HP for massive buff
     const totalHpCost = st.players.reduce((sum, p) => sum + Math.round(p.hp * 0.25), 0);
@@ -1210,6 +1462,7 @@ function missy_useSkill(a,key){
         // Grant massive buff
         p._critBuff = 5000; // 5 seconds 100% crit
         p._invulnBuff = 5000; // 5 seconds invulnerability
+        addFloater(p.x, p.y-60, 'GAMBIT!', '#ffaa00');
       }
     });
     
@@ -1217,6 +1470,11 @@ function missy_useSkill(a,key){
     if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
   } else if(key==='X1'){
     // X1 (Sovereign Parade): Royal procession with bells, costs 20% Max HP
+    if(a.secretGauge < a.secretMax) {
+      notify('Secret gauge not ready!', '#ff4d4f');
+      return;
+    }
+    
     const hpCost = Math.round(a.hpMax * 0.20);
     if(a.hp <= hpCost) {
       notify('Not enough HP for Parade!', '#ff4d4f');
@@ -1224,16 +1482,24 @@ function missy_useSkill(a,key){
     }
     
     a.hp -= hpCost;
+    a.secretGauge = 0;
     addFloater(a.x, a.y-30, '-'+hpCost+' HP', '#ff4d4f');
     
     // Create royal bells and procession
     for(let i=0;i<2;i++){
       st.shots.push({
         kind:'missy_royal_bell', x:a.x+80+(i*120), y:a.y-80, vx:0, vy:0,
-        hp:200, life:20000, w:60, h:80, color:'#ffd56a',
-        healRate:400, lootPull:true, convertBullets:true, ownerId:'Missy'
+        hp:200, hpMax:200, life:20000, w:60, h:80, color:'#ffd56a',
+        healRate:400, lootPull:true, convertBullets:true, lastHeal:0, ownerId:'Missy'
       });
     }
+    
+    // Create procession effect
+    st.shots.push({
+      kind:'missy_procession', x:a.x, y:a.y, vx:0, vy:0,
+      life:20000, w:400, h:200, color:'#ff9aa8',
+      globalHeal:true, globalLuck:true, ownerId:'Missy'
+    });
     
     // Crescendo Reset
     if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
@@ -1292,12 +1558,26 @@ function melee(a,reach,height,dmg){
 
 /* ================= Cooldowns ================== */
 const CD = {
-  'A1':{S1:6000,S2:10000,S3:16000,S5:45000,X1:120000},
-  'Unique':{S1:6000,S2:10000,S3:16000,S5:35000,X1:120000},
-  'Missy':{S1:6000,S2:10000,S3:16000,S5:30000,X1:120000}
+  'A1':{S1:6000,S2:10000,S3:16000,S4:14000,S5:45000,X1:120000},
+  'Unique':{S1:6000,S2:10000,S3:16000,S4:20000,S5:35000,X1:120000},
+  'Missy':{S1:6000,S2:10000,S3:16000,S4:18000,S5:30000,X1:120000}
 };
 function cdReady(id,key){return st.cds[id] && st.cds[id][key]<=0;}
 function startCD(id,key){ if(st.cds[id]) st.cds[id][key]=CD[id][key]; }
+
+/* ================= S4 Release Handler ================= */
+function releaseS4(player) {
+  if(!player || player.isDefeated) return;
+  
+  if(player.id === 'Unique') {
+    unique_releaseStellarAnnihilator(player);
+  } else if(player.id === 'A1') {
+    // A1 doesn't have hold-to-charge S4, treat as instant
+    // Could implement A1's S4 here if needed
+  } else if(player.id === 'Missy') {
+    // Missy's S4 could be implemented here
+  }
+}
 
 /* ================== Rage Activation ================== */
 function triggerRageFor(p){
@@ -1748,6 +2028,15 @@ function enemyShoot(e){
 /* ================== Enemy Death / Drops ================== */
 function onEnemyKilled(e){
   st.kills++;
+  
+  // Fill secret gauge for all active players
+  st.players.forEach(p => {
+    if(!p.isDefeated) {
+      const baseGain = e.kind === 'boss' ? 30 : (e.kind === 'miniboss' ? 15 : 5);
+      fillSecretGauge(p, baseGain);
+    }
+  });
+  
   // Drops: base gold + chance for gear chest
   const baseGold=20+Math.floor(Math.random()*40);
   st.gold+=baseGold;
@@ -1759,6 +2048,11 @@ function onEnemyKilled(e){
   if(e.kind==='miniboss'){
     const it=rollLoot('miniBossChest');
     if(it){ addItemToBag(it); notify('Mini-Boss Gear: '+it.name); }
+  } else if(e.kind==='boss'){
+    st.bossAlive = false;
+    st.bossKills++;
+    const it=rollLoot('bossChest');
+    if(it){ addItemToBag(it); notify('Boss Gear: '+it.name); }
   } else if(chestRoll < 0.02*luckScale){
     const it=rollLoot('mobChest');
     if(it){ addItemToBag(it); notify('Loot: '+it.name); }
@@ -1805,6 +2099,8 @@ document.getElementById('btnShoot').onpointerup=()=>hold.shoot=false;
 document.getElementById('btnS1').onclick=()=> useSkillWrapper(leader(),'S1');
 document.getElementById('btnS2').onclick=()=> useSkillWrapper(leader(),'S2');
 document.getElementById('btnS3').onclick=()=> useSkillWrapper(leader(),'S3');
+document.getElementById('btnS4').onpointerdown=()=> useSkillWrapper(leader(),'S4');
+document.getElementById('btnS4').onpointerup=()=> releaseS4(leader());
 document.getElementById('btnS5').onclick=()=> useSkillWrapper(leader(),'S5');
 document.getElementById('btnX1').onclick=()=> useSkillWrapper(leader(),'X1');
 
@@ -1813,8 +2109,12 @@ addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(e.code==='KeyQ'){ document.getElementById('btnSwitch2').click(); }
   if(e.code==='Space'){ jumpAll(); }
+  if(e.code==='Digit4'){ useSkillWrapper(leader(),'S4'); }
 });
-addEventListener('keyup',e=>keys[e.code]=false);
+addEventListener('keyup',e=>{
+  keys[e.code]=false;
+  if(e.code==='Digit4'){ releaseS4(leader()); }
+});
 
 const stick=document.getElementById('stick'), nub=document.getElementById('nub');
 let joyId=null,joyX=0,joyY=0,lastTap=0;
@@ -1949,6 +2249,13 @@ function update(dt){
   // Enemy update
   for(const e of st.enemies){
     if(e.hp<=0) continue;
+    
+    // Update boss tracking
+    if(e.kind === 'boss') {
+      st.bossHP = e.hp;
+      st.bossMax = e.max;
+    }
+    
     // Basic move
     e.x += (e.vx||0)*DESIGN_W*dt;
     
@@ -1981,8 +2288,98 @@ function update(dt){
     s.x += (s.vx||0)*dt;
     s.y += (s.vy||0)*dt;
     s.life -= dtMs;
+    
+    // Special behavior for unique projectiles
+    if(s.kind === 'unique_stellar_beam' && s.persistent && s.tickRate) {
+      if(!s.lastTick) s.lastTick = 0;
+      s.lastTick += dtMs;
+      if(s.lastTick >= s.tickRate) {
+        s.lastTick = 0;
+        // Continuous damage to enemies in beam area
+        for(const e of st.enemies) {
+          if(e.hp > 0 && Math.abs(e.x - s.x) < s.w/2 && Math.abs(e.y - s.y) < s.h/2) {
+            e.hp -= s.dmg;
+            addFloater(e.x, e.y-20, '-'+s.dmg, '#6aa8ff');
+            if(e.hp <= 0) onEnemyKilled(e);
+          }
+        }
+      }
+    }
+    
+    // Update attached beams
+    if(s.attachedTo && s.attachedTo.x !== undefined) {
+      s.x = s.attachedTo.x + 30;
+      s.y = s.attachedTo.y - 40;
+    }
+    
+    // Assistance modules
+    if(s.kind === 'unique_module' && s.assistCD) {
+      s.lastAssist = (s.lastAssist || 0) + dtMs;
+      if(s.lastAssist >= s.assistCD && s.hp > 0) {
+        // Find nearest enemy to assist with
+        const nearestEnemy = st.enemies.find(e => e.hp > 0 && Math.hypot(e.x - s.x, e.y - s.y) < 200);
+        if(nearestEnemy) {
+          st.shots.push({
+            x: s.x, y: s.y, vx: 400, vy: 0,
+            dmg: 20, life: 1000, color: '#00ff88', ownerId: s.ownerId
+          });
+          s.lastAssist = 0;
+        }
+      }
+    }
+    
+    // Maneki taunt behavior
+    if(s.kind === 'missy_maneki' && s.taunt && s.hp > 0) {
+      if(!s.lastTaunt) s.lastTaunt = 0;
+      s.lastTaunt += dtMs;
+      if(s.lastTaunt >= (s.tauntCD || 2000)) {
+        // Pull nearby enemies towards this guardian
+        for(const e of st.enemies) {
+          if(e.hp > 0 && Math.hypot(e.x - s.x, e.y - s.y) < s.pullRadius) {
+            const dx = s.x - e.x;
+            const dy = s.y - e.y;
+            const dist = Math.hypot(dx, dy);
+            if(dist > 0) {
+              e.x += (dx / dist) * 20 * dt;
+              e.y += (dy / dist) * 20 * dt;
+            }
+          }
+        }
+        s.lastTaunt = 0;
+      }
+    }
+    
+    // Royal bells healing and loot pull
+    if(s.kind === 'missy_royal_bell' && s.hp > 0) {
+      if(!s.lastHeal) s.lastHeal = 0;
+      s.lastHeal += dtMs;
+      if(s.lastHeal >= s.healRate) {
+        // Heal nearby players
+        st.players.forEach(p => {
+          if(!p.isDefeated && Math.hypot(p.x - s.x, p.y - s.y) < 150) {
+            const heal = Math.round(p.hpMax * 0.02);
+            p.hp = Math.min(p.hpMax, p.hp + heal);
+            addFloater(p.x, p.y-30, '+'+heal, '#36c777');
+          }
+        });
+        s.lastHeal = 0;
+      }
+      
+      // Loot pull effect (would need pickup system to be fully implemented)
+      if(s.lootPull && st.pickups) {
+        for(const pickup of st.pickups) {
+          const dist = Math.hypot(pickup.x - s.x, pickup.y - s.y);
+          if(dist < 200 && dist > 0) {
+            const dx = s.x - pickup.x;
+            const dy = s.y - pickup.y;
+            pickup.x += (dx / dist) * 100 * dt;
+            pickup.y += (dy / dist) * 100 * dt;
+          }
+        }
+      }
+    }
   }
-  st.shots = st.shots.filter(s=>s.life>0);
+  st.shots = st.shots.filter(s => s.life > 0 && (!s.hp || s.hp > 0));
 
   // Enemy shots
   for(const b of st.eShots){
@@ -2101,6 +2498,10 @@ function draw(){
     const rRatio=p.rage/p.rageMax;
     ctx.fillStyle='#2d2208'; ctx.fillRect(p.x-24,p.y-62,48,3);
     ctx.fillStyle='#f9cc2b'; ctx.fillRect(p.x-24,p.y-62,48*rRatio,3);
+    // Secret gauge bar
+    const sRatio=p.secretGauge/p.secretMax;
+    ctx.fillStyle='#2d1a2d'; ctx.fillRect(p.x-24,p.y-68,48,3);
+    ctx.fillStyle='#ff6aa8'; ctx.fillRect(p.x-24,p.y-68,48*sRatio,3);
     // Rage trail aura
     if(p.id==='A1' && (p.rageOn || p._rageTrailT>0)){
       const t=p.rageOn?1:Math.max(0,p._rageTrailT/1000);
@@ -2113,7 +2514,7 @@ function draw(){
   // Enemy
   for(const e of st.enemies){
     if(e.hp<=0) continue;
-    ctx.fillStyle = e.kind==='miniboss'?'#ffbb9a':'#ff6e6e';
+    ctx.fillStyle = e.kind==='miniboss'?'#ffbb9a':(e.kind==='boss'?'#ff4d4f':'#ff6e6e');
     ctx.fillRect(e.x-20,e.y-36,40,60);
     const ratio=e.hp/e.max;
     ctx.fillStyle='#2a1e1e'; ctx.fillRect(e.x-24,e.y-46,48,4);
@@ -2128,6 +2529,11 @@ function draw(){
     } else if(s.kind==='a1_bomb'){
       ctx.fillStyle='#ff4d4f';
       ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill();
+    } else if(s.kind==='astral_sever_h' || s.kind==='astral_sever_v'){
+      ctx.fillStyle='#ffaa00';
+      ctx.globalAlpha=0.7;
+      ctx.fillRect(s.x - s.w/2, s.y - s.h/2, s.w, s.h);
+      ctx.globalAlpha=1;
     } else {
       ctx.fillStyle='#9ad1ff';
       ctx.fillRect(s.x-4,s.y-3,8,6);
@@ -2161,6 +2567,8 @@ function draw(){
   }
 
   // HUD updates
+  updateTeamStatusUI();
+  updateSecretGaugeUI();
   document.getElementById('hpFill').style.transform='scaleX('+(st.hp/st.hpMax)+')';
   document.getElementById('mpFill').style.transform='scaleX('+ ( (st.mp||100)/(st.mpMax||100) ) +')';
   document.getElementById('bossFill').style.transform='scaleX('+(st.bossAlive?(st.bossHP/st.bossMax):0)+')';
