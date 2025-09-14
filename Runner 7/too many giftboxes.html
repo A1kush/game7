@@ -411,6 +411,42 @@
       color: #e9f4ff;
     }
 
+    .automation-toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      background: var(--panel2);
+      border-bottom: 1px solid rgba(123, 97, 255, 0.3);
+    }
+
+    .auto-btn {
+      background: linear-gradient(135deg, var(--mp), var(--mp2));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: white;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .auto-btn:hover {
+      background: linear-gradient(135deg, var(--mp2), var(--hp));
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .auto-btn:active {
+      transform: translateY(0);
+    }
+
+    .auto-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .bag-nav {
       display: flex;
       flex-direction: column;
@@ -638,6 +674,11 @@
           <span>Gold: <span id="bagGoldVal">176532</span></span>
           <button class="drawer-close" aria-label="Close">×</button>
         </div>
+      </div>
+      <div class="automation-toolbar">
+        <button id="btnOpenAllGifts" class="auto-btn">Open All</button>
+        <button id="btnAutoUpgrade" class="auto-btn">Auto Upgrade</button>
+        <button id="btnAutoFuse" class="auto-btn">Auto Fuse</button>
       </div>
       <div class="bag-body">
         <div class="bag-nav">
@@ -1692,9 +1733,188 @@
         });
       }
       
+      
+      // --- Automation Functions ---
+      
+      function openAllGifts() {
+        const giftBoxes = st.inv.filter(item => item.type === 'giftBox');
+        if (giftBoxes.length === 0) {
+          notify('No gift boxes to open!');
+          return;
+        }
+        
+        let opened = 0;
+        const totalBoxes = giftBoxes.length;
+        
+        // Process in batches to avoid UI freezing
+        function processBatch() {
+          const batchSize = Math.min(5, giftBoxes.length);
+          
+          for (let i = 0; i < batchSize; i++) {
+            const box = giftBoxes.shift();
+            if (!box) break;
+            
+            // Remove gift box from inventory
+            const boxIndex = st.inv.indexOf(box);
+            if (boxIndex >= 0) {
+              st.inv.splice(boxIndex, 1);
+              opened++;
+              
+              // Award random item (same logic as individual open)
+              const rand = Math.random();
+              if (rand < 0.6) { // 60% chance for gear
+                const slots = ['weapon', 'armor', 'acc1', 'acc2'];
+                const slot = slots[Math.floor(Math.random() * slots.length)];
+                const newGear = makeItem('Random Gear', slot, 3 + Math.floor(Math.random() * 8));
+                addItemToBag(newGear);
+              } else if (rand < 0.8) { // 20% chance for pet box
+                addItemToBag({ id: Math.random(), name: 'Pet Box', type: 'petBox', slot: 'item', description: 'Contains a random pet.' });
+              } else { // 20% chance for vehicle box
+                addItemToBag({ id: Math.random(), name: 'Vehicle Box', type: 'vehicleBox', slot: 'item', description: 'Contains a random vehicle.' });
+              }
+            }
+          }
+          
+          // Continue processing if more boxes remain
+          if (giftBoxes.length > 0) {
+            setTimeout(processBatch, 50); // Small delay to keep UI responsive
+          } else {
+            // All done
+            notify(`Opened ${opened} gift boxes!`);
+            addFloater(DESIGN_W / 2, 100, `+${opened} opened`, '#6aa8ff');
+            renderBagContents();
+          }
+        }
+        
+        processBatch();
+      }
+      
+      function autoUpgrade() {
+        const equippedGear = Object.values(st.equippedGear || {}).filter(item => item);
+        if (equippedGear.length === 0) {
+          notify('No gear equipped to upgrade!');
+          return;
+        }
+        
+        let totalCost = 0;
+        let upgradedCount = 0;
+        
+        // Calculate total cost for upgrading all gear to +10
+        equippedGear.forEach(item => {
+          const currentLevel = item.upgradeLevel || 0;
+          for (let level = currentLevel; level < 10; level++) {
+            totalCost += (level + 1) * 100; // Cost increases with level
+          }
+        });
+        
+        if (st.gold < totalCost) {
+          notify(`Need ${totalCost} gold to upgrade all gear to +10! (Have ${st.gold})`);
+          return;
+        }
+        
+        // Perform upgrades
+        equippedGear.forEach(item => {
+          const currentLevel = item.upgradeLevel || 0;
+          let itemCost = 0;
+          
+          for (let level = currentLevel; level < 10; level++) {
+            const upgradeCost = (level + 1) * 100;
+            itemCost += upgradeCost;
+            upgradedCount++;
+          }
+          
+          // Apply upgrades
+          item.upgradeLevel = 10;
+          item.atk = (item.atk || 0) + (10 - currentLevel) * 2; // +2 ATK per level
+          item.def = (item.def || 0) + (10 - currentLevel) * 2; // +2 DEF per level
+          
+          st.gold -= itemCost;
+        });
+        
+        updateCurrencies();
+        recalcStats();
+        renderBagContents();
+        notify(`Auto-upgraded ${equippedGear.length} items to +10 for ${totalCost} gold!`);
+        addFloater(DESIGN_W / 2, 120, `+${upgradedCount} upgrades`, '#6aa8ff');
+      }
+      
+      function autoFuse() {
+        // Group items by name and slot for fusing
+        const itemGroups = {};
+        const invItems = st.inv.filter(item => ['weapon', 'armor', 'acc1', 'acc2'].includes(item.slot));
+        
+        invItems.forEach(item => {
+          const key = `${item.name}_${item.slot}_${item.atk}_${item.def}`;
+          if (!itemGroups[key]) itemGroups[key] = [];
+          itemGroups[key].push(item);
+        });
+        
+        let fusedSets = 0;
+        let itemsConsumed = 0;
+        
+        // Process each group for fusing
+        Object.values(itemGroups).forEach(group => {
+          while (group.length >= 3) {
+            // Take 3 items for fusing
+            const items = group.splice(0, 3);
+            itemsConsumed += 3;
+            fusedSets++;
+            
+            // Remove items from inventory
+            items.forEach(item => {
+              const index = st.inv.indexOf(item);
+              if (index >= 0) st.inv.splice(index, 1);
+            });
+            
+            // Create fused item (better stats)
+            const baseItem = items[0];
+            const fusedItem = makeItem(
+              baseItem.name + '+',
+              baseItem.slot,
+              Math.round((baseItem.atk || 0) * 1.5)
+            );
+            fusedItem.def = Math.round((baseItem.def || 0) * 1.5);
+            fusedItem.rarity = baseItem.rarity || 'C';
+            
+            // Upgrade rarity: C->B->A->S
+            const rarityUpgrade = { 'C': 'B', 'B': 'A', 'A': 'S', 'S': 'S' };
+            fusedItem.rarity = rarityUpgrade[fusedItem.rarity] || 'B';
+            
+            addItemToBag(fusedItem);
+          }
+        });
+        
+        if (fusedSets > 0) {
+          renderBagContents();
+          notify(`Auto-fused ${fusedSets} sets (${itemsConsumed} items consumed)!`);
+          addFloater(DESIGN_W / 2, 140, `+${fusedSets} fused`, '#6aa8ff');
+        } else {
+          notify('No sets of 3+ identical items found to fuse!');
+        }
+      }
+      
+      // Wire up automation buttons
+      const btnOpenAllGifts = document.getElementById('btnOpenAllGifts');
+      if (btnOpenAllGifts) {
+        btnOpenAllGifts.onclick = openAllGifts;
+      }
+      
+      const btnAutoUpgrade = document.getElementById('btnAutoUpgrade');
+      if (btnAutoUpgrade) {
+        btnAutoUpgrade.onclick = autoUpgrade;
+      }
+      
+      const btnAutoFuse = document.getElementById('btnAutoFuse');
+      if (btnAutoFuse) {
+        btnAutoFuse.onclick = autoFuse;
+      }
+      
       // Test button logic removed.
       return {
-        addItemToBag: addItemToBag
+        addItemToBag: addItemToBag,
+        openAllGifts: openAllGifts,
+        autoUpgrade: autoUpgrade,
+        autoFuse: autoFuse
       };
     })();
 
