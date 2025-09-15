@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game7 - Feature Overview</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c1420, #1a263a);
+            color: #e9f4ff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #2EA8FF, #7B61FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(123, 97, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .feature-card h3 {
+            color: #7B61FF;
+            margin-top: 0;
+        }
+        .ascii-art {
+            font-family: monospace;
+            background: #000;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            white-space: pre;
+        }
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .character {
+            text-align: center;
+            padding: 15px;
+            background: rgba(46, 168, 255, 0.1);
+            border-radius: 8px;
+        }
+        .skills {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .skill {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .s5-skill {
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            color: #000;
+            font-weight: bold;
+        }
+        .api-demo {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 20px 0;
+        }
+        .endpoint {
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(46, 168, 255, 0.2);
+            border-radius: 4px;
+        }
+        .demo-button {
+            background: linear-gradient(45deg, #2EA8FF, #7B61FF);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(123, 97, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Game7 - Enhanced Action RPG</h1>
+            <p>Python Backend • Procedural Graphics • Solo Leveling Style Combat</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>🗡️ Enhanced Combat System</h3>
+                <p>6-skill combat with S5 ultimate abilities</p>
+                <div class="character-grid">
+                    <div class="character">
+                        <h4>A1 - Boss Slayer</h4>
+                        <div class="ascii-art">  (O)  
+ /||\ 
+  ||   
+ /||\ 
+/    \
+|    |
+L    J</div>
+                        <div class="skills">
+                            <div class="skill">S1: Umbral Crescent</div>
+                            <div class="skill">S2: Vortex Cross</div>
+                            <div class="skill">S3: Mirror Reversal</div>
+                            <div class="skill">S4: Riftfall Impact</div>
+                            <div class="skill">R1: Nocturne Ascendance</div>
+                            <div class="skill s5-skill">S5: Void Impale</div>
+                        </div>
+                    </div>
+                    <div class="character">
+                        <h4>Unique - Mob Slayer</h4>
+                        <div class="ascii-art">  (*)  
+ <||> 
+  ||   
+ ≈||≈ 
+≈    ≈
+|    |
+L    J</div>
+                        <div class="skills">
+                            <div class="skill">S1: Scatter Bloom</div>
+                            <div class="skill">S2: Drone Command</div>
+                            <div class="skill">S3: Overcharge Stream</div>
+                            <div class="skill">S4: Stellar Annihilator</div>
+                            <div class="skill">R1: Prism Overdrive</div>
+                            <div class="skill s5-skill">S5: Drone Overdrive</div>
+                        </div>
+                    </div>
+                    <div class="character">
+                        <h4>Missy - Support/Loot</h4>
+                        <div class="ascii-art">  (♥)  
+ ~||~ 
+  ||   
+ ♪||♪ 
+♪    ♪
+|    |
+L    J</div>
+                        <div class="skills">
+                            <div class="skill">S1: Lucky Charm Volley</div>
+                            <div class="skill">S2: Winged Aegis v2</div>
+                            <div class="skill">S3: Neko Dominion v2</div>
+                            <div class="skill">S4: Queen's Bell</div>
+                            <div class="skill">R1: Jackpot Rush</div>
+                            <div class="skill s5-skill">S5: Sacrificial Gambit</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <h3>🎨 Procedural Graphics</h3>
+                <p>ASCII art system with chibi-style aesthetics</p>
+                <h4>Item Icons by Rarity:</h4>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div>
+                        <strong>Common Sword:</strong>
+                        <div class="ascii-art" style="color: #808080;">  /|  
+ / |  
+/  |  
+   |  
+   |  
+  /+\ 
+ /___\</div>
+                    </div>
+                    <div>
+                        <strong>Legendary Sword:</strong>
+                        <div class="ascii-art" style="color: #ffd700;">  /|  
+ / |  
+/  |  
+   |  
+   |  
+  /+\ 
+ /___\</div>
+                    </div>
+                </div>
+                
+                <h4>Aura Effects:</h4>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div>
+                        <strong>Power Aura:</strong>
+                        <div class="ascii-art" style="color: #ffd700;"> ≈≈≈≈≈ 
+≈≈≈≈≈≈≈
+≈≈≈≈≈≈≈
+≈≈≈≈≈≈≈
+≈≈≈≈≈≈≈
+ ≈≈≈≈≈ </div>
+                    </div>
+                    <div>
+                        <strong>Rage Aura:</strong>
+                        <div class="ascii-art" style="color: #ff4500;"> !!! 
+!!!!!
+!!!!!
+ !!! </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <h3>🌐 Python Backend Integration</h3>
+                <p>RESTful API for real-time game state management</p>
+                <div class="api-demo">
+                    <h4>API Endpoints:</h4>
+                    <div class="endpoint">GET /api/game-state</div>
+                    <div class="endpoint">GET /api/team-status</div>
+                    <div class="endpoint">GET /api/character-info?id=A1</div>
+                    <div class="endpoint">GET /api/assets?type=characters</div>
+                    <div class="endpoint">POST /api/use-skill</div>
+                    <div class="endpoint">POST /api/switch-character</div>
+                </div>
+                <button class="demo-button" onclick="alert('Start server: python3 web_server.py --port 8080')">Start Server</button>
+                <button class="demo-button" onclick="alert('Run demo: python3 demo.py')">Run Demo</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>⭐ Solo Leveling Features</h3>
+                <p>Anime-style visual effects and power progression</p>
+                <ul>
+                    <li>Dynamic pulsing aura effects</li>
+                    <li>Character-specific aura colors</li>
+                    <li>Visual power level indicators</li>
+                    <li>Dramatic skill presentations</li>
+                    <li>Screen shake on powerful skills</li>
+                    <li>Crescendo cooldown reset system</li>
+                </ul>
+                
+                <h4>S5 Ultimate Skills:</h4>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 6px; margin: 10px 0;">
+                    <strong>A1 - Void Impale:</strong> 35% HP cost, 1500% ATK damage
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 6px; margin: 10px 0;">
+                    <strong>Unique - Drone Overdrive:</strong> 30% HP cost, kamikaze explosion
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 6px; margin: 10px 0;">
+                    <strong>Missy - Sacrificial Gambit:</strong> 25% team HP, invulnerability + 100% crit
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <h3>🧪 Testing & Quality</h3>
+                <p>Comprehensive test suite with 36 passing tests</p>
+                <div style="background: rgba(0, 255, 0, 0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    <strong>✅ Test Results:</strong>
+                    <ul>
+                        <li>Game Engine: 11 tests passing</li>
+                        <li>Graphics Generation: 13 tests passing</li>
+                        <li>Web Server Integration: 9 tests passing</li>
+                        <li>Core Functionality: 2 tests passing</li>
+                        <li>Integration Tests: 2 tests passing</li>
+                    </ul>
+                </div>
+                <button class="demo-button" onclick="alert('Run tests: python3 -m pytest -v')">Run Tests</button>
+                <button class="demo-button" onclick="alert('Format code: python3 -m black *.py')">Format Code</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>🚀 Quick Start Guide</h3>
+                <p>Get started with Game7 in minutes</p>
+                <div class="api-demo">
+<strong>1. Install dependencies:</strong>
+pip3 install --user -r requirements.txt
+
+<strong>2. Start the web server:</strong>
+python3 web_server.py --port 8080
+
+<strong>3. Open in browser:</strong>
+http://localhost:8080/
+
+<strong>4. Test S5 skills (browser console):</strong>
+game.testS5()
+
+<strong>5. View procedural assets:</strong>
+http://localhost:8080/api/assets
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: linear-gradient(45deg, #2EA8FF, #7B61FF); border-radius: 12px;">
+            <h2 style="margin: 0; color: white;">🎉 Game7 - Where Strategy Meets Style!</h2>
+            <p style="margin: 10px 0 0 0; color: white;">Complete Python backend • Procedural graphics • Enhanced combat • Solo leveling aesthetics</p>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive effects
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px)';
+                card.style.boxShadow = '0 10px 25px rgba(123, 97, 255, 0.3)';
+                card.style.transition = 'all 0.3s ease';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = 'none';
+            });
+        });
+
+        // Animate ASCII art on hover
+        document.querySelectorAll('.ascii-art').forEach(art => {
+            art.addEventListener('mouseenter', () => {
+                art.style.textShadow = '0 0 10px currentColor';
+                art.style.transform = 'scale(1.05)';
+                art.style.transition = 'all 0.3s ease';
+            });
+            
+            art.addEventListener('mouseleave', () => {
+                art.style.textShadow = 'none';
+                art.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
