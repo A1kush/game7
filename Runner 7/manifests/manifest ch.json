@@ -53,15 +53,11 @@
       "accessory_legendary_air.png",
       "accessory_legendary_dark.png",
       "accessory_legendary_light.png",
-      "gift_common.png",
-      "gift_rare.png",
-      "gift_epic.png",
-      "gift_legendary.png"
-    ],
-    "sprites": [
-      "a1_chibi.png",
-      "unique_chibi.png",
-      "missy_chibi.png"
-    ]
-  }
-}
+            "gift_common.png",
+            "gift_rare.png",
+            "gift_epic.png",
+            "gift_legendary.png"
+          ]
+        }
+      }
+      

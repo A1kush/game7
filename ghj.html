@@ -1,0 +1,3671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A1K Runner — Unified Build (Team HP + A1 Kit v5 + Talents Lanes)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+  :root {
+    --bg:#0d131c; --ink:#e9f4ff; --muted:#a8b7ce; --line:#293854;
+    --panel:#121b20; --panel2:#0f1826; --panel3:#0b1421;
+    --hp:#36c777; --hp2:#6de38e; --mp:#3ec5ff; --mp2:#6aa8ff;
+    --boss:#ff8c6a; --boss2:#ffbb9a; --rage:#f9cc2b; --rage2:#ff7a31;
+  }
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  *{box-sizing:border-box}
+  #wrap{position:relative;margin:0 auto;max-width:1280px;height:100vh;overflow:hidden;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;background:linear-gradient(#0c1420,#0a1018)}
+  .hud{position:absolute;left:10px;right:10px;top:8px;display:flex;gap:10px;align-items:center;pointer-events:none;flex-wrap:wrap}
+  .pill{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px;color:var(--muted)}
+  .bar{position:relative;height:12px;background:var(--panel);border:1px solid var(--line);border-radius:999px;overflow:hidden;min-width:200px}
+  .fill{position:absolute;inset:0;transform-origin:left center}
+  .hp{background:linear-gradient(90deg,var(--hp),var(--hp2))}
+  .mp{background:linear-gradient(90deg,var(--mp),var(--mp2))}
+  .boss{background:linear-gradient(90deg,var(--boss),var(--boss2))}
+  .xp{background:linear-gradient(90deg,#2EA8FF,#7B61FF)}
+  .xpText{position:absolute;left:0;right:0;top:-16px;text-align:center;font-weight:700;font-size:12px;color:#a8b7ce;text-shadow:0 1px 2px #000}
+  #xpDomFill.pulse{animation:xpGlow .6s ease-out}
+  @keyframes xpGlow{0%{box-shadow:0 0 0 rgba(123,97,255,0)}50%{box-shadow:0 0 10px rgba(123,97,255,.9)}100%{box-shadow:0 0 0 rgba(123,97,255,0)}}
+  .subdock{position:absolute;left:10px;top:70px;display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:6px 10px;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .controls{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none}
+  .stick{position:relative;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#111b2a 0%,#0c1420 60%,#0c1420 100%);border:1px solid var(--line);box-shadow:inset 0 0 18px rgba(0,0,0,.55);pointer-events:auto}
+  .stick .nub{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#29384f,#1b2639);border:1px solid #3b4d71;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+  .actions{position:relative;display:flex;gap:22px;pointer-events:auto;align-items:flex-end}
+  .col{display:flex;flex-direction:column;gap:16px;align-items:flex-end}
+  .btn-round{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a384f,#182235);border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.35);color:#dfe9ff;display:flex;align-items:center;justify-content:center;user-select:none;cursor:pointer}
+  .btn-round.small{width:56px;height:56px;font-size:11px}
+  .btn-round.big{width:86px;height:86px;font-weight:700}
+  .btn-round:active{transform:translateY(1px)}
+  #itemMenu{position:fixed;z-index:10000;background:#0f1826;border:1px solid var(--line);border-radius:8px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  #itemMenu button{display:block;width:100%;padding:6px 10px;background:transparent;border:0;color:#cfe3ff;text-align:left}
+  #itemMenu button:hover{background:#15243a}
+  #notifWrap{position:fixed;right:14px;top:14px;z-index:12000;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+  .toast{background:#0f1826;border:1px solid var(--line);border-radius:8px;color:#cfe3ff;padding:6px 10px;box-shadow:0 8px 18px rgba(0,0,0,.35);opacity:.95}
+  .bag-overlay{position:fixed;top:0;right:0;bottom:0;width:60%;max-width:600px;background:linear-gradient(rgba(3,7,15,.95),rgba(3,7,15,.95));box-shadow:0 0 32px rgba(123,97,255,.55);border-left:2px solid rgba(123,97,255,.5);padding:12px;display:none;flex-direction:column;z-index:1000;overflow-y:auto}
+  .bag-overlay.open{display:flex}
+  .bag-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:4px;border-bottom:1px solid rgba(123,97,255,.3);color:#e9f4ff}
+  .bag-nav{display:flex;flex-direction:column;gap:6px;padding-right:8px;border-right:1px solid rgba(123,97,255,.3)}
+  .bag-nav-item{background:rgba(255,255,255,0.05);color:#a8b7ce;padding:6px 10px;text-align:left;cursor:pointer;font-weight:600;border-radius:4px;border:1px solid rgba(123,97,255,.2)}
+  .bag-nav-item:hover{background:rgba(123,97,255,.2);color:#e9f4ff;border-color:rgba(123,97,255,.4)}
+  .bag-nav-item.active{background:linear-gradient(90deg,#2EA8FF,#7B61FF);color:#fff;border-color:rgba(123,97,255,.6)}
+  .bag-body{flex:1;display:flex;margin-top:8px}
+  .bag-content{flex:3;padding-right:8px;overflow-y:auto}
+  .bag-detail{flex:2;border-left:1px solid rgba(58,226,255,.2);padding-left:8px;color:#cfe3ff;overflow-y:auto}
+  .bag-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+  .gear-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .pets-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .vehicles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;padding:8px}
+  .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;padding:8px}
+  .shop-item{background:rgba(255,255,255,.04);border:1px solid rgba(123,97,255,.2);border-radius:6px;padding:8px;text-align:center;font-size:12px}
+  .shop-item h5{margin:0 0 4px;font-size:13px;color:#cfe3ff}
+  .shop-item p{margin:0 0 8px;color:#9baec8;font-size:11px}
+  .shop-item button{background:rgba(123,97,255,.2);border:1px solid rgba(123,97,255,.4);color:#e9f4ff;padding:4px 8px;border-radius:4px;cursor:pointer;width:100%}
+  .shop-item button:hover{background:rgba(123,97,255,.4)}
+  .bag-panel{display:none}
+  .bag-panel.active{display:block}
+  .slot-box{height:44px;border:1px dashed rgba(123,97,255,.4);display:flex;align-items:center;justify-content:center;font-size:10px;color:#cfe3ff;cursor:pointer;user-select:none;background:rgba(255,255,255,.04)}
+  .slot-box.item{background:rgba(46,168,255,.08)}
+  .slot-box.equip{background:rgba(255,165,0,.08)}
+  .slot-box.pet{background:rgba(255,192,203,.08)}
+  .bag-detail-content h4{margin:0 0 4px 0;font-size:14px;color:#cfe3ff}
+  .bag-detail-content p{font-size:12px;margin:0 0 8px 0;color:#9baec8}
+  .bag-actions button{display:inline-block;margin-right:6px;margin-bottom:6px;padding:4px 8px;font-size:12px;border:none;border-radius:4px;cursor:pointer;background:#0f1826;color:#cfe3ff}
+  .bag-actions button:hover{background:#1a263a}
+  .drawer-close{position:absolute;top:6px;right:8px;width:20px;height:20px;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:20px;cursor:pointer;pointer-events:auto}
+  .drawer-close:hover{color:var(--ink)}
+  /* Talent Lanes */
+  .lane-wrap{display:flex;gap:12px;flex-wrap:wrap}
+  .lane-col{flex:1 1 160px;background:rgba(255,255,255,0.03);border:1px solid rgba(123,97,255,0.25);padding:6px;border-radius:6px}
+  .lane-col h4{margin:2px 0 6px;font-size:12px;letter-spacing:.5px;color:#cfe3ff}
+  .lane-node{display:flex;flex-direction:column;gap:2px;margin-bottom:6px;padding:6px;background:#0f1826;border:1px solid rgba(123,97,255,0.25);border-radius:4px;font-size:11px;cursor:pointer;position:relative}
+  .lane-node.owned{background:#1d2c48;border-color:#63e6ff;color:#bfe9ff}
+  .lane-node.locked{opacity:.45;cursor:not-allowed}
+  .lane-node span.cost{position:absolute;right:6px;top:4px;font-size:10px;color:#ffd56a}
+  .lane-node small{color:#8ea5c4;font-size:10px}
+  .lane-node button{margin-top:4px;font-size:10px;padding:3px 6px;background:#2d3a54;border:1px solid #4b638b;border-radius:3px;color:#d7e9ff;cursor:pointer}
+  .lane-node button:disabled{opacity:.4;cursor:not-allowed}
+  #talentSummary{margin-top:6px;font-size:11px;color:#9baec8;line-height:1.4;white-space:pre-wrap}
+  .upgrade-btn[disabled]{opacity:.4;cursor:not-allowed}
+  /* Team Status UI */
+  .team-status{display:flex;gap:8px;pointer-events:auto;flex-wrap:nowrap}
+  .hero-portrait{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px;min-width:48px;text-align:center}
+  .hero-portrait.leader{border-color:var(--hp);box-shadow:0 0 8px rgba(54,199,119,.3)}
+  .hero-portrait.defeated{opacity:.5;border-color:#ff4d4f}
+  .hero-icon{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:2px}
+  .hero-hp-bar{position:relative;height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-bottom:2px}
+  .hero-hp-fill{position:absolute;inset:0;background:linear-gradient(90deg,var(--hp),var(--hp2));transform-origin:left center}
+  .hero-status{font-size:8px;color:var(--muted);min-height:10px}
+  .hero-portrait.defeated .hero-status{color:#ff4d4f}
+  /* Secret Gauge */
+  .secret-gauge{position:relative;width:40px;height:8px;background:var(--panel2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin:0 auto 4px}
+  .secret-fill{position:absolute;inset:0;background:linear-gradient(90deg,#ff6aa8,#ffaa00);transform-origin:left center}
+  /* Quest UI */
+  .quest-item{background:rgba(255,255,255,0.04);border:1px solid rgba(123,97,255,0.3);border-radius:6px;padding:8px;margin-bottom:6px}
+  .quest-item.completed{border-color:#36c777;background:rgba(54,199,119,0.1)}
+  .quest-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .quest-name{font-size:13px;color:#cfe3ff;font-weight:600}
+  .quest-progress{font-size:11px;color:#9baec8}
+  .quest-description{font-size:11px;color:#a8b7ce;margin-bottom:6px}
+  .quest-progress-bar{position:relative;height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-bottom:4px}
+  .quest-progress-fill{position:absolute;inset:0;background:linear-gradient(90deg,#2EA8FF,#7B61FF);transform-origin:left center}
+  .quest-reward{font-size:10px;color:#ffd56a}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv" width="1280" height="720"></canvas>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="pill" id="stagePill">Stage 1 • Wave 1/10 • Kills 0</div>
+    <div class="team-status" id="teamStatus">
+      <div class="hero-portrait" id="heroA1">
+        <div class="hero-icon">A1</div>
+        <div class="hero-hp-bar"><div class="hero-hp-fill"></div></div>
+        <div class="hero-status"></div>
+      </div>
+      <div class="hero-portrait" id="heroUnique">
+        <div class="hero-icon">U</div>
+        <div class="hero-hp-bar"><div class="hero-hp-fill"></div></div>
+        <div class="hero-status"></div>
+      </div>
+      <div class="hero-portrait" id="heroMissy">
+        <div class="hero-icon">M</div>
+        <div class="hero-hp-bar"><div class="hero-hp-fill"></div></div>
+        <div class="hero-status"></div>
+      </div>
+    </div>
+    <div class="bar"><div class="fill hp" id="hpFill"></div></div>
+    <div class="bar"><div class="fill mp" id="mpFill"></div></div>
+    <div class="bar" style="min-width:260px;position:relative">
+      <div class="fill xp" id="xpDomFill"></div>
+      <div class="xpText" id="xpDomLabel">0/50 XP — Lv 1</div>
+    </div>
+    <div class="bar" style="min-width:260px">
+      <div class="fill boss" id="bossFill"></div>
+    </div>
+    <div class="pill" id="boostPill">Lv 1 • Booster: -</div>
+  </div>
+  <div id="currency" class="hud" style="top:30px;gap:8px;justify-content:flex-start;pointer-events:none">
+    <div class="pill" style="pointer-events:auto">Gold: <b id="goldVal">0</b></div>
+    <div class="pill" style="pointer-events:auto">Silver: <b id="silverVal">0</b></div>
+    <div class="pill" style="pointer-events:auto">Tickets: <b id="ticketVal">0</b></div>
+    <div class="pill" style="pointer-events:auto">Gems: <b id="gemVal">0</b></div>
+    <div class="pill" style="pointer-events:auto">Boss Kills: <b id="bossKillsVal">0</b></div>
+    <div class="pill" style="pointer-events:auto" id="giftKeysPill">Gift Keys: <b id="giftKeyVal">0</b></div>
+    <div class="pill" style="pointer-events:auto" id="bossKeysPill">Boss Keys: <b id="bossKeyVal">0</b></div>
+  </div>
+
+  <!-- Dock -->
+  <div class="subdock">
+    <button class="btn" id="btnSpeed">×1</button>
+    <button class="btn" id="btnInventory">Items</button>
+    <button class="btn" id="btnPets">Pets</button>
+    <button class="btn" id="btnVehicles">Vehicles</button>
+    <button class="btn" id="btnTalents">Talents</button>
+    <button class="btn" id="btnAuto">Auto: OFF</button>
+    <button class="btn" id="btnStart">Pause</button>
+    <button class="btn" id="btnShop">Shop</button>
+    <button class="btn" id="btnSettings">Settings</button>
+  </div>
+
+  <!-- Bag Overlay -->
+  <aside id="inventory" class="bag-overlay">
+    <div class="bag-header">
+      <h3>Bag</h3>
+      <div>
+        <span>Gold: <span id="bagGoldVal">0</span></span>
+        <button class="drawer-close" aria-label="Close" id="btnCloseBag">×</button>
+      </div>
+    </div>
+    <div class="bag-body">
+      <div class="bag-nav">
+        <button class="bag-nav-item active" data-tab="items">Items</button>
+        <button class="bag-nav-item" data-tab="gear">Gear</button>
+        <button class="bag-nav-item" data-tab="pets">Pets</button>
+        <button class="bag-nav-item" data-tab="talent">Talents</button>
+        <button class="bag-nav-item" data-tab="vehicles">Vehicles</button>
+        <button class="bag-nav-item" data-tab="quests">Quests</button>
+        <button class="bag-nav-item" data-tab="shop">Shop</button>
+        <button class="bag-nav-item" data-tab="settings">Settings</button>
+      </div>
+      <div class="bag-content">
+        <div id="bag-items" class="bag-panel active">
+          <div id="bagGrid" class="bag-grid"></div>
+        </div>
+        <div id="bag-gear" class="bag-panel">
+          <div id="gearSlots" class="gear-grid"></div>
+          <hr style="margin:8px 0;border-color:var(--line)">
+          <div id="gearGrid" class="bag-grid"></div>
+        </div>
+        <div id="bag-pets" class="bag-panel">
+          <div id="petsGrid" class="pets-grid"></div>
+        </div>
+        <div id="bag-talent" class="bag-panel">
+          <div id="talentLaneWrap" class="lane-wrap"></div>
+          <div id="talentSummary"></div>
+        </div>
+        <div id="bag-vehicles" class="bag-panel">
+          <div id="vehiclesGrid" class="vehicles-grid"></div>
+        </div>
+        <div id="bag-quests" class="bag-panel">
+          <div id="questsContent" style="padding:8px">
+            <h4 style="margin:0 0 8px;color:#e9f4ff">Daily Quests</h4>
+            <div id="questsList" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(123,97,255,0.3)">
+              <p style="margin:0;font-size:11px;color:#9baec8">Quests refresh daily. Complete them for rewards!</p>
+              <div id="endlessStats" style="margin-top:8px;display:none">
+                <h5 style="margin:0 0 4px;color:#ffaa00">Endless Mode</h5>
+                <p style="margin:0;font-size:12px;color:#cfe3ff">Score: <span id="endlessScore">0</span></p>
+                <p style="margin:0;font-size:12px;color:#cfe3ff">Time: <span id="endlessTime">0:00</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="bag-shop" class="bag-panel">
+          <div id="shopGrid" class="shop-grid"></div>
+        </div>
+        <div id="bag-settings" class="bag-panel">
+          <div class="card" style="background:rgba(255,255,255,0.04);padding:8px;border:1px solid rgba(123,97,255,0.2);border-radius:6px">
+            <h4 style="margin:0 0 6px;font-size:14px">Game Settings</h4>
+            <label style="display:block;margin-top:6px"><input type="checkbox" id="setting-auto-ai"> Auto-AI</label>
+            <label style="display:block;margin-top:6px"><input type="checkbox" id="setting-parallax" checked> Parallax Background</label>
+          </div>
+        </div>
+      </div>
+      <div class="bag-detail">
+        <div id="detailContent" class="bag-detail-content">
+          <h4 id="detailName">Select Item</h4>
+          <p id="detailStats">-</p>
+          <div id="detailActions" class="bag-actions"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="joyWrap">
+      <div class="stick" id="stick">
+        <div class="nub" id="nub"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="col">
+        <div class="btn-round small" id="btnRage">R</div>
+        <div class="btn-round small" id="btnShield">Shield</div>
+        <div class="btn-round small" id="btnJump">Jump</div>
+        <div class="btn-round big" id="btnShoot"><b>•</b></div>
+        <div class="btn-round small" id="btnAction" title="Context Action">ACT</div>
+      </div>
+      <div class="col">
+        <div class="btn-round small" id="btnSwitch2">Switch</div>
+        <div class="btn-round small" id="btnS1">S1</div>
+        <div class="btn-round small" id="btnS2">S2</div>
+        <div class="btn-round small" id="btnS3">S3</div>
+        <div class="btn-round small" id="btnS4">S4</div>
+        <div class="btn-round small" id="btnS5" title="A1 Finisher">S5</div>
+        <div class="btn-round small" id="btnX1" title="A1 Secret Skill">X1</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CORE SCRIPT ================= -->
+<script>
+/* ================================================================
+   HIGH-LEVEL ROADMAP / WHAT IS IMPLEMENTED HERE
+   ----------------------------------------------------------------
+   1. Team HP & Revival System
+      - Per player: hp, hpMax, isDefeated, reviveT.
+      - defeatPlayer / revivePlayer / checkGameOver.
+      - HUD uses current leader's HP (legacy st.hp mirrors leader).
+      - Revive Token instantly revives one defeated hero.
+
+   2. Enemy AI & Formations
+      - spawnWave assigns role (shooter/melee) & behavior (hitAndRun/relentless).
+      - updateEnemyFormations() resolves horizontal overlap.
+      - Shooter keeps distance; hitAndRun retreats briefly after first shot.
+
+   3. Gear & Loot Rules
+      - LOOT_TABLES with proper rank distributions.
+      - Gold Bag item: open for 500–5000 gold.
+      - Item upgrade system with +10 cap (Upgrade button disabled at +10).
+      - Luck stat affects drop rolls.
+
+   4. A1 Combat Kit v5
+      - a1_basicAttack() 5‑hit combo with per-hit damage & parry windows.
+      - a1_useSkill(): S1 multi-waves; S2 Fuse Bomb (armor shred + hitstop); S3 Combo Burst (echo tick + reset S2); S5 Finisher (multi-lane waves + Crescendo).
+      - updateA1RageMode() drains rage, applies global 0.2s skill lock while active.
+      - Aura trails during & shortly after Rage.
+
+   5. Talent Lanes
+      - Five lanes: ATK / DEF / Recovery / Cooldown / Luck.
+      - lane-based purchase UI replaces old canvas.
+      - tallyTalentStats integrates lane effects & recalculates hero stats.
+
+   6. Crescendo Cooldown Reset
+      - After any S5 or SECRET: S1 & S2 cooldown reset.
+
+   NOTE: Many legacy systems trimmed/simplified to keep this single-file
+         version focused on the requested tasks & finishing A1's kit.
+=================================================================== */
+
+/* =============== Constants / Canvas Setup ====================== */
+const DESIGN_W = 1280, DESIGN_H = 720;
+const cv = document.getElementById('cv'); let ctx = cv.getContext('2d');
+function resize() {
+  const scale = Math.min(innerWidth / DESIGN_W, innerHeight / DESIGN_H);
+  const cssW = DESIGN_W * scale, cssH = DESIGN_H * scale;
+  Object.assign(cv.style, { width: cssW+'px', height: cssH+'px', position:'absolute', left: ((innerWidth - cssW)/2)+'px', top: ((innerHeight - cssH)/2)+'px'});
+  const dpr = Math.min(devicePixelRatio||1, 2);
+  cv.width = Math.round(DESIGN_W * dpr); cv.height = Math.round(DESIGN_H * dpr);
+  ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', resize); resize();
+
+/* ================== Game State ================== */
+const st = {
+  running:true, speed:1, time:0, dt:0, started:false,
+  stage:1, wave:1, wavesPerStage:10, kills:0,
+  gold:0, silver:0, tickets:0, gems:0, bossKills:0,
+  giftKeys:0, bossKeys:0,
+  xp:0, level:1, apTotal:0, apSpent:0,
+  lootLuckBase:0,
+  players:[
+    { id:'A1', x:200, y:DESIGN_H-160, lane:0, vx:0, vy:0,
+      hpMax:100, hp:100, isDefeated:false, reviveT:0,
+      dmgBase:20, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0,
+      secretGauge:0, secretMax:100 },
+    { id:'Unique', x:240, y:DESIGN_H-130, lane:1, vx:0, vy:0,
+      hpMax:100, hp:100, isDefeated:false, reviveT:0,
+      dmgBase:18, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0,
+      secretGauge:0, secretMax:100 },
+    { id:'Missy', x:220, y:DESIGN_H-100, lane:2, vx:0, vy:0,
+      hpMax:100, hp:100, isDefeated:false, reviveT:0,
+      dmgBase:18, rage:0, rageMax:100, rageOn:false, rageDur:0, rageICD:0,
+      secretGauge:0, secretMax:100 },
+  ],
+  leader:0,
+  enemies:[], shots:[], eShots:[], pickups:[], effects:[],
+  bossAlive:false, bossHP:0, bossMax:1,
+  cds:{ 'A1':{S1:0,S2:0,S3:0,S4:0,S5:0,X1:0}, 'Unique':{S1:0,S2:0,S3:0,S4:0,S5:0,X1:0}, 'Missy':{S1:0,S2:0,S3:0,S4:0,S5:0,X1:0}},
+  // Inventory / Gear
+  inv:[], invRows:4,
+  equippedGear:{weapon:null,armor:null,acc1:null,acc2:null},
+  equippedPets:[], petSlots:1,
+  equippedVehicle:null,
+  bagOpen:false, bagTab:'items',
+  // Talent Lanes
+  talentLanes:{}, talentPicks:new Set(), _talentStats:{},
+  luck:0,
+  // Misc
+  _globalSkillLock:0,
+  reviveTokens:0
+};
+
+/* ================== Utility UI ================== */
+function $(q){return document.querySelector(q);}
+function notify(msg,color){const wrap=notifWrap();const d=document.createElement('div');d.className='toast';if(color)d.style.color=color;d.textContent=msg;wrap.appendChild(d);setTimeout(()=>{d.style.transition='opacity .4s';d.style.opacity=0;setTimeout(()=>d.remove(),400);},1400);}
+let _notifEl=null;function notifWrap(){if(!_notifEl){_notifEl=document.createElement('div');_notifEl.id='notifWrap';document.body.appendChild(_notifEl);}return _notifEl;}
+function addFloater(x,y,txt,color){st.effects.push({x,y,txt,color,vy:-0.25,life:800});}
+
+/* ================= Team Status UI ================= */
+function updateTeamStatusUI(){
+  const teamStatus = document.getElementById('teamStatus');
+  if(!teamStatus) return;
+  
+  st.players.forEach((p, i) => {
+    const heroId = p.id.toLowerCase();
+    const portrait = document.getElementById('hero' + p.id);
+    if(!portrait) return;
+    
+    // Update leader indicator
+    portrait.classList.toggle('leader', i === st.leader);
+    
+    // Update defeated state
+    portrait.classList.toggle('defeated', p.isDefeated);
+    
+    // Update HP bar
+    const hpFill = portrait.querySelector('.hero-hp-fill');
+    if(hpFill) {
+      const ratio = p.hp / p.hpMax;
+      hpFill.style.transform = `scaleX(${ratio})`;
+    }
+    
+    // Update status text
+    const statusEl = portrait.querySelector('.hero-status');
+    if(statusEl) {
+      if(p.isDefeated) {
+        const reviveTime = Math.ceil(p.reviveT / 1000);
+        statusEl.textContent = reviveTime > 0 ? `${reviveTime}s` : 'DOWNED';
+      } else if(p.rageOn) {
+        statusEl.textContent = 'RAGE';
+      } else {
+        statusEl.textContent = 'OK';
+      }
+    }
+  });
+}
+
+function updateSecretGaugeUI(){
+  const L = leader();
+  if(!L) return;
+  
+  // Update X1 button visibility based on conditions
+  const x1Btn = document.getElementById('btnX1');
+  if(x1Btn) {
+    const canUseSecret = L.secretGauge >= L.secretMax && 
+                        (st.bossAlive || L.hp <= L.hpMax * 0.5);
+    x1Btn.style.display = canUseSecret ? 'flex' : 'none';
+    x1Btn.style.opacity = cdReady(L.id, 'X1') ? '1' : '0.5';
+  }
+}
+
+function fillSecretGauge(player, amount) {
+  if(!player || player.isDefeated) return;
+  player.secretGauge = Math.min(player.secretMax, player.secretGauge + amount);
+  
+  // Visual feedback when gauge fills
+  if(player.secretGauge >= player.secretMax) {
+    addFloater(player.x, player.y - 60, 'SECRET READY!', '#ffaa00');
+  }
+}
+
+/* ================= Team HP Helpers ================= */
+function leader(){return st.players[st.leader];}
+function mirrorLeaderHP(){
+  const L=leader();
+  st.hp = L.hp; st.hpMax = L.hpMax; // mirror for legacy HUD code
+}
+function defeatPlayer(p){
+  if(p.isDefeated) return;
+  p.isDefeated=true; p.reviveT=(40+Math.floor(Math.random()*21))*1000;
+  addFloater(p.x,p.y-50,p.id+' Down!','#ff4d4f');
+  // Auto-switch if leader
+  if(st.players[st.leader]===p){
+    const idx=st.players.findIndex(pl=>!pl.isDefeated);
+    if(idx>=0) st.leader=idx;
+  }
+}
+function revivePlayer(p, instant=false){
+  p.isDefeated=false; p.reviveT=0; p.hp=p.hpMax;
+  addFloater(p.x,p.y-50,p.id+' Revived','#36c777');
+  if(instant) notify(p.id+' revived!');
+}
+function damagePlayer(p,dmg){
+  if(p.isDefeated) return;
+  p.hp = Math.max(0,p.hp-dmg);
+  addFloater(p.x,p.y-30,'-'+dmg,'#ff7a6a');
+  if(p.hp<=0) defeatPlayer(p);
+}
+function checkPlayersRevive(dtMs){
+  for(const p of st.players){
+    if(p.isDefeated && p.reviveT>0){
+      p.reviveT-=dtMs;
+      if(p.reviveT<=0) revivePlayer(p);
+    }
+  }
+}
+function checkGameOver(){
+  if(st.players.every(p=>p.isDefeated)){
+    notify('Game Over!');
+    // Simple reset
+    for(const p of st.players){
+      p.isDefeated=false; p.hpMax=100; p.hp=p.hpMax; p.reviveT=0;
+    }
+    st.stage=1; st.wave=1; st.kills=0;
+    st.enemies.length=0; st.shots.length=0; st.eShots.length=0; st.pickups.length=0;
+    spawnWave();
+  }
+}
+
+/* ================ Enemy Formation & AI ================= */
+function updateEnemyFormations(){
+  const R=28;
+  for(let i=0;i<st.enemies.length;i++){
+    const a=st.enemies[i]; if(a.hp<=0) continue;
+    for(let j=i+1;j<st.enemies.length;j++){
+      const b=st.enemies[j]; if(b.hp<=0) continue;
+      const dx=b.x-a.x;
+      if(Math.abs(dx)<R){
+        const push=(R - Math.abs(dx))*0.5;
+        const dir=dx>=0?1:-1;
+        a.x-=push*dir; b.x+=push*dir;
+      }
+    }
+  }
+}
+function applyEnemyBehavior(e, dt){
+  if(!e.role) return;
+  const L=leader();
+  
+  // Flying enemy behaviors
+  if(e.isFlying){
+    // Sine wave movement for flyers
+    e.y = e.originalY + Math.sin(performance.now()*0.003)*50;
+    
+    if(e.behavior === 'aerial'){
+      // Maintain distance and occasionally dive bomb
+      if(e.diveBombCD){
+        e.diveBombCD -= dt*1000;
+        if(e.diveBombCD <= 0 && Math.abs(L.x - e.x) < 300){
+          // Initiate dive bomb
+          e.vy = 300; // Dive down fast
+          e.vx *= 2;  // Speed up horizontally
+          e.diveBombCD = 5000 + Math.random()*3000; // Reset CD
+          e._diveBombing = true;
+          setTimeout(()=>{
+            e._diveBombing = false;
+            e.vy = Math.sin(performance.now()*0.002)*0.1; // Return to sine wave
+            e.vx /= 2; // Return to normal speed
+          }, 1500);
+        }
+      }
+    }
+    return; // Skip ground behaviors for flying enemies
+  }
+  
+  // Ground enemy behaviors
+  if(e.role==='shooter'){
+    // Maintain distance ~240px
+    const dist=L.x - e.x;
+    const desired=-240;
+    if(dist>desired+40) e.x+=Math.min(120*dt,(dist-desired)*0.5*dt);
+    if(dist<desired-40) e.x-=Math.min(120*dt,(desired-dist)*0.5*dt);
+  }
+  
+  if(e.behavior==='hitAndRun'){
+    if(e._justFired && !e._retreating){
+      e._retreating=true; e._retreatT=1200;
+    }
+    if(e._retreating){
+      e._retreatT-=dt*1000;
+      e.x+=160*dt; // move right
+      if(e._retreatT<=0){e._retreating=false; e._justFired=false;}
+    }
+  } else if(e.behavior==='berserker'){
+    // New berserker behavior: charge faster when low HP
+    const hpRatio = e.hp / e.max;
+    if(hpRatio < 0.5){
+      e.vx = Math.min(-0.8, e.vx * 1.5); // Speed up when damaged
+    }
+  } else if(e.behavior==='boss_pattern'){
+    // Boss specific behaviors
+    if(!e.rageMode && e.hp < e.max * e.rageTrigger){
+      e.rageMode = true;
+      e.vx *= 1.5; // Speed up in rage
+      e.fireCD *= 0.6; // Fire faster
+      addFloater(e.x, e.y-50, 'RAGE MODE!', '#ff4d4f');
+    }
+    
+    // Boss skills
+    if(e.skillCD){
+      e.skillCD -= dt*1000;
+      if(e.skillCD <= 0){
+        useBossSkill(e);
+        e.skillCD = 4000 + Math.random()*2000;
+      }
+    }
+  } else if(e.behavior==='support'){
+    // Support behaviors for healer/summoner
+    if(e.role === 'healer' && e.healCD){
+      e.healCD -= dt*1000;
+      if(e.healCD <= 0 && e.boss && e.boss.hp < e.boss.max){
+        // Heal the boss
+        const healAmount = Math.round(e.boss.max * 0.15);
+        e.boss.hp = Math.min(e.boss.max, e.boss.hp + healAmount);
+        addFloater(e.boss.x, e.boss.y-50, '+'+healAmount+' HP', '#36c777');
+        addCast(e.x, e.y, '#36c777');
+        e.healCD = 3000 + Math.random()*2000;
+      }
+    } else if(e.role === 'summoner' && e.summonCD){
+      e.summonCD -= dt*1000;
+      if(e.summonCD <= 0){
+        // Summon minions
+        for(let i=0;i<2;i++){
+          st.enemies.push({
+            kind:'summoned_minion',
+            x:e.x+50+i*40, y:laneY(i%3),
+            hp:60, max:60, vx:-0.3, fireCD:1200,
+            role:'melee', behavior:'relentless'
+          });
+        }
+        addCast(e.x, e.y, '#ff9aa8');
+        e.summonCD = 6000 + Math.random()*3000;
+      }
+    }
+  }
+}
+
+/* ================ Loot Tables & Gold Bag ================= */
+const LOOT_TABLES = {
+  mobChest:[
+    {name:'Rusty Blade',rank:'C',slot:'weapon',atk:5},
+    {name:'Cracked Buckler',rank:'C',slot:'armor',def:5},
+    {name:'Gleam Ring',rank:'B',slot:'acc1',atk:8}
+  ],
+  miniBossChest:[
+    {name:'Reinforced Edge',rank:'B',slot:'weapon',atk:18},
+    {name:'Composite Armor',rank:'B',slot:'armor',def:22},
+    {name:'Battle Loop',rank:'B',slot:'acc2',atk:15}
+  ],
+  bossChest:[
+    {name:'Aether Greatblade',rank:'A',slot:'weapon',atk:40},
+    {name:'Starlit Carapace',rank:'A',slot:'armor',def:45},
+    {name:'Celestial Loop',rank:'S',slot:'acc1',atk:55}
+  ]
+};
+function rollLoot(type){
+  const pool=LOOT_TABLES[type]||[];
+  if(!pool.length) return null;
+  // Luck weighting: higher luck pushes index upward slightly
+  const luck = st.luck||0;
+  const bias = Math.min(0.6, luck*0.01);
+  let idx = Math.floor(Math.random()*pool.length + bias*(pool.length-1));
+  if(idx>=pool.length) idx=pool.length-1;
+  const base = JSON.parse(JSON.stringify(pool[idx]));
+  base.id=Math.random();
+  base.type='gear';
+  base.level=0;
+  return base;
+}
+
+/* =============== Inventory / Bag UI =============== */
+function maxBagSlots(){return st.invRows*8;}
+function addItemToBag(it){
+  if(st.inv.length>=maxBagSlots()){notify('Bag Full!','#ff7a6a');return;}
+  st.inv.push(it); if(st.bagOpen) renderBag();
+}
+function renderBag(){
+  if(!st.bagOpen) return;
+  // Items tab
+  const grid=document.getElementById('bagGrid');
+  if(grid){
+    grid.innerHTML='';
+    const items=st.inv.filter(i=>i && i.type!=='gear' && i.slot!=='weapon' && i.slot!=='armor' && !['acc1','acc2'].includes(i.slot) && i.slot!=='pet' && i.slot!=='vehicle');
+    items.forEach(it=>{
+      const cell=document.createElement('div');
+      cell.className='slot-box item';
+      cell.textContent=it.name;
+      cell.onclick=()=>renderDetail(it, st.inv.findIndex(x=>x&&x.id===it.id));
+      grid.appendChild(cell);
+    });
+    const empty = maxBagSlots() - st.inv.length;
+    for(let i=0;i<empty;i++){
+      const cell=document.createElement('div');
+      cell.className='slot-box';
+      cell.textContent='+';
+      grid.appendChild(cell);
+    }
+  }
+  // Gear tab
+  const gearSlotsEl=document.getElementById('gearSlots');
+  const gearGrid=document.getElementById('gearGrid');
+  if(gearSlotsEl&&gearGrid){
+    gearSlotsEl.innerHTML=''; gearGrid.innerHTML='';
+    const slots=['weapon','armor','acc1','acc2'];
+    slots.forEach(sl=>{
+      const slotDiv=document.createElement('div');
+      const item=st.equippedGear[sl];
+      slotDiv.className='slot-box equip';
+      slotDiv.textContent=item?item.name:('+ '+sl);
+      slotDiv.onclick=()=>{ if(item) renderDetail(item, sl, true); };
+      gearSlotsEl.appendChild(slotDiv);
+    });
+    st.inv.filter(it=>it&&['weapon','armor','acc1','acc2'].includes(it.slot)).forEach(it=>{
+      const cell=document.createElement('div');
+      cell.className='slot-box item';
+      cell.textContent=it.name+(it.level?(' +'+it.level):'');
+      cell.onclick=()=>renderDetail(it, st.inv.findIndex(x=>x&&x.id===it.id));
+      gearGrid.appendChild(cell);
+    });
+  }
+  // Pets tab
+  const petsGrid=document.getElementById('petsGrid');
+  if(petsGrid){
+    petsGrid.innerHTML='';
+    for(let i=0;i<st.petSlots;i++){
+      const pet=st.equippedPets[i];
+      const cell=document.createElement('div');
+      cell.className='slot-box equip pet';
+      cell.textContent=pet?pet.name:('Pet Slot '+(i+1));
+      cell.onclick=()=>{ if(pet) renderDetail(pet,'petEquipped:'+i,true); };
+      petsGrid.appendChild(cell);
+    }
+    const hr=document.createElement('hr');
+    hr.style.gridColumn='1 / -1'; hr.style.margin='8px 0'; hr.style.border='1px solid var(--line)';
+    petsGrid.appendChild(hr);
+    st.inv.filter(it=>it&&it.slot==='pet').forEach(it=>{
+      const cell=document.createElement('div');
+      cell.className='slot-box item pet';
+      cell.textContent=it.name;
+      cell.onclick=()=>renderDetail(it, st.inv.findIndex(x=>x&&x.id===it.id));
+      petsGrid.appendChild(cell);
+    });
+  }
+  // Vehicles
+  const vehiclesGrid=document.getElementById('vehiclesGrid');
+  if(vehiclesGrid){
+    vehiclesGrid.innerHTML='';
+    const cell=document.createElement('div');
+    cell.className='slot-box equip vehicle';
+    cell.textContent=st.equippedVehicle?st.equippedVehicle.name:'Equip Vehicle';
+    cell.onclick=()=>{ if(st.equippedVehicle) renderDetail(st.equippedVehicle,'vehicleEquipped',true); };
+    vehiclesGrid.appendChild(cell);
+    const hr=document.createElement('hr');
+    hr.style.gridColumn='1 / -1'; hr.style.margin='8px 0'; hr.style.border='1px solid var(--line)';
+    vehiclesGrid.appendChild(hr);
+    st.inv.filter(it=>it&&it.slot==='vehicle').forEach(it=>{
+      const c=document.createElement('div');
+      c.className='slot-box item vehicle';
+      c.textContent=it.name;
+      c.onclick=()=>renderDetail(it, st.inv.findIndex(x=>x&&x.id===it.id));
+      vehiclesGrid.appendChild(c);
+    });
+  }
+  // Quests
+  renderQuests();
+  // Shop
+  renderShop();
+  // Talents
+  renderTalentLanes();
+  document.getElementById('bagGoldVal').textContent=st.gold;
+}
+
+function renderQuests(){
+  const questsList = document.getElementById('questsList');
+  if(!questsList) return;
+  
+  questsList.innerHTML = '';
+  
+  if(!st.dailyQuests || st.dailyQuests.length === 0){
+    const placeholder = document.createElement('div');
+    placeholder.className = 'quest-item';
+    placeholder.innerHTML = '<p style="margin:0;color:#9baec8;text-align:center">No active quests</p>';
+    questsList.appendChild(placeholder);
+    return;
+  }
+  
+  st.dailyQuests.forEach(quest => {
+    const questDiv = document.createElement('div');
+    questDiv.className = 'quest-item' + (quest.completed ? ' completed' : '');
+    
+    const progressPercent = Math.min(100, (quest.progress / quest.target) * 100);
+    
+    questDiv.innerHTML = `
+      <div class="quest-header">
+        <div class="quest-name">${quest.name}</div>
+        <div class="quest-progress">${quest.progress}/${quest.target}</div>
+      </div>
+      <div class="quest-description">${quest.description}</div>
+      <div class="quest-progress-bar">
+        <div class="quest-progress-fill" style="transform: scaleX(${progressPercent/100})"></div>
+      </div>
+      <div class="quest-reward">
+        Reward: ${Object.keys(quest.reward).map(key => `${quest.reward[key]} ${key}`).join(', ')}
+        ${quest.completed ? ' ✓ COMPLETED' : ''}
+      </div>
+    `;
+    
+    questsList.appendChild(questDiv);
+  });
+  
+  // Update endless mode stats if active
+  const endlessStats = document.getElementById('endlessStats');
+  if(endlessStats && st.endlessMode){
+    endlessStats.style.display = 'block';
+    document.getElementById('endlessScore').textContent = st.endlessScore || 0;
+    
+    if(st.endlessStartTime){
+      const elapsed = (performance.now() - st.endlessStartTime) / 1000;
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = Math.floor(elapsed % 60);
+      document.getElementById('endlessTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+  }
+}
+function openBag(tab='items'){
+  st.bagOpen=true; st.bagTab=tab;
+  document.getElementById('inventory').classList.add('open');
+  document.querySelectorAll('.bag-nav-item').forEach(b=>{
+    const t=b.getAttribute('data-tab');
+    b.classList.toggle('active', t===tab);
+  });
+  document.querySelectorAll('.bag-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('bag-'+tab);
+  if(panel) panel.classList.add('active');
+  renderBag();
+}
+function closeBag(){
+  st.bagOpen=false;
+  document.getElementById('inventory').classList.remove('open');
+}
+document.getElementById('btnInventory').onclick=()=>openBag('items');
+document.getElementById('btnPets').onclick=()=>openBag('pets');
+document.getElementById('btnVehicles').onclick=()=>openBag('vehicles');
+document.getElementById('btnTalents').onclick=()=>openBag('talent');
+document.getElementById('btnShop').onclick=()=>openBag('shop');
+document.getElementById('btnSettings').onclick=()=>openBag('settings');
+document.getElementById('btnCloseBag').onclick=()=>closeBag();
+document.querySelectorAll('.bag-nav-item').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    openBag(btn.getAttribute('data-tab'));
+  });
+});
+
+/* ================= Shop Items =================== */
+const SHOP_ITEMS = [
+  {id:'hp_potion', name:'HP Potion', description:'Heals 40% leader HP.', cost:60, type:'consumable'},
+  {id:'rage_pill', name:'Rage Pill', description:'Grants +30 Rage to party.', cost:90, type:'consumable'},
+  {id:'revive_token', name:'Revive Token', description:'Instantly revives one defeated hero.', cost:80, type:'consumable'},
+  {id:'gold_bag', name:'Gold Bag', description:'Open for 500–5000 gold.', cost:300, type:'item'},
+  {id:'big_gold_bag', name:'Big Gold Bag', description:'Open for 2000–10000 gold.', cost:1200, type:'item'},
+  {id:'gear_kit', name:'Random Gear Kit', description:'Adds 3 random gear pieces.', cost:250, type:'item'},
+  {id:'ap_reset', name:'AP Reset', description:'Refund all spent AP.', cost:400, type:'consumable'}
+];
+function renderShop(){
+  const grid=document.getElementById('shopGrid'); if(!grid) return;
+  grid.innerHTML='';
+  SHOP_ITEMS.forEach(it=>{
+    const d=document.createElement('div');
+    d.className='shop-item';
+    d.innerHTML=`<h5>${it.name}</h5><p>${it.description}</p><p><b>Cost: ${it.cost} Gold</b></p><button data-id="${it.id}">Buy</button>`;
+    grid.appendChild(d);
+  });
+  grid.onclick=e=>{
+    if(e.target.matches('button[data-id]')){
+      buyShopItem(e.target.getAttribute('data-id'));
+    }
+  };
+}
+function buyShopItem(id){
+  const it=SHOP_ITEMS.find(i=>i.id===id); if(!it) return;
+  if(st.gold<it.cost){notify('Not enough gold','#ff7a6a');return;}
+  st.gold-=it.cost; updateCurrencies();
+  notify('Purchased '+it.name);
+  switch(it.id){
+    case 'hp_potion': {
+      const L=leader();
+      const heal=Math.round(L.hpMax*0.4);
+      L.hp=Math.min(L.hpMax, L.hp+heal);
+      addFloater(L.x,L.y-60,'+'+heal+' HP','#36c777');
+      break;
+    }
+    case 'rage_pill':
+      st.players.forEach(p=>p.rage=Math.min(p.rageMax,p.rage+30));
+      break;
+    case 'revive_token': {
+      // Revive first defeated else store token
+      const dead = st.players.find(p=>p.isDefeated);
+      if(dead) revivePlayer(dead,true);
+      else st.reviveTokens++;
+      break;
+    }
+    case 'gold_bag':
+      addItemToBag({id:Math.random(),name:'Gold Bag',type:'gold_bag',slot:'item'});
+      break;
+    case 'big_gold_bag':
+      addItemToBag({id:Math.random(),name:'Big Gold Bag',type:'big_gold_bag',slot:'item'});
+      break;
+    case 'gear_kit':
+      for(let i=0;i<3;i++){
+        const slot=['weapon','armor','acc1','acc2'][Math.floor(Math.random()*4)];
+        addItemToBag(makeGear('Random '+slot,slot, {atk:5+Math.floor(Math.random()*8)}));
+      }
+      break;
+    case 'ap_reset':
+      st.talentPicks.clear(); st.apSpent=0; tallyTalentStats(); renderTalentLanes(); break;
+  }
+  renderBag();
+}
+
+/* ================== Gear / Items =================== */
+function makeGear(name, slot, extra={}){
+  return { id:Math.random(), name, slot, type:'gear', level:0, ...extra };
+}
+function renderDetail(item, indexOrSlot, equipped=false){
+  const nameEl=$('#detailName'), statEl=$('#detailStats'), actEl=$('#detailActions');
+  if(!item){ nameEl.textContent='Select Item'; statEl.textContent='-'; actEl.innerHTML=''; return; }
+  nameEl.textContent=item.name+(item.level?(' +'+item.level):'');
+  let desc='';
+  if(item.type==='gear'){
+    if(item.atk) desc+='ATK +'+item.atk+' ';
+    if(item.def) desc+='DEF +'+item.def+' ';
+  } else if(item.type==='gold_bag'){
+    desc='Open to gain random gold (500-5000).';
+  } else if(item.type==='big_gold_bag'){
+    desc='Open to gain random gold (2000-10000).';
+  } else {
+    desc=item.description||'-';
+  }
+  statEl.textContent=desc.trim()||'-';
+  actEl.innerHTML='';
+  // Actions
+  if(item.type==='gear'){
+    if(equipped){
+      const b=document.createElement('button'); b.textContent='Unequip';
+      b.onclick=()=>{
+        // put back to bag
+        if(typeof indexOrSlot==='string'){
+          // slot key
+          const slotKey=indexOrSlot;
+          st.equippedGear[slotKey]=null;
+          addItemToBag(item);
+          recalcStats(); renderBag(); renderDetail(null);
+        }
+      };
+      actEl.appendChild(b);
+    } else {
+      const b=document.createElement('button'); b.textContent='Equip';
+      b.onclick=()=>{
+        const idx=indexOrSlot;
+        const it=st.inv[idx];
+        if(!it) return;
+        const slot=it.slot;
+        if(st.equippedGear[slot]) addItemToBag(st.equippedGear[slot]);
+        st.equippedGear[slot]=it;
+        st.inv.splice(idx,1);
+        recalcStats(); renderBag(); renderDetail(null);
+      };
+      actEl.appendChild(b);
+    }
+    // Upgrade
+    const up=document.createElement('button');
+    up.className='upgrade-btn';
+    up.textContent=item.level>=10?'Max +10':'Upgrade';
+    up.disabled=item.level>=10 || st.gold<calcUpgradeCost(item);
+    up.onclick=()=>{
+      if(item.level>=10) return;
+      const cost=calcUpgradeCost(item);
+      if(st.gold<cost){notify('Need '+cost+' Gold','#ff7a6a');return;}
+      st.gold-=cost;
+      item.level++;
+      // Simple scaling: +12% atk/def each level
+      if(item.atk) item.atk = Math.round(item.atk*1.12);
+      if(item.def) item.def = Math.round(item.def*1.12);
+      updateCurrencies(); recalcStats(); renderBag(); renderDetail(item,indexOrSlot,equipped);
+    };
+    actEl.appendChild(up);
+  } else if(item.type==='gold_bag'){
+    const b=document.createElement('button'); b.textContent='Open';
+    b.onclick=()=>{
+      const idx=st.inv.findIndex(x=>x&&x.id===item.id);
+      if(idx>=0) st.inv.splice(idx,1);
+      const amt=500+Math.floor(Math.random()*4501);
+      st.gold+=amt; updateCurrencies();
+      notify('+'+amt+' Gold','#ffd56a');
+      renderBag(); renderDetail(null);
+    };
+    actEl.appendChild(b);
+  } else if(item.type==='big_gold_bag'){
+    const b=document.createElement('button'); b.textContent='Open';
+    b.onclick=()=>{
+      const idx=st.inv.findIndex(x=>x&&x.id===item.id);
+      if(idx>=0) st.inv.splice(idx,1);
+      const amt=2000+Math.floor(Math.random()*8001);
+      st.gold+=amt; updateCurrencies();
+      notify('+'+amt+' Gold (Big Bag!)','#ffaa00');
+      renderBag(); renderDetail(null);
+    };
+    actEl.appendChild(b);
+  } else {
+    const b=document.createElement('button'); b.textContent='Close';
+    b.onclick=()=>renderDetail(null);
+    actEl.appendChild(b);
+  }
+}
+function calcUpgradeCost(item){
+  return 100*(item.level+1);
+}
+
+/* =================== Talents: Lane System =================== */
+st.talentLanes = {
+  atk:[
+    {id:'atk_1', cost:1, text:'+5% ATK', fx:s=>s.atkMul+=0.05},
+    {id:'atk_2', cost:2, req:['atk_1'], text:'+8% ATK', fx:s=>s.atkMul+=0.08},
+    {id:'atk_3', cost:3, req:['atk_2'], text:'+12% ATK', fx:s=>s.atkMul+=0.12},
+    {id:'atk_4', cost:4, req:['atk_3'], text:'+15% ATK + Crit Chance', fx:s=>{s.atkMul+=0.15; s.crit=(s.crit||0)+0.10;}},
+    {id:'atk_5', cost:5, req:['atk_4'], text:'Berserker: ATK scales with missing HP', fx:s=>{s.berserker=true;}},
+    {id:'atk_ultimate', cost:8, req:['atk_5'], text:'APEX HUNTER: +50% ATK, kills grant rage', fx:s=>{s.atkMul+=0.50; s.killRage=true;}}
+  ],
+  def:[
+    {id:'def_1', cost:1, text:'+80 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+80;}},
+    {id:'def_2', cost:2, req:['def_1'], text:'+120 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+120;}},
+    {id:'def_3', cost:3, req:['def_2'], text:'+160 HP', fx:s=>{s.hpFlat=(s.hpFlat||0)+160;}},
+    {id:'def_4', cost:4, req:['def_3'], text:'+200 HP + 10% Damage Reduction', fx:s=>{s.hpFlat=(s.hpFlat||0)+200; s.damageReduction=(s.damageReduction||0)+0.10;}},
+    {id:'def_5', cost:5, req:['def_4'], text:'Guardian: Nearby allies take 20% less damage', fx:s=>{s.guardian=true;}},
+    {id:'def_ultimate', cost:8, req:['def_5'], text:'FORTRESS: Team immunity when at low HP', fx:s=>{s.fortress=true;}}
+  ],
+  recovery:[
+    {id:'rec_1', cost:1, text:'+6% Lifesteal', fx:s=>{s.ls=(s.ls||0)+0.06;}},
+    {id:'rec_2', cost:2, req:['rec_1'], text:'+10% Lifesteal', fx:s=>{s.ls=(s.ls||0)+0.10;}},
+    {id:'rec_3', cost:3, req:['rec_2'], text:'+15% Lifesteal + HP Regen', fx:s=>{s.ls=(s.ls||0)+0.15; s.regen=(s.regen||0)+2;}},
+    {id:'rec_4', cost:4, req:['rec_3'], text:'Vampiric: Killing blows fully heal', fx:s=>{s.vampiric=true;}},
+    {id:'rec_ultimate', cost:7, req:['rec_4'], text:'PHOENIX: Auto-revive on death (once per stage)', fx:s=>{s.phoenix=true;}}
+  ],
+  cooldown:[
+    {id:'cd_1', cost:1, text:'-8% Skill CD', fx:s=>{s.haste=(s.haste||0)+8;}},
+    {id:'cd_2', cost:2, req:['cd_1'], text:'-12% Skill CD', fx:s=>{s.haste=(s.haste||0)+12;}},
+    {id:'cd_3', cost:3, req:['cd_2'], text:'-15% Skill CD + Movement Speed', fx:s=>{s.haste=(s.haste||0)+15; s.moveSpeed=(s.moveSpeed||0)+0.20;}},
+    {id:'cd_4', cost:4, req:['cd_3'], text:'Cascade: Skills have 25% chance to reset CD', fx:s=>{s.cascade=true;}},
+    {id:'cd_ultimate', cost:7, req:['cd_4'], text:'TIME MASTER: All abilities cost 50% less CD', fx:s=>{s.timeMaster=true;}}
+  ],
+  luck:[
+    {id:'luck_1', cost:1, text:'+8 Luck', fx:s=>{s.luck=(s.luck||0)+8;}},
+    {id:'luck_2', cost:2, req:['luck_1'], text:'+15 Luck', fx:s=>{s.luck=(s.luck||0)+15;}},
+    {id:'luck_3', cost:3, req:['luck_2'], text:'+25 Luck + Gold Find', fx:s=>{s.luck=(s.luck||0)+25; s.goldFind=(s.goldFind||0)+0.30;}},
+    {id:'luck_4', cost:4, req:['luck_3'], text:'Fortune: 10% chance for double loot', fx:s=>{s.fortune=true;}},
+    {id:'luck_5', cost:5, req:['luck_4'], text:'Jackpot: Rare items can upgrade quality', fx:s=>{s.jackpot=true;}},
+    {id:'luck_ultimate', cost:8, req:['luck_5'], text:'GOLDEN TOUCH: Everything drops gold, permanent luck aura', fx:s=>{s.goldenTouch=true;}}
+  ]
+};
+function canBuyTalent(node){
+  if(st.apSpent >= st.apTotal) return false;
+  if(st.talentPicks.has(node.id)) return false;
+  if(node.req && !node.req.every(r=>st.talentPicks.has(r))) return false;
+  return true;
+}
+function buyTalent(node){
+  if(!canBuyTalent(node)) return;
+  st.talentPicks.add(node.id);
+  st.apSpent += node.cost||1;
+  tallyTalentStats();
+  renderTalentLanes();
+}
+function tallyTalentStats(){
+  const stats={atkMul:0};
+  st.luck=0;
+  for(const lane of Object.values(st.talentLanes)){
+    for(const n of lane){
+      if(st.talentPicks.has(n.id) && n.fx) n.fx(stats);
+    }
+  }
+  st._talentStats=stats;
+  if(stats.hpFlat){
+    for(const p of st.players){
+      const r=p.hp/p.hpMax;
+      p.hpMax=100+stats.hpFlat;
+      p.hp=Math.round(p.hpMax*r);
+    }
+  }
+  if(stats.luck) st.luck=stats.luck;
+  recalcStats();
+  updateTalentSummary();
+}
+function renderTalentLanes(){
+  const wrap=document.getElementById('talentLaneWrap'); if(!wrap) return;
+  wrap.innerHTML='';
+  for(const [laneName, nodes] of Object.entries(st.talentLanes)){
+    const col=document.createElement('div');
+    col.className='lane-col';
+    col.innerHTML=`<h4>${laneName.toUpperCase()}</h4>`;
+    nodes.forEach(node=>{
+      const owned=st.talentPicks.has(node.id);
+      const can=canBuyTalent(node);
+      const div=document.createElement('div');
+      div.className='lane-node';
+      if(owned) div.classList.add('owned');
+      else if(!can) div.classList.add('locked');
+      div.innerHTML=`<span>${node.text}</span><span class="cost">AP ${node.cost||1}</span>${node.req?('<small>Requires '+node.req.join(', ')+'</small>'):''}`;
+      const btn=document.createElement('button');
+      btn.textContent=owned?'Owned':'Buy';
+      btn.disabled=!can||owned;
+      btn.onclick=()=>buyTalent(node);
+      div.appendChild(btn);
+      col.appendChild(div);
+    });
+    wrap.appendChild(col);
+  }
+  updateTalentSummary();
+}
+function updateTalentSummary(){
+  const el=document.getElementById('talentSummary');
+  if(!el) return;
+  el.textContent=`AP: ${st.apSpent}/${st.apTotal}\nLuck: ${st.luck}\nATK Mult: ${(1+(st._talentStats.atkMul||0)).toFixed(2)}x`;
+}
+
+/* =================== Stats Recalculation =================== */
+function recalcStats(){
+  for(const p of st.players){
+    const atkMul=1+(st._talentStats.atkMul||0);
+    let gearAtk=0;
+    for(const slot of Object.values(st.equippedGear)){
+      if(slot && slot.atk) gearAtk+=slot.atk;
+    }
+    p.dmg = Math.round((p.dmgBase + gearAtk)*atkMul);
+  }
+}
+
+/* ================= Experience / Level ================= */
+function xpToNext(lv){return Math.round(50+25*lv+5*lv*lv);}
+function grantXP(n){
+  st.xp+=n;
+  while(st.xp>=xpToNext(st.level)){
+    st.xp-=xpToNext(st.level);
+    st.level++;
+    st.apTotal = Math.min(200, st.apTotal+2);
+  }
+}
+
+/* =================== A1 Combat Kit v5 =================== */
+const A1_COMBO_WINDOW=750;
+function a1_basicAttack(a){
+  const now=performance.now();
+  if(!a.a1ComboIdx) a.a1ComboIdx=0;
+  if(!a.a1ComboTimer) a.a1ComboTimer=0;
+  if(now>a.a1ComboTimer) a.a1ComboIdx=0; // chain reset
+  a.a1ComboIdx = (a.a1ComboIdx%5)+1;
+  a.a1ComboTimer=now+A1_COMBO_WINDOW;
+  // Damage profile 5 hits
+  const mult=[0.9,1.0,1.1,1.3,1.8][a.a1ComboIdx-1]||1;
+  melee(a,36,42, Math.round(a.dmg*mult));
+  addAfterImage(a.x,a.y,'#ff4d4f');
+  // Parry window: final strike longer
+  st.parryT=Math.max(st.parryT, a.a1ComboIdx===5?900:550);
+  // Finisher extras
+  if(a.a1ComboIdx===5){
+    wave(a,1.0,'#ff4d4f',Math.round(a.dmg*2.2));
+  }
+}
+function a1_useSkill(a,key){
+  if(!cdReady(a.id,key)) return;
+  if(st._globalSkillLock>0) return;
+  a._castInvT=Math.max(a._castInvT||0,3000);
+  st._shieldOn=true; st._shieldT=Math.max(st._shieldT||0,2000);
+  
+  if(key==='S1'){
+    // S1 (Umbral Crescent) - Enhanced with 1% Max HP damage and reset on kill
+    const swings=5;
+    let totalKills = 0;
+    
+    for(let i=0;i<swings;i++){
+      setTimeout(()=>{
+        const killed = meleeWithTracking(a, 40, 44, Math.round(a.dmg*1.0), 0.01); // 1% max HP damage
+        totalKills += killed;
+        if(i%2===1) wave(a,0.9,'#ff7a6a');
+        // micro hitstop feel
+        st._hitstop=Math.max(st._hitstop||0,30);
+        
+        // Reset S1 cooldown on kill
+        if(killed > 0 && st.cds[a.id]) {
+          st.cds[a.id].S1 = 0;
+          addFloater(a.x, a.y-70, 'S1 RESET!', '#ffaa00');
+        }
+      }, i*90);
+    }
+    st.parryT=Math.max(st.parryT,600);
+  } else if(key==='S2'){
+    // Fuse Bomb: delayed AoE + armor shred + freeze-frame
+    addCast(a.x+12,a.y-42,'#ff4d4f');
+    setTimeout(()=>{
+      st.shots.push({
+        x:a.x+140,y:a.y-40,vx:0,vy:0,dmg:Math.round(a.dmg*4),
+        life:90,aoe:84,kind:'a1_bomb',armorShred:0.18
+      });
+      addImpact(a.x+140,a.y-40,'#ff4d4f');
+      st._hitstop=Math.max(st._hitstop||0,120);
+    },700);
+  } else if(key==='S3'){
+    // Combo Burst: heavy hit + echo (after 0.6s) + reset S2 CD
+    melee(a,48,50, Math.round(a.dmg*2.4));
+    wave(a,1.25,'#ff4d4f', Math.round(a.dmg*1.5));
+    setTimeout(()=>{
+      melee(a,48,50, Math.round(a.dmg*0.9));
+      wave(a,0.9,'#ff4d4f',Math.round(a.dmg*0.9));
+    },600);
+    st.cds[a.id].S2=0; // reset S2
+  } else if(key==='S5'){
+    // S5 (Void Impale) - NEW: Consumes 35% of Current HP for devastating single-target attack
+    const hpCost = Math.round(a.hp * 0.35);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Void Impale!', '#ff4d4f');
+      return;
+    }
+    
+    // Consume HP over 2 seconds
+    a.hp -= hpCost;
+    addFloater(a.x, a.y - 30, '-' + hpCost + ' HP', '#ff4d4f');
+    
+    // Swift dash with impale
+    addCast(a.x, a.y, '#8b00ff');
+    st.shots.push({
+      kind:'a1_void_impale', x:a.x+20, y:a.y, vx:800, vy:0,
+      dmg:Math.round(a.dmg*15), life:300, w:120, h:60,
+      color:'#8b00ff', pierce:1, hpRecovery:hpCost, ownerId:'A1'
+    });
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  } else if(key==='X1'){
+    // X1 (Astral Sever EX) - Secret Skill: Enhanced with kill scaling
+    if(a.secretGauge < a.secretMax) {
+      notify('Secret gauge not ready!', '#ff4d4f');
+      return;
+    }
+    
+    const hpCost = Math.round(a.hpMax * 0.20);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Astral Sever!', '#ff4d4f');
+      return;
+    }
+    
+    // Consume HP over 2 seconds and reset secret gauge
+    a.hp -= hpCost;
+    a.secretGauge = 0;
+    addFloater(a.x, a.y - 30, '-' + hpCost + ' HP', '#ff4d4f');
+    
+    // Kill scaling: size and damage increase at 2, 4, 6 kills
+    const killBonus = Math.floor(st.kills / 2) * 0.5; // 50% bonus per 2 kills
+    const baseSize = 80;
+    const scaledSize = baseSize + (killBonus * 20);
+    
+    // Full-screen cross-slash effect
+    addCast(a.x, a.y, '#ffaa00');
+    
+    // Calculate boss damage (10% current boss HP)
+    const bossDamage = st.bossAlive ? Math.round(st.bossHP * 0.1) : 0;
+    const totalDamage = Math.round(a.dmg * (10 + killBonus)) + bossDamage;
+    
+    // Horizontal slash
+    st.shots.push({
+      kind:'astral_sever_h', x:0, y:a.y, vx:0, vy:0,
+      dmg:totalDamage, life:800, 
+      w:DESIGN_W, h:scaledSize, color:'#ffaa00', pierce:99, ownerId:'A1'
+    });
+    
+    // Vertical slash
+    st.shots.push({
+      kind:'astral_sever_v', x:a.x, y:0, vx:0, vy:0,
+      dmg:totalDamage, life:800,
+      w:scaledSize, h:DESIGN_H, color:'#ffaa00', pierce:99, ownerId:'A1'
+    });
+    
+    // Crescendo Reset (Secret Skill)
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+    
+    // Visual feedback for scaling
+    if(killBonus > 0) {
+      addFloater(a.x, a.y-90, `EMPOWERED x${1+killBonus}!`, '#ffaa00');
+    }
+  }
+  startCD(a.id,key);
+}
+
+// Enhanced melee with max HP damage and kill tracking
+function meleeWithTracking(a, reach, height, dmg, maxHPPercent = 0) {
+  let kills = 0;
+  for(const e of st.enemies){
+    if(e.hp>0 && e.x>a.x && (e.x-a.x)<=reach && Math.abs(e.y-a.y)<=height/2){
+      let real=dmg;
+      
+      // Add % max HP damage
+      if(maxHPPercent > 0) {
+        real += Math.round(e.max * maxHPPercent);
+      }
+      
+      if(e.armorShredDebuff) real=Math.round(real*(1+e.armorShredDebuff));
+      e.hp-=real;
+      addFloater(e.x,e.y-20,'-'+real,'#ff7a6a');
+      if(e.hp<=0) {
+        onEnemyKilled(e);
+        kills++;
+      }
+    }
+  }
+  if(kills > 0) addImpact(a.x+reach/2,a.y-40,'#ff7a6a');
+  // Parry window synergy
+  st.parryT=Math.max(st.parryT,500);
+  return kills;
+}
+
+/* =================== UNIQUE Combat Kit (MOB SLAYER) =================== */
+function unique_useSkill(a,key){
+  if(!cdReady(a.id,key)) return;
+  if(st._globalSkillLock>0) return;
+  a._castInvT=Math.max(a._castInvT||0,2500);
+  
+  if(key==='S1'){
+    // S1 (Scatter Bloom): 5 ricocheting shards with shardlings on kill
+    addCast(a.x,a.y,'#6aa8ff');
+    for(let i=0;i<5;i++){
+      setTimeout(()=>{
+        st.shots.push({
+          kind:'unique_shard', x:a.x+20, y:a.y-30, vx:600+i*100, vy:(i-2)*80,
+          dmg:Math.round(a.dmg*1.5), life:1800, w:12, h:12, color:'#6aa8ff',
+          pierce:3, ricochet:2, ownerId:'Unique'
+        });
+      }, i*100);
+    }
+  } else if(key==='S2'){
+    // S2 (Harmonic Field): Team haste/drop buff + assistance modules
+    addCast(a.x,a.y,'#00ff88');
+    
+    // Grant team-wide buff
+    st.players.forEach(p => {
+      if(!p.isDefeated) {
+        p._hasteBuff = 8000; // 8 second haste
+        p._dropBuff = 8000;  // 8 second improved drops
+        addFloater(p.x, p.y-50, 'HASTE+LUCK!', '#00ff88');
+      }
+    });
+    
+    // Spawn assistance modules
+    for(let i=0;i<3;i++){
+      st.shots.push({
+        kind:'unique_module', x:a.x+60+(i*80), y:a.y-60, vx:0, vy:0,
+        hp:40, life:12000, w:30, h:30, color:'#00ff88',
+        assistCD:1200, lastAssist:0, ownerId:'Unique'
+      });
+    }
+  } else if(key==='S3'){
+    // S3 (Overcharge Stream v2): Attached sweeping beam
+    addCast(a.x,a.y,'#ff6aa8');
+    const beamDuration = 2500;
+    const beam = {
+      kind:'unique_beam', x:a.x+30, y:a.y-40, attachedTo:a,
+      dmg:Math.round(a.dmg*0.8), life:beamDuration, rampUp:0,
+      w:200, h:60, color:'#ff6aa8', ownerId:'Unique'
+    };
+    st.shots.push(beam);
+  } else if(key==='S4'){
+    // S4 (Stellar Annihilator): Hold-to-charge persistent beam
+    if(!a._stellarCharging) {
+      a._stellarCharging = true;
+      a._stellarCharge = 0;
+      a._stellarMaxCharge = 2500; // 2.5 seconds max charge
+      addCast(a.x, a.y, '#6aa8ff');
+      notify('Hold S4 to charge Stellar Annihilator');
+      
+      // Start charging effect
+      a._stellarChargingInterval = setInterval(() => {
+        if(a._stellarCharging && a._stellarCharge < a._stellarMaxCharge) {
+          a._stellarCharge += 100;
+          // Visual charging effect
+          if(a._stellarCharge % 500 === 0) {
+            addCast(a.x, a.y, '#6aa8ff');
+          }
+        }
+      }, 100);
+    }
+    
+    // Note: Release logic will be handled in key-up event
+  } else if(key==='S5'){
+    // S5 (Drone Overdrive): Kamikaze drones, costs 30% Current HP
+    const hpCost = Math.round(a.hp * 0.30);
+    if(a.hp <= hpCost || !a._drones || a._drones.length === 0) {
+      notify('Need drones and HP for Overdrive!', '#ff4d4f');
+      return;
+    }
+    
+    a.hp -= hpCost;
+    addFloater(a.x, a.y-30, '-'+hpCost+' HP', '#ff4d4f');
+    
+    // Convert drones to kamikazes
+    a._drones.forEach(drone => {
+      st.shots.push({
+        kind:'unique_kamikaze', x:drone.x, y:drone.y, vx:400, vy:0,
+        dmg:Math.round(a.dmg*8), life:3000, w:80, h:80,
+        color:'#ff6aa8', aoe:120, seeking:true, ownerId:'Unique'
+      });
+    });
+    a._drones = []; // Destroy all drones
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  } else if(key==='X1'){
+    // X1 (Prismatic Cataclysm): Persistent energy lattice, costs 20% Max HP
+    if(a.secretGauge < a.secretMax) {
+      notify('Secret gauge not ready!', '#ff4d4f');
+      return;
+    }
+    
+    const hpCost = Math.round(a.hpMax * 0.20);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Cataclysm!', '#ff4d4f');
+      return;
+    }
+    
+    a.hp -= hpCost;
+    a.secretGauge = 0;
+    addFloater(a.x, a.y-30, '-'+hpCost+' HP', '#ff4d4f');
+    
+    // Create persistent lattice
+    st.shots.push({
+      kind:'unique_lattice', x:a.x+100, y:a.y-100, vx:0, vy:0,
+      hp:300, hpMax:300, dmg:Math.round(a.dmg*3), life:15000,
+      w:200, h:200, color:'#6aa8ff', fireRate:300, lastFire:0,
+      lootVacuum:true, ownerId:'Unique'
+    });
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  }
+  startCD(a.id,key);
+}
+
+// Handle S4 release for Unique
+function unique_releaseStellarAnnihilator(a) {
+  if(!a._stellarCharging) return;
+  
+  a._stellarCharging = false;
+  if(a._stellarChargingInterval) {
+    clearInterval(a._stellarChargingInterval);
+    a._stellarChargingInterval = null;
+  }
+  
+  const chargeRatio = Math.min(1, a._stellarCharge / a._stellarMaxCharge);
+  const beamDuration = 300 + (chargeRatio * 2200); // 0.3s to 2.5s
+  const beamDamage = Math.round(a.dmg * (1 + chargeRatio * 4)); // 1x to 5x damage
+  
+  // Create the persistent beam
+  st.shots.push({
+    kind:'unique_stellar_beam', x:a.x+40, y:a.y-40, vx:0, vy:0,
+    dmg:Math.round(beamDamage * 0.1), // Damage per tick
+    life:beamDuration, w:400, h:80, color:'#6aa8ff',
+    persistent:true, tickRate:50, ownerId:'Unique'
+  });
+  
+  addCast(a.x, a.y, '#6aa8ff');
+  notify(`Stellar Beam: ${Math.round(chargeRatio*100)}% charged!`);
+  
+  // Reset charge
+  a._stellarCharge = 0;
+}
+
+/* =================== MISSY Combat Kit (SUPPORT/LOOT) =================== */
+function missy_useSkill(a,key){
+  if(!cdReady(a.id,key)) return;
+  if(st._globalSkillLock>0) return;
+  a._castInvT=Math.max(a._castInvT||0,2000);
+  
+  if(key==='S1'){
+    // S1 (Lucky Charm Volley): Fast poke that marks enemies and adds clovers
+    addCast(a.x,a.y,'#ffd56a');
+    for(let i=0;i<3;i++){
+      setTimeout(()=>{
+        st.shots.push({
+          kind:'missy_charm', x:a.x+15, y:a.y-35, vx:800, vy:(i-1)*50,
+          dmg:Math.round(a.dmg*1.2), life:1500, w:16, h:16,
+          color:'#ffd56a', mark:true, addClover:true, ownerId:'Missy'
+        });
+      }, i*120);
+    }
+    
+    // Add clover to Missy's state
+    if(!a._clovers) a._clovers = 0;
+    a._clovers = Math.min(10, a._clovers + 1); // Max 10 clovers
+    addFloater(a.x, a.y-70, `Clover x${a._clovers}`, '#ffd56a');
+  } else if(key==='S2'){
+    // S2 (Winged Aegis v2): Dome that reflects and heals
+    addCast(a.x,a.y,'#36c777');
+    st.shots.push({
+      kind:'missy_dome', x:a.x, y:a.y-50, vx:0, vy:0,
+      life:8000, w:160, h:160, color:'#36c777',
+      reflect:true, healPulse:true, ownerId:'Missy'
+    });
+    
+    // Heal team
+    st.players.forEach(p => {
+      if(!p.isDefeated){
+        const heal = Math.round(p.hpMax * 0.08);
+        p.hp = Math.min(p.hpMax, p.hp + heal);
+        addFloater(p.x, p.y-30, '+'+heal+' HP', '#36c777');
+      }
+    });
+  } else if(key==='S3'){
+    // S3 (Neko Dominion v2): Summon Maneki guardians that taunt
+    addCast(a.x,a.y,'#ff9aa8');
+    for(let i=0;i<2;i++){
+      st.shots.push({
+        kind:'missy_maneki', x:a.x+50+(i*100), y:a.y, vx:0, vy:0,
+        hp:80, hpMax:80, life:12000, w:40, h:60, color:'#ff9aa8',
+        taunt:true, pullRadius:150, tauntCD:2000, ownerId:'Missy'
+      });
+    }
+  } else if(key==='S4'){
+    // S4 (Clover Burst): Consumes clovers for powerful effects
+    if(!a._clovers || a._clovers === 0) {
+      notify('Need clovers for Clover Burst!', '#ff4d4f');
+      return;
+    }
+    
+    const cloverCount = a._clovers;
+    a._clovers = 0; // Consume all clovers
+    
+    // Effects scale with clover count
+    const goldGain = cloverCount * 50;
+    const healAmount = Math.round(cloverCount * 0.05 * a.hpMax);
+    
+    // Grant gold and healing
+    st.gold += goldGain;
+    st.players.forEach(p => {
+      if(!p.isDefeated) {
+        p.hp = Math.min(p.hpMax, p.hp + healAmount);
+        addFloater(p.x, p.y-30, '+'+healAmount+' HP', '#36c777');
+      }
+    });
+    
+    // Create luck burst that affects drops
+    st.shots.push({
+      kind:'missy_clover_burst', x:a.x, y:a.y-40, vx:0, vy:0,
+      life:5000, w:300, h:300, color:'#ffd56a', aoe:300,
+      luckMultiplier:1 + (cloverCount * 0.2), ownerId:'Missy'
+    });
+    
+    updateCurrencies();
+    addFloater(a.x, a.y-60, `+${goldGain} Gold!`, '#ffd56a');
+    addFloater(a.x, a.y-90, `${cloverCount} Clovers Used!`, '#ffd56a');
+  } else if(key==='S5'){
+    // S5 (Sacrificial Gambit): Costs 25% team HP for massive buff
+    const totalHpCost = st.players.reduce((sum, p) => sum + Math.round(p.hp * 0.25), 0);
+    
+    let canAfford = true;
+    st.players.forEach(p => {
+      if(!p.isDefeated && p.hp <= Math.round(p.hp * 0.25)) canAfford = false;
+    });
+    
+    if(!canAfford) {
+      notify('Team needs more HP for Gambit!', '#ff4d4f');
+      return;
+    }
+    
+    // Take HP from all players
+    st.players.forEach(p => {
+      if(!p.isDefeated){
+        const cost = Math.round(p.hp * 0.25);
+        p.hp -= cost;
+        addFloater(p.x, p.y-30, '-'+cost+' HP', '#ff4d4f');
+        
+        // Grant massive buff
+        p._critBuff = 5000; // 5 seconds 100% crit
+        p._invulnBuff = 5000; // 5 seconds invulnerability
+        addFloater(p.x, p.y-60, 'GAMBIT!', '#ffaa00');
+      }
+    });
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  } else if(key==='X1'){
+    // X1 (Sovereign Parade): Royal procession with bells, costs 20% Max HP
+    if(a.secretGauge < a.secretMax) {
+      notify('Secret gauge not ready!', '#ff4d4f');
+      return;
+    }
+    
+    const hpCost = Math.round(a.hpMax * 0.20);
+    if(a.hp <= hpCost) {
+      notify('Not enough HP for Parade!', '#ff4d4f');
+      return;
+    }
+    
+    a.hp -= hpCost;
+    a.secretGauge = 0;
+    addFloater(a.x, a.y-30, '-'+hpCost+' HP', '#ff4d4f');
+    
+    // Create royal bells and procession
+    for(let i=0;i<2;i++){
+      st.shots.push({
+        kind:'missy_royal_bell', x:a.x+80+(i*120), y:a.y-80, vx:0, vy:0,
+        hp:200, hpMax:200, life:20000, w:60, h:80, color:'#ffd56a',
+        healRate:400, lootPull:true, convertBullets:true, lastHeal:0, ownerId:'Missy'
+      });
+    }
+    
+    // Create procession effect
+    st.shots.push({
+      kind:'missy_procession', x:a.x, y:a.y, vx:0, vy:0,
+      life:20000, w:400, h:200, color:'#ff9aa8',
+      globalHeal:true, globalLuck:true, ownerId:'Missy'
+    });
+    
+    // Crescendo Reset
+    if(st.cds[a.id]){st.cds[a.id].S1=0; st.cds[a.id].S2=0;}
+  }
+  startCD(a.id,key);
+}
+
+function updateA1RageMode(a, dtMs){
+  if(!a) return;
+  if(a.rageOn){
+    a.rageDur-=dtMs;
+    st._globalSkillLock=Math.max(st._globalSkillLock||0,200);
+    if(a.rageDur<=0){
+      a.rageOn=false;
+      a._rageTrailT=1000;
+    }
+  } else {
+    if(a.rage>=a.rageMax && a.rageICD<=0){
+      // Activate automatically only if player pressed Rage button; logic outside
+    }
+  }
+  if(a.rageICD>0) a.rageICD-=dtMs;
+  if(a._rageTrailT>0) a._rageTrailT-=dtMs;
+}
+
+/* ================ Legacy helper stubs reused ================ */
+function laneY(l){ return (DESIGN_H - 100) + (l===0?-30:(l===2?30:0)); }
+function addAfterImage(x,y,color='#ff4d4f'){ st.effects.push({kind:'after',x,y,color,life:160,max:160}); }
+function addCast(x,y,color){ st.effects.push({kind:'cast',x,y,color,life:320,max:320}); }
+function addImpact(x,y,color){ st.effects.push({kind:'impact',x,y,color,life:260,max:260}); }
+function wave(a,mul,tint,fixed){
+  const w=46,h=14;
+  st.shots.push({
+    kind:'wave',color:tint||'#9ad1ff',w,h,
+    x:a.x+24,y:a.y-40,vx:640,vy:0,speed:640,
+    dmg:fixed!=null?fixed:Math.round(a.dmg*mul),
+    life:2000,laneY:a.y,homing:false,pierce:2,ownerId:a.id
+  });
+}
+function melee(a,reach,height,dmg){
+  // Basic forward rectangle
+  let hit=false;
+  for(const e of st.enemies){
+    if(e.hp>0 && e.x>a.x && (e.x-a.x)<=reach && Math.abs(e.y-a.y)<=height/2){
+      let real=dmg;
+      if(e.armorShredDebuff) real=Math.round(real*(1+e.armorShredDebuff));
+      e.hp-=real; hit=true;
+      addFloater(e.x,e.y-20,'-'+real,'#ff7a6a');
+      if(e.hp<=0) onEnemyKilled(e);
+    }
+  }
+  if(hit) addImpact(a.x+reach/2,a.y-40,'#ff7a6a');
+  // Parry window synergy
+  st.parryT=Math.max(st.parryT,500);
+}
+
+/* ================= Cooldowns ================== */
+const CD = {
+  'A1':{S1:6000,S2:10000,S3:16000,S4:14000,S5:45000,X1:120000},
+  'Unique':{S1:6000,S2:10000,S3:16000,S4:20000,S5:35000,X1:120000},
+  'Missy':{S1:6000,S2:10000,S3:16000,S4:18000,S5:30000,X1:120000}
+};
+function cdReady(id,key){return st.cds[id] && st.cds[id][key]<=0;}
+function startCD(id,key){ if(st.cds[id]) st.cds[id][key]=CD[id][key]; }
+
+/* ================= S4 Release Handler ================= */
+function releaseS4(player) {
+  if(!player || player.isDefeated) return;
+  
+  if(player.id === 'Unique') {
+    unique_releaseStellarAnnihilator(player);
+  } else if(player.id === 'A1') {
+    // A1 doesn't have hold-to-charge S4, treat as instant
+    // Could implement A1's S4 here if needed
+  } else if(player.id === 'Missy') {
+    // Missy's S4 could be implemented here
+  }
+}
+
+/* ================== Rage Activation ================== */
+function triggerRageFor(p){
+  if(p.rage>=p.rageMax && !p.rageOn && p.rageICD<=0){
+    p.rageOn=true; p.rage=0; p.rageDur=10000; p.rageICD=20000;
+    addCast(p.x+12,p.y-44,'#f9cc2b');
+    notify(p.id+' Rage!');
+  }
+}
+
+/* ================== Spawn Wave & Enemies ================== */
+function spawnWave(){
+  // Enhanced spawning with flying enemies and better variety
+  const count = 8 + Math.floor(Math.random()*5) + st.wave;
+  const flyingChance = Math.min(0.4, 0.1 + st.stage * 0.05); // Increases with stage
+  
+  for(let i=0;i<count;i++){
+    const hp=80 + st.stage*40 + st.wave*10;
+    const isFlying = Math.random() < flyingChance;
+    
+    const e={
+      kind: isFlying ? 'flyer' : 'mob',
+      x:DESIGN_W+40+i*40,
+      y: isFlying ? (200 + Math.random()*200) : laneY(i%3), // Flying enemies at variable height
+      hp:hp, max:hp,
+      vx: isFlying ? (-0.15 - 0.008*st.stage) : (-0.25 - 0.01*st.stage),
+      vy: isFlying ? (Math.sin(performance.now()*0.002 + i)*0.1) : 0, // Flying sine wave movement
+      fireCD:800+Math.random()*600,
+      isFlying: isFlying,
+      originalY: isFlying ? (200 + Math.random()*200) : laneY(i%3) // Store original Y for sine wave
+    };
+    
+    // Enhanced role & behavior assignment
+    if(isFlying){
+      e.role = 'shooter'; // Flying enemies are primarily shooters
+      e.behavior = 'aerial'; // Special aerial behavior
+      e.hp = Math.round(e.hp * 0.8); // Flying enemies have less HP but harder to hit
+      e.max = e.hp;
+      e.diveBombCD = 3000 + Math.random()*2000; // Can dive bomb occasionally
+    } else {
+      e.role = Math.random()<0.6?'shooter':'melee'; // More shooters in later waves
+      e.behavior = Math.random()<0.35?'hitAndRun':'relentless';
+      
+      // Enhanced ground behaviors
+      if(st.stage >= 3 && Math.random() < 0.2){
+        e.behavior = 'berserker'; // New berserker type for late game
+        e.hp = Math.round(e.hp * 1.5);
+        e.max = e.hp;
+        e.vx *= 1.8;
+      }
+    }
+    
+    st.enemies.push(e);
+  }
+  
+  // Spawn interactive objects occasionally
+  if(Math.random() < 0.3){
+    spawnInteractiveObjects();
+  }
+  
+  // Mini-boss chance enhanced
+  if(st.wave>=5 && st.wave<=7 && Math.random()<0.4){
+    const hp=600+st.stage*120;
+    const m={kind:'miniboss',x:DESIGN_W-120,y:laneY(1),hp,max:hp,vx:-0.15,fireCD:600,role:'shooter',behavior:'relentless'};
+    st.enemies.push(m);
+  }
+  
+  // Boss wave every 10 waves
+  if(st.wave === 10){
+    spawnBoss();
+  }
+}
+
+function spawnInteractiveObjects(){
+  const objectTypes = ['chest', 'switch', 'ladder'];
+  const objectType = objectTypes[Math.floor(Math.random() * objectTypes.length)];
+  
+  const x = 300 + Math.random() * 400;
+  const y = laneY(Math.floor(Math.random() * 3));
+  
+  switch(objectType){
+    case 'chest':
+      st.pickups.push({
+        kind: 'chest',
+        x: x,
+        y: y,
+        life: 60000,
+        chestType: 'normal'
+      });
+      break;
+      
+    case 'switch':
+      st.pickups.push({
+        kind: 'switch',
+        x: x,
+        y: y,
+        life: 120000,
+        switchType: Math.random() < 0.5 ? 'treasure' : 'platform',
+        activated: false,
+        singleUse: true
+      });
+      break;
+      
+    case 'ladder':
+      st.pickups.push({
+        kind: 'ladder',
+        x: x,
+        y: y,
+        life: 120000,
+        direction: Math.random() < 0.5 ? 'up' : 'down',
+        singleUse: false
+      });
+      break;
+  }
+}
+
+/* ================= Enhanced Boss Encounters ================= */
+function spawnBoss(){
+  const bossHP = 2000 + st.stage * 800;
+  const boss = {
+    kind: 'boss',
+    x: DESIGN_W - 200,
+    y: laneY(1),
+    hp: bossHP,
+    max: bossHP,
+    vx: -0.05,
+    fireCD: 400,
+    role: 'boss',
+    behavior: 'boss_pattern',
+    rageMode: false,
+    rageTrigger: 0.3, // Activates rage at 30% HP
+    skills: ['boss_slam', 'boss_barrage', 'boss_summon'],
+    lastSkill: 0,
+    skillCD: 5000,
+    skillIndex: 0, // Track which skill to use next
+    enrageTimer: 0,
+    summonedMinions: []
+  };
+  
+  // Enhanced Boss team: add healer and summoner according to blueprint
+  const healer = {
+    kind: 'boss_healer',
+    x: DESIGN_W - 100,
+    y: laneY(0),
+    hp: 400 + st.stage * 100,
+    max: 400 + st.stage * 100,
+    vx: -0.08,
+    role: 'healer',
+    behavior: 'support',
+    healCD: 2000,
+    boss: boss, // Reference to boss for healing
+    healPower: 0.15, // Heals 15% of boss max HP
+    priority: 'high' // AI targets this first
+  };
+  
+  const summoner = {
+    kind: 'boss_summoner',
+    x: DESIGN_W - 100,
+    y: laneY(2),
+    hp: 350 + st.stage * 80,
+    max: 350 + st.stage * 80,
+    vx: -0.08,
+    role: 'summoner',
+    behavior: 'support',
+    summonCD: 4000,
+    maxMinions: 3,
+    summonTypes: ['warrior', 'archer', 'mage'],
+    priority: 'high' // AI targets this first
+  };
+  
+  st.enemies.push(boss, healer, summoner);
+  st.bossAlive = true;
+  st.bossHP = boss.hp;
+  st.bossMax = boss.max;
+  
+  // Boss encounter announcement
+  notify(`BOSS ENCOUNTER: Stage ${st.stage} Guardian!`, '#ff4d4f');
+  addFloater(boss.x, boss.y-80, 'BOSS FIGHT!', '#ff4d4f');
+}
+
+/* ================= Enhanced Boss Skills System ================= */
+function useBossSkill(boss){
+  if(!boss.skills || boss.skills.length === 0) return;
+  
+  // Use skills in sequence for more predictable patterns
+  const skill = boss.skills[boss.skillIndex % boss.skills.length];
+  boss.skillIndex++;
+  
+  // Enhanced skill effects based on rage mode
+  const rageMultiplier = boss.rageMode ? 1.5 : 1.0;
+  const stageMultiplier = 1 + (st.stage - 1) * 0.2;
+  
+  switch(skill){
+    case 'boss_slam':
+      // Enhanced ground slam that hits all lanes with warning
+      addCast(boss.x, boss.y, '#ff4d4f');
+      
+      // Warning indicators first
+      for(let lane=0; lane<3; lane++){
+        addCast(boss.x-100, laneY(lane), '#ffaa00');
+      }
+      
+      setTimeout(()=>{
+        for(let lane=0; lane<3; lane++){
+          st.shots.push({
+            kind:'boss_slam', x:boss.x-100, y:laneY(lane), vx:0, vy:0,
+            dmg:Math.round((30 + st.stage*8) * rageMultiplier), life:500, aoe:150,
+            color:'#ff4d4f', ownerId:'boss', shockwave: true
+          });
+          
+          // Shockwave effect that travels outward
+          st.shots.push({
+            kind:'boss_shockwave', x:boss.x-100, y:laneY(lane), vx:-200, vy:0,
+            dmg:Math.round((15 + st.stage*4) * rageMultiplier), life:2000, aoe:80,
+            color:'#ff6aa8', ownerId:'boss'
+          });
+        }
+        addImpact(boss.x-100, boss.y, '#ff4d4f');
+        notify('BOSS SLAM!', '#ff4d4f');
+      }, 1200); // 1.2 second warning
+      break;
+      
+    case 'boss_barrage':
+      // Enhanced rapid fire projectiles with better patterns
+      addCast(boss.x, boss.y, '#ff6aa8');
+      const projectileCount = boss.rageMode ? 12 : 8;
+      
+      for(let i=0;i<projectileCount;i++){
+        setTimeout(()=>{
+          const angle = (i / projectileCount) * Math.PI * 2;
+          const speed = 300 + Math.random()*200;
+          st.eShots.push({
+            x:boss.x-20, y:boss.y-20, 
+            vx:Math.cos(angle) * speed * -1, 
+            vy:Math.sin(angle) * speed, 
+            life:4000,
+            dmg:Math.round((12+st.stage*2) * rageMultiplier), 
+            color:'#ff6aa8',
+            homing: boss.rageMode // Homing in rage mode
+          });
+        }, i*150);
+      }
+      notify('BOSS BARRAGE!', '#ff6aa8');
+      break;
+      
+    case 'boss_summon':
+      // Enhanced summon reinforcements with variety
+      addCast(boss.x, boss.y, '#8b00ff');
+      const summonCount = boss.rageMode ? 5 : 3;
+      
+      for(let i=0;i<summonCount;i++){
+        const minionType = ['warrior', 'archer', 'mage'][i % 3];
+        const minion = createBossMinion(boss.x+100+i*40, laneY(i%3), minionType, stageMultiplier);
+        st.enemies.push(minion);
+        boss.summonedMinions.push(minion);
+      }
+      notify(`BOSS SUMMON: ${summonCount} minions!`, '#8b00ff');
+      break;
+  }
+  
+  // Reduce cooldown in rage mode
+  boss.skillCD = boss.rageMode ? 3000 : 5000;
+}
+
+function createBossMinion(x, y, type, stageMultiplier){
+  const baseHP = 120 * stageMultiplier;
+  
+  const minion = {
+    kind:'boss_minion',
+    minionType: type,
+    x:x, y:y,
+    hp:Math.round(baseHP), max:Math.round(baseHP), 
+    vx:-0.2, fireCD:1000,
+    role:'melee', behavior:'relentless'
+  };
+  
+  switch(type){
+    case 'warrior':
+      minion.hp = Math.round(baseHP * 1.5);
+      minion.max = minion.hp;
+      minion.role = 'melee';
+      minion.behavior = 'berserker';
+      minion.vx = -0.3;
+      break;
+    case 'archer':
+      minion.role = 'shooter';
+      minion.behavior = 'hitAndRun';
+      minion.fireCD = 600;
+      minion.vx = -0.15;
+      break;
+    case 'mage':
+      minion.hp = Math.round(baseHP * 0.8);
+      minion.max = minion.hp;
+      minion.role = 'caster';
+      minion.behavior = 'support';
+      minion.fireCD = 1200;
+      minion.vx = -0.1;
+      minion.spellCD = 3000;
+      break;
+  }
+  
+  return minion;
+}
+
+/* ================= Post-Campaign Endless Mode ================= */
+function checkEndlessMode(){
+  if(st.stage >= 10 && st.wave > st.wavesPerStage && !st.endlessUnlocked){
+    st.endlessUnlocked = true;
+    st.endlessMode = true;
+    st.stage = 11; // Start endless at stage 11
+    st.wave = 1;
+    
+    notify('ENDLESS MODE UNLOCKED!', '#ffaa00');
+    notify('Infinite scaling difficulty begins!', '#6aa8ff');
+    
+    // Reset some stats for endless mode
+    st.endlessScore = st.kills * 100 + st.gold + st.gems * 1000;
+    st.endlessStartTime = performance.now();
+    
+    spawnEndlessWave();
+  }
+}
+
+function spawnEndlessWave(){
+  if(!st.endlessMode) return spawnWave();
+  
+  // Endless mode: exponentially scaling difficulty
+  const difficultyMultiplier = Math.pow(1.15, st.stage - 10); // 15% increase per stage
+  const count = Math.floor((12 + st.wave * 2) * difficultyMultiplier);
+  
+  for(let i=0;i<count;i++){
+    const hp = Math.floor((120 + st.stage*60 + st.wave*20) * difficultyMultiplier);
+    const isElite = Math.random() < 0.1 + (st.stage - 10) * 0.02; // Elite chance increases
+    
+    const e={
+      kind: isElite ? 'elite' : 'mob',
+      x:DESIGN_W+40+i*30,
+      y: laneY(i%3),
+      hp:hp, max:hp,
+      vx: -0.3 - 0.02*st.stage,
+      fireCD:600 - st.stage*10,
+      role: Math.random()<0.7?'shooter':'melee',
+      behavior: isElite ? 'berserker' : (Math.random()<0.4?'hitAndRun':'relentless')
+    };
+    
+    if(isElite){
+      e.hp = Math.round(e.hp * 2);
+      e.max = e.hp;
+      e.vx *= 1.5;
+      e.fireCD = Math.max(200, e.fireCD * 0.5);
+    }
+    
+    st.enemies.push(e);
+  }
+  
+  // Boss every 5 waves in endless mode
+  if(st.wave % 5 === 0){
+    spawnEndlessBoss(difficultyMultiplier);
+  }
+  
+  // Update endless score
+  st.endlessScore += count * 10;
+}
+
+function spawnEndlessBoss(difficultyMultiplier){
+  const bossHP = Math.floor(2500 * difficultyMultiplier);
+  const boss = {
+    kind: 'endless_boss',
+    x: DESIGN_W - 200,
+    y: laneY(1),
+    hp: bossHP,
+    max: bossHP,
+    vx: -0.05,
+    fireCD: Math.max(200, 400 - st.stage*5),
+    role: 'boss',
+    behavior: 'boss_pattern',
+    rageMode: false,
+    rageTrigger: 0.4, // Rage at 40% in endless
+    skills: ['boss_slam', 'boss_barrage', 'boss_summon', 'boss_nova'],
+    skillCD: Math.max(2000, 5000 - st.stage*100),
+    endlessLevel: st.stage - 10
+  };
+  
+  st.enemies.push(boss);
+  st.bossAlive = true;
+  st.bossHP = boss.hp;
+  st.bossMax = boss.max;
+  
+  notify(`ENDLESS BOSS LV${boss.endlessLevel}!`, '#ff4d4f');
+}
+
+/* ================= Daily Quests System ================= */
+function initializeDailyQuests(){
+  if(!st.dailyQuests) st.dailyQuests = [];
+  if(!st.lastQuestRefresh) st.lastQuestRefresh = 0;
+  
+  const now = Date.now();
+  const dayInMs = 24 * 60 * 60 * 1000;
+  
+  // Refresh quests if it's been more than a day
+  if(now - st.lastQuestRefresh > dayInMs){
+    generateDailyQuests();
+    st.lastQuestRefresh = now;
+  }
+}
+
+function generateDailyQuests(){
+  st.dailyQuests = [];
+  
+  const questTemplates = [
+    {
+      id: 'kill_enemies',
+      name: 'Enemy Hunter',
+      description: 'Defeat 100 enemies',
+      target: 100,
+      progress: 0,
+      reward: {gold: 500, gems: 10},
+      type: 'kills'
+    },
+    {
+      id: 'reach_stage',
+      name: 'Stage Clear',
+      description: 'Reach Stage 5',
+      target: 5,
+      progress: Math.max(1, st.stage),
+      reward: {gold: 300, tickets: 5},
+      type: 'stage'
+    },
+    {
+      id: 'boss_kills',
+      name: 'Boss Slayer',
+      description: 'Defeat 3 bosses',
+      target: 3,
+      progress: 0,
+      reward: {gems: 25, bossKeys: 2},
+      type: 'bosses'
+    },
+    {
+      id: 'use_skills',
+      name: 'Skill Master',
+      description: 'Use 50 skills',
+      target: 50,
+      progress: 0,
+      reward: {gold: 200, silver: 100},
+      type: 'skills'
+    },
+    {
+      id: 'collect_gold',
+      name: 'Treasure Hunter',
+      description: 'Collect 2000 gold',
+      target: 2000,
+      progress: 0,
+      reward: {gems: 15, giftKeys: 3},
+      type: 'gold'
+    }
+  ];
+  
+  // Pick 3 random quests for today
+  for(let i = 0; i < 3; i++){
+    const template = questTemplates[Math.floor(Math.random() * questTemplates.length)];
+    const quest = JSON.parse(JSON.stringify(template)); // Deep copy
+    quest.id += '_' + Date.now() + '_' + i; // Unique ID
+    st.dailyQuests.push(quest);
+  }
+  
+  notify('Daily Quests Updated!', '#6aa8ff');
+}
+
+function updateQuestProgress(type, amount = 1){
+  if(!st.dailyQuests) return;
+  
+  st.dailyQuests.forEach(quest => {
+    if(quest.type === type && !quest.completed){
+      quest.progress = Math.min(quest.target, quest.progress + amount);
+      
+      if(quest.progress >= quest.target && !quest.completed){
+        quest.completed = true;
+        claimQuestReward(quest);
+      }
+    }
+  });
+}
+
+function claimQuestReward(quest){
+  const reward = quest.reward;
+  
+  if(reward.gold) { st.gold += reward.gold; }
+  if(reward.silver) { st.silver += reward.silver; }
+  if(reward.gems) { st.gems += reward.gems; }
+  if(reward.tickets) { st.tickets += reward.tickets; }
+  if(reward.giftKeys) { st.giftKeys += reward.giftKeys; }
+  if(reward.bossKeys) { st.bossKeys += reward.bossKeys; }
+  
+  updateCurrencies();
+  notify(`Quest Complete: ${quest.name}!`, '#ffaa00');
+  
+  // Show rewards
+  let rewardText = 'Rewards: ';
+  Object.keys(reward).forEach(key => {
+    rewardText += `${reward[key]} ${key} `;
+  });
+  notify(rewardText, '#6aa8ff');
+}
+
+/* ================= Enhanced Universal Action Button System ================= */
+function performContextAction(){
+  const L = leader();
+  if(!L || L.isDefeated) return;
+  
+  // Check for nearby interactables in priority order
+  const nearbyItems = findNearbyInteractables(L);
+  
+  if(nearbyItems.chests.length > 0){
+    // Open nearest chest carefully
+    const chest = nearbyItems.chests[0];
+    openChest(chest);
+    updateActionButtonText();
+  } else if(nearbyItems.vehicles.length > 0){
+    // Enter nearest vehicle
+    const vehicle = nearbyItems.vehicles[0];
+    enterVehicle(L, vehicle);
+    updateActionButtonText();
+  } else if(nearbyItems.ladders.length > 0){
+    // Climb ladder
+    const ladder = nearbyItems.ladders[0];
+    climbLadder(L, ladder);
+    updateActionButtonText();
+  } else if(nearbyItems.stunnedEnemies.length > 0){
+    // Grab stunned enemy
+    const enemy = nearbyItems.stunnedEnemies[0];
+    grabAndThrowEnemy(L, enemy);
+    updateActionButtonText();
+  } else if(nearbyItems.pets.length > 0){
+    // Pick up pet
+    const pet = nearbyItems.pets[0];
+    pickupPet(L, pet);
+    updateActionButtonText();
+  } else if(nearbyItems.throwables.length > 0){
+    // Pick up and throw item
+    const item = nearbyItems.throwables[0];
+    throwItem(L, item);
+    updateActionButtonText();
+  } else if(nearbyItems.switches.length > 0){
+    // Activate switch
+    const switch_ = nearbyItems.switches[0];
+    activateSwitch(L, switch_);
+    updateActionButtonText();
+  } else {
+    // Default action: basic attack
+    basicAttackAction(L);
+  }
+}
+
+function findNearbyInteractables(player){
+  const range = 80;
+  const result = {
+    chests: [], vehicles: [], pets: [], throwables: [], 
+    ladders: [], stunnedEnemies: [], switches: []
+  };
+  
+  // Check pickups for chests, pets, etc.
+  for(const pickup of st.pickups){
+    const dist = Math.hypot(pickup.x - player.x, pickup.y - player.y);
+    if(dist < range){
+      if(pickup.kind === 'chest') result.chests.push(pickup);
+      else if(pickup.kind === 'pet') result.pets.push(pickup);
+      else if(pickup.kind === 'ladder') result.ladders.push(pickup);
+      else if(pickup.kind === 'switch') result.switches.push(pickup);
+      else if(pickup.throwable) result.throwables.push(pickup);
+    }
+  }
+  
+  // Check for vehicles (if implemented)
+  if(st.vehicles){
+    for(const vehicle of st.vehicles){
+      const dist = Math.hypot(vehicle.x - player.x, vehicle.y - player.y);
+      if(dist < range) result.vehicles.push(vehicle);
+    }
+  }
+  
+  // Check for stunned enemies
+  for(const enemy of st.enemies){
+    if(enemy.stunned && enemy.hp > 0){
+      const dist = Math.hypot(enemy.x - player.x, enemy.y - player.y);
+      if(dist < range) result.stunnedEnemies.push(enemy);
+    }
+  }
+  
+  return result;
+}
+
+function updateActionButtonText(){
+  const L = leader();
+  if(!L || L.isDefeated) return;
+  
+  const nearby = findNearbyInteractables(L);
+  const btn = document.getElementById('btnAction');
+  
+  if(nearby.chests.length > 0){
+    btn.textContent = 'OPEN';
+    btn.title = 'Open Chest';
+  } else if(nearby.vehicles.length > 0){
+    btn.textContent = 'RIDE';
+    btn.title = 'Enter Vehicle';
+  } else if(nearby.ladders.length > 0){
+    btn.textContent = 'CLIMB';
+    btn.title = 'Climb Ladder';
+  } else if(nearby.stunnedEnemies.length > 0){
+    btn.textContent = 'GRAB';
+    btn.title = 'Grab Stunned Enemy';
+  } else if(nearby.pets.length > 0){
+    btn.textContent = 'PET';
+    btn.title = 'Pickup Pet';
+  } else if(nearby.throwables.length > 0){
+    btn.textContent = 'GRAB';
+    btn.title = 'Throw Item';
+  } else if(nearby.switches.length > 0){
+    btn.textContent = 'USE';
+    btn.title = 'Activate Switch';
+  } else {
+    btn.textContent = 'ACT';
+    btn.title = 'Context Action';
+  }
+}
+
+/* ================= Enhanced Interactive Objects ================= */
+function climbLadder(player, ladder){
+  // Move player up/down based on ladder direction
+  if(ladder.direction === 'up'){
+    player.y -= 100;
+    notify(player.id + ' climbed up!', '#6aa8ff');
+  } else {
+    player.y += 100;
+    notify(player.id + ' climbed down!', '#6aa8ff');
+  }
+  
+  // Remove ladder use or make it multi-use
+  if(ladder.singleUse){
+    const idx = st.pickups.indexOf(ladder);
+    if(idx >= 0) st.pickups.splice(idx, 1);
+  }
+}
+
+function grabAndThrowEnemy(player, enemy){
+  // Create a thrown enemy projectile
+  enemy.stunned = false; // Remove stun
+  enemy.hp = 0; // Kill the enemy
+  
+  // Create projectile
+  st.shots.push({
+    kind: 'thrown_enemy',
+    x: player.x + 20,
+    y: player.y - 30,
+    vx: 600,
+    vy: -150,
+    dmg: Math.round(player.dmg * 2),
+    life: 3000,
+    w: 40,
+    h: 40,
+    color: '#ff6e6e',
+    gravity: true,
+    aoe: 60,
+    ownerId: player.id
+  });
+  
+  notify('Enemy thrown!', '#ff6aa8');
+  onEnemyKilled(enemy); // Grant rewards
+}
+
+function activateSwitch(player, switch_){
+  if(switch_.activated) return;
+  
+  switch_.activated = true;
+  switch_.activatedBy = player.id;
+  
+  // Switch effects based on type
+  switch(switch_.switchType){
+    case 'door':
+      // Open door (would need door system)
+      notify('Door opened!', '#6aa8ff');
+      break;
+    case 'platform':
+      // Activate moving platform
+      notify('Platform activated!', '#6aa8ff');
+      break;
+    case 'treasure':
+      // Spawn treasure
+      spawnTreasureRoom();
+      notify('Secret treasure revealed!', '#ffd56a');
+      break;
+    case 'teleporter':
+      // Teleport player
+      teleportPlayer(player, switch_.destination);
+      break;
+    default:
+      notify('Switch activated!', '#6aa8ff');
+  }
+  
+  // Visual feedback
+  addCast(switch_.x, switch_.y, '#6aa8ff');
+  
+  // Remove switch if single use
+  if(switch_.singleUse){
+    const idx = st.pickups.indexOf(switch_);
+    if(idx >= 0) st.pickups.splice(idx, 1);
+  }
+}
+
+function teleportPlayer(player, destination){
+  if(!destination) return;
+  
+  // Teleport effect
+  addCast(player.x, player.y, '#8b00ff');
+  
+  player.x = destination.x || player.x;
+  player.y = destination.y || player.y;
+  
+  addCast(player.x, player.y, '#8b00ff');
+  notify(player.id + ' teleported!', '#8b00ff');
+}
+
+function spawnTreasureRoom(){
+  // Spawn multiple high-value items
+  for(let i = 0; i < 3; i++){
+    const chest = {
+      kind: 'chest',
+      x: 400 + i * 100,
+      y: laneY(1),
+      life: 30000,
+      chestType: 'treasure',
+      throwable: false
+    };
+    st.pickups.push(chest);
+  }
+  
+  // Spawn special currency
+  st.gems += 50;
+  st.giftKeys += 5;
+  updateCurrencies();
+}
+
+/* ================== Basic Pet System ================== */
+function pickupPet(player, petPickup){
+  // Add pet to player's collection
+  if(!st.activePets) st.activePets = [];
+  
+  const pet = {
+    id: Math.random(),
+    name: petPickup.petName || 'Companion',
+    x: player.x - 40,
+    y: player.y - 20,
+    hp: 50,
+    hpMax: 50,
+    owner: player.id,
+    ai: 'follow',
+    fireCD: 1500,
+    reviveCD: 0
+  };
+  
+  st.activePets.push(pet);
+  
+  // Remove pickup
+  const idx = st.pickups.indexOf(petPickup);
+  if(idx >= 0) st.pickups.splice(idx, 1);
+  
+  notify('Pet acquired: ' + pet.name, '#00ff88');
+}
+
+/* ================= Advanced Vehicle Mechanics ================= */
+function enterVehicle(player, vehicle){
+  if(!vehicle.riders) vehicle.riders = [];
+  if(!vehicle.maxRiders) vehicle.maxRiders = 3; // Default 3 seats
+  
+  if(vehicle.riders.length >= vehicle.maxRiders) {
+    notify('Vehicle is full!', '#ff7a6a');
+    return;
+  }
+  
+  // Determine role based on seat
+  const seatIndex = vehicle.riders.length;
+  let role = 'passenger';
+  if(seatIndex === 0) role = 'driver';
+  else if(seatIndex === 1) role = 'gunner';
+  
+  vehicle.riders.push({
+    playerId: player.id,
+    role: role,
+    seatIndex: seatIndex
+  });
+  
+  player._riding = vehicle;
+  player._vehicleRole = role;
+  
+  // Show vehicle selection UI for other heroes
+  if(vehicle.riders.length === 1){
+    showVehicleSelectionUI(vehicle);
+  }
+  
+  notify(`${player.id} entered vehicle as ${role}`, '#6aa8ff');
+  
+  // Update vehicle skills UI
+  updateVehicleSkillsUI(vehicle);
+}
+
+function showVehicleSelectionUI(vehicle){
+  // Create temporary UI for other heroes to join
+  const availableHeroes = st.players.filter(p => !p.isDefeated && !p._riding);
+  
+  if(availableHeroes.length > 0){
+    // Add floating buttons above vehicle for each available hero
+    vehicle._selectionButtons = [];
+    
+    availableHeroes.forEach((hero, index) => {
+      const button = {
+        x: vehicle.x + (index * 60) - 30,
+        y: vehicle.y - 100,
+        w: 50,
+        h: 30,
+        text: hero.id,
+        heroId: hero.id,
+        vehicle: vehicle,
+        life: 10000 // 10 second timeout
+      };
+      vehicle._selectionButtons.push(button);
+    });
+    
+    notify('Other heroes can join! Click hero buttons above vehicle', '#6aa8ff');
+  }
+}
+
+function updateVehicleSelectionButtons(dtMs){
+  if(!st.vehicles) return;
+  
+  for(const vehicle of st.vehicles){
+    if(vehicle._selectionButtons){
+      // Update button timers
+      vehicle._selectionButtons.forEach(btn => btn.life -= dtMs);
+      
+      // Remove expired buttons
+      vehicle._selectionButtons = vehicle._selectionButtons.filter(btn => btn.life > 0);
+      
+      // Clear selection UI if no buttons left
+      if(vehicle._selectionButtons.length === 0){
+        delete vehicle._selectionButtons;
+      }
+    }
+  }
+}
+
+function handleVehicleButtonClick(x, y){
+  if(!st.vehicles) return;
+  
+  for(const vehicle of st.vehicles){
+    if(vehicle._selectionButtons){
+      for(const btn of vehicle._selectionButtons){
+        const dist = Math.hypot(x - btn.x, y - btn.y);
+        if(dist < 30){ // Click radius
+          const hero = st.players.find(p => p.id === btn.heroId);
+          if(hero && !hero._riding && !hero.isDefeated){
+            enterVehicle(hero, vehicle);
+            // Remove this button
+            const idx = vehicle._selectionButtons.indexOf(btn);
+            if(idx >= 0) vehicle._selectionButtons.splice(idx, 1);
+          }
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function updateVehicleSkillsUI(vehicle){
+  // Create/update vehicle skills UI
+  if(!vehicle.skills) vehicle.skills = ['V1', 'V2']; // Default vehicle skills
+  
+  // This would create floating skill buttons above the vehicle
+  // For now, we'll add them to the main UI when someone is driving
+  const driver = vehicle.riders.find(r => r.role === 'driver');
+  if(driver && st.players[st.leader].id === driver.playerId){
+    // Show vehicle skills in main UI (could be implemented as overlay)
+    notify('Vehicle skills: V1, V2 available', '#6aa8ff');
+  }
+}
+
+function exitVehicle(player){
+  if(!player._riding) return;
+  
+  const vehicle = player._riding;
+  const riderIndex = vehicle.riders.findIndex(r => r.playerId === player.id);
+  
+  if(riderIndex >= 0){
+    vehicle.riders.splice(riderIndex, 1);
+    
+    // Reassign roles if driver left
+    if(vehicle.riders.length > 0 && player._vehicleRole === 'driver'){
+      vehicle.riders[0].role = 'driver';
+      const newDriver = st.players.find(p => p.id === vehicle.riders[0].playerId);
+      if(newDriver) newDriver._vehicleRole = 'driver';
+    }
+  }
+  
+  player._riding = null;
+  player._vehicleRole = null;
+  
+  notify(`${player.id} exited vehicle`, '#6aa8ff');
+  
+  // Clear selection UI if vehicle is empty
+  if(vehicle.riders.length === 0){
+    delete vehicle._selectionButtons;
+  }
+}
+
+function useVehicleSkill(vehicle, skillKey){
+  const driver = vehicle.riders.find(r => r.role === 'driver');
+  if(!driver) return;
+  
+  const driverPlayer = st.players.find(p => p.id === driver.playerId);
+  if(!driverPlayer) return;
+  
+  if(skillKey === 'V1'){
+    // Vehicle Boost - temporary speed increase
+    vehicle._boost = 5000; // 5 second boost
+    addCast(vehicle.x, vehicle.y, '#ffaa00');
+    notify('Vehicle Boost Activated!', '#ffaa00');
+  } else if(skillKey === 'V2'){
+    // Vehicle Weapon - all passengers fire
+    vehicle.riders.forEach(rider => {
+      const passenger = st.players.find(p => p.id === rider.playerId);
+      if(passenger){
+        // Fire from vehicle position
+        st.shots.push({
+          x: vehicle.x + (rider.seatIndex * 20),
+          y: vehicle.y - 20,
+          vx: 700,
+          vy: 0,
+          dmg: Math.round(passenger.dmg * 1.5),
+          life: 1500,
+          color: '#ff6aa8',
+          ownerId: passenger.id
+        });
+      }
+    });
+    addCast(vehicle.x, vehicle.y, '#ff6aa8');
+    notify('Vehicle Weapons Fired!', '#ff6aa8');
+  }
+}
+
+function updateVehicles(dtMs){
+  if(!st.vehicles) return;
+  
+  for(const vehicle of st.vehicles){
+    // Update boost timer
+    if(vehicle._boost > 0){
+      vehicle._boost -= dtMs;
+    }
+    
+    // Move vehicle if it has a driver
+    const driver = vehicle.riders && vehicle.riders.find(r => r.role === 'driver');
+    if(driver){
+      const driverPlayer = st.players.find(p => p.id === driver.playerId);
+      if(driverPlayer){
+        // Vehicle moves based on driver input
+        const speed = vehicle._boost > 0 ? 1.5 : 1.0;
+        vehicle.x += joyX * 0.7 * speed;
+        vehicle.y += joyY * 0.7 * speed;
+        
+        // Keep vehicle in bounds
+        vehicle.x = Math.max(60, Math.min(DESIGN_W - 60, vehicle.x));
+        vehicle.y = Math.max(100, Math.min(DESIGN_H - 100, vehicle.y));
+        
+        // Update all riders' positions
+        vehicle.riders.forEach((rider, index) => {
+          const passenger = st.players.find(p => p.id === rider.playerId);
+          if(passenger){
+            passenger.x = vehicle.x + (index * 15) - 30;
+            passenger.y = vehicle.y;
+          }
+        });
+      }
+    }
+  }
+  
+  updateVehicleSelectionButtons(dtMs);
+}
+
+/* ================== Throwable System ================== */
+function throwItem(player, item){
+  // Create projectile from thrown item
+  st.shots.push({
+    kind: 'thrown_item',
+    x: player.x + 20,
+    y: player.y - 30,
+    vx: 400,
+    vy: -100,
+    dmg: 25,
+    life: 2000,
+    w: 20,
+    h: 20,
+    color: '#ffaa00',
+    gravity: true,
+    ownerId: player.id
+  });
+  
+  // Remove from pickups
+  const idx = st.pickups.indexOf(item);
+  if(idx >= 0) st.pickups.splice(idx, 1);
+  
+  notify('Item thrown!', '#ffaa00');
+}
+
+/* ================== Pet AI System ================== */
+function updatePets(dtMs){
+  if(!st.activePets) return;
+  
+  for(const pet of st.activePets){
+    if(pet.hp <= 0){
+      if(pet.reviveCD > 0){
+        pet.reviveCD -= dtMs;
+        if(pet.reviveCD <= 0){
+          pet.hp = pet.hpMax;
+          addFloater(pet.x, pet.y-30, 'Pet Revived!', '#36c777');
+        }
+      }
+      continue;
+    }
+    
+    // Find owner
+    const owner = st.players.find(p => p.id === pet.owner);
+    if(!owner || owner.isDefeated) continue;
+    
+    // Pet AI behaviors
+    if(pet.ai === 'follow'){
+      // Follow owner at distance
+      const targetX = owner.x - 60;
+      const targetY = owner.y - 40;
+      
+      pet.x += (targetX - pet.x) * 0.15;
+      pet.y += (targetY - pet.y) * 0.15;
+      
+      // Pet combat
+      if(pet.fireCD > 0) pet.fireCD -= dtMs;
+      if(pet.fireCD <= 0){
+        const nearestEnemy = findNearestEnemyToPet(pet);
+        if(nearestEnemy && Math.hypot(nearestEnemy.x - pet.x, nearestEnemy.y - pet.y) < 200){
+          // Pet shoots at enemy
+          const ang = Math.atan2(nearestEnemy.y - pet.y, nearestEnemy.x - pet.x);
+          st.shots.push({
+            x: pet.x, y: pet.y, vx: Math.cos(ang)*400, vy: Math.sin(ang)*400,
+            dmg: 15, life: 1500, color: '#00ff88', ownerId: pet.owner
+          });
+          pet.fireCD = 1500;
+        }
+      }
+    }
+  }
+  
+  // Remove dead pets that have no revive left
+  st.activePets = st.activePets.filter(pet => pet.hp > 0 || pet.reviveCD > 0);
+}
+
+function findNearestEnemyToPet(pet){
+  let nearest = null;
+  let bestDist = Infinity;
+  
+  for(const e of st.enemies){
+    if(e.hp <= 0) continue;
+    const dist = Math.hypot(e.x - pet.x, e.y - pet.y);
+    if(dist < bestDist){
+      bestDist = dist;
+      nearest = e;
+    }
+  }
+  return nearest;
+}
+
+/* ================== Helper Functions ================== */
+function openChest(chest){
+  // Simple chest opening - grants random loot
+  const lootRoll = Math.random();
+  if(lootRoll < 0.6){
+    // Equipment
+    const item = rollLoot('mobChest');
+    if(item) addItemToBag(item);
+  } else if(lootRoll < 0.9){
+    // Gold
+    const gold = 100 + Math.floor(Math.random()*200);
+    st.gold += gold;
+    updateCurrencies();
+    notify('+' + gold + ' Gold', '#ffd56a');
+  } else {
+    // Special items
+    st.giftKeys++;
+    updateCurrencies();
+    notify('+1 Gift Key', '#ff9aa8');
+  }
+  
+  // Remove chest
+  const idx = st.pickups.indexOf(chest);
+  if(idx >= 0) st.pickups.splice(idx, 1);
+  
+  notify('Chest opened!', '#6aa8ff');
+}
+
+function basicAttackAction(player){
+  // Enhanced basic attack
+  if(player.id === 'A1'){
+    a1_basicAttack(player);
+  } else {
+    // Generic basic attack for other characters
+    melee(player, 32, 38, Math.round(player.dmg * 0.8));
+  }
+}
+
+/* ================== Enemy Shooting ================== */
+function enemyShoot(e){
+  const L=leader();
+  if(!L) return;
+  const ang=Math.atan2(L.y-e.y, L.x-e.x);
+  const sp= e.kind==='miniboss'?560:420;
+  const vx=Math.cos(ang)*sp;
+  const vy=Math.sin(ang)*sp;
+  st.eShots.push({x:e.x,y:e.y,vx,vy,speed:sp,life:2500,owner:'enemy'});
+  e._justFired=true;
+}
+
+/* ================== Enemy Death / Drops ================== */
+function onEnemyKilled(e){
+  st.kills++;
+  
+  // Update quest progress
+  updateQuestProgress('kills', 1);
+  if(e.kind === 'boss' || e.kind === 'endless_boss'){
+    updateQuestProgress('bosses', 1);
+    st.bossKills++;
+  }
+  
+  // Fill secret gauge for all active players
+  st.players.forEach(p => {
+    if(!p.isDefeated) {
+      const baseGain = e.kind === 'boss' ? 30 : (e.kind === 'miniboss' ? 15 : 5);
+      fillSecretGauge(p, baseGain);
+    }
+  });
+  
+  // Drops: base gold + chance for gear chest
+  const baseGold=20+Math.floor(Math.random()*40);
+  st.gold+=baseGold;
+  updateQuestProgress('gold', baseGold);
+  updateCurrencies();
+  grantXP(5);
+  // Chest roll
+  const chestRoll=Math.random();
+  const luckScale=1+ (st.luck||0)*0.01;
+  if(e.kind==='miniboss'){
+    const it=rollLoot('miniBossChest');
+    if(it){ addItemToBag(it); notify('Mini-Boss Gear: '+it.name); }
+  } else if(e.kind==='boss' || e.kind==='endless_boss'){
+    st.bossAlive = false;
+    const it=rollLoot('bossChest');
+    if(it){ addItemToBag(it); notify('Boss Gear: '+it.name); }
+    
+    // Endless mode score bonus
+    if(st.endlessMode){
+      st.endlessScore += 1000 * (st.stage - 9);
+    }
+  } else if(chestRoll < 0.02*luckScale){
+    const it=rollLoot('mobChest');
+    if(it){ addItemToBag(it); notify('Loot: '+it.name); }
+  }
+}
+
+/* ================== Currency UI ================== */
+function updateCurrencies(){
+  $('#goldVal').textContent=st.gold;
+  $('#silverVal').textContent=st.silver;
+  $('#ticketVal').textContent=st.tickets;
+  $('#gemVal').textContent=st.gems;
+  $('#bossKillsVal').textContent=st.bossKills;
+  $('#giftKeyVal').textContent=st.giftKeys;
+  $('#bossKeyVal').textContent=st.bossKeys;
+  if(st.bagOpen) $('#bagGoldVal').textContent=st.gold;
+}
+
+/* ================== Input / Controls ================== */
+const SPEEDS=[1,2,3,4,6];
+$('#btnSpeed').onclick=()=>{
+  const i=SPEEDS.indexOf(st.speed);
+  st.speed=SPEEDS[(i+1)%SPEEDS.length];
+  $('#btnSpeed').textContent='×'+st.speed;
+};
+$('#btnStart').onclick=()=>{st.running=!st.running; $('#btnStart').textContent=st.running?'Pause':'Start';};
+$('#btnAuto').onclick=()=>{st.auto=!st.auto; $('#btnAuto').textContent='Auto: '+(st.auto?'ON':'OFF');};
+
+document.getElementById('btnSwitch2').onclick=()=>{
+  let next=(st.leader+1)%st.players.length;
+  // skip defeated heroes
+  for(let i=0;i<st.players.length;i++){
+    if(!st.players[next].isDefeated) break;
+    next=(next+1)%st.players.length;
+  }
+  st.leader=next;
+};
+document.getElementById('btnRage').onclick=()=>triggerRageFor(leader());
+document.getElementById('btnShield').onclick=()=>{ if(!st._shieldOn){ st._shieldOn=true; st._shieldT=2500;} };
+document.getElementById('btnJump').onclick=()=>jumpAll();
+document.getElementById('btnAction').onclick=()=>performContextAction();
+document.getElementById('btnShoot').onpointerdown=()=>hold.shoot=true;
+document.getElementById('btnShoot').onpointerup=()=>hold.shoot=false;
+document.getElementById('btnS1').onclick=()=> useSkillWrapper(leader(),'S1');
+document.getElementById('btnS2').onclick=()=> useSkillWrapper(leader(),'S2');
+document.getElementById('btnS3').onclick=()=> useSkillWrapper(leader(),'S3');
+document.getElementById('btnS4').onpointerdown=()=> useSkillWrapper(leader(),'S4');
+document.getElementById('btnS4').onpointerup=()=> releaseS4(leader());
+document.getElementById('btnS5').onclick=()=> useSkillWrapper(leader(),'S5');
+document.getElementById('btnX1').onclick=()=> useSkillWrapper(leader(),'X1');
+
+const keys={};
+addEventListener('keydown',e=>{
+  keys[e.code]=true;
+  if(e.code==='KeyQ'){ document.getElementById('btnSwitch2').click(); }
+  if(e.code==='Space'){ jumpAll(); }
+  if(e.code==='Digit4'){ useSkillWrapper(leader(),'S4'); }
+});
+addEventListener('keyup',e=>{
+  keys[e.code]=false;
+  if(e.code==='Digit4'){ releaseS4(leader()); }
+});
+
+const stick=document.getElementById('stick'), nub=document.getElementById('nub');
+let joyId=null,joyX=0,joyY=0,lastTap=0;
+stick.addEventListener('pointerdown',e=>{stick.setPointerCapture(e.pointerId);joyId=e.pointerId;onJoy(e);});
+stick.addEventListener('pointermove',e=>{if(e.pointerId===joyId) onJoy(e);});
+stick.addEventListener('pointerup',e=>{
+  if(e.pointerId===joyId){joyId=null;joyX=0;joyY=0;nub.style.left='50%';nub.style.top='50%';const now=performance.now();if(now-lastTap<260) jumpAll(); lastTap=now;}
+});
+function onJoy(e){
+  const r=stick.getBoundingClientRect(); const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  let dx=e.clientX-cx, dy=e.clientY-cy;
+  const m=Math.hypot(dx,dy);const lim=r.width*0.38;
+  if(m>lim){dx=dx/m*lim; dy=dy/m*lim;}
+  nub.style.left=(50+dx/r.width*100)+'%';
+  nub.style.top=(50+dy/r.height*100)+'%';
+  joyX=dx/lim; joyY=dy/lim;
+}
+const hold={shoot:false};
+
+/* ================= Basic Attack Wrapper ================= */
+function basicAttackLoop(){
+  // Only A1's manual hold for now
+  if(hold.shoot){
+    const L=leader();
+    if(L.id==='A1'){
+      if(!L._basicCD || L._basicCD<=0){
+        a1_basicAttack(L);
+        L._basicCD=260; // ms between combo hits
+      }
+    } else {
+      // Placeholder simple shot for other heroes
+      if(!L._basicCD || L._basicCD<=0){
+        st.shots.push({x:L.x+10,y:L.y-40,vx:700,vy:0,speed:700,dmg:L.dmg,life:1600,ownerId:L.id});
+        L._basicCD=420;
+      }
+    }
+  }
+}
+
+/* ================= Jump Logic ================= */
+function jumpAll(){
+  const L=leader();
+  if(L.grounded){L.vy=-0.22; L.grounded=false;}
+}
+
+/* ================= Skill Wrapper ================= */
+function useSkillWrapper(a,key){
+  if(!a || a.isDefeated) return;
+  
+  // Track skill usage for quests
+  updateQuestProgress('skills', 1);
+  
+  if(a.id==='A1') a1_useSkill(a,key);
+  else if(a.id==='Unique') unique_useSkill(a,key);
+  else if(a.id==='Missy') missy_useSkill(a,key);
+  else genericSkill(a,key);
+  // Crescendo reset if Secret (not implemented separate) or S5
+  if(key==='S5' || key==='X1'){
+    if(st.cds[a.id]){
+      st.cds[a.id].S1=0;
+      st.cds[a.id].S2=0;
+    }
+  }
+}
+function genericSkill(a,key){
+  if(!cdReady(a.id,key)) return;
+  a._castInvT=Math.max(a._castInvT||0,2000);
+  if(key==='S1'){
+    // Small AoE
+    addCast(a.x+8,a.y-40,'#6aa8ff');
+    st.shots.push({x:a.x+80,y:a.y-40,vx:0,vy:0,dmg:Math.round(a.dmg*2.2),life:100,aoe:60});
+  } else if(key==='S2'){
+    // Heal self
+    a.hp=Math.min(a.hpMax,a.hp+Math.round(a.hpMax*0.25));
+    addCast(a.x,a.y-36,'#36c777');
+  } else if(key==='S3'){
+    // Multi-shots
+    for(let i=0;i<5;i++){
+      setTimeout(()=>{
+        st.shots.push({x:a.x+10,y:a.y-40,vx:700,vy:(i-2)*30,speed:700,dmg:Math.round(a.dmg*1.1),life:1600,ownerId:a.id});
+      },i*80);
+    }
+  }
+  startCD(a.id,key);
+}
+
+/* ================= Cooldown Tick ================= */
+function tickCooldowns(dtMs){
+  for(const hero in st.cds){
+    for(const k in st.cds[hero]){
+      st.cds[hero][k]=Math.max(0, st.cds[hero][k]-dtMs);
+    }
+  }
+  if(st._globalSkillLock>0) st._globalSkillLock-=dtMs;
+}
+
+/* ================= Physics & Game Loop ================= */
+function nearestEnemy(a){
+  let best=null,bestD=1e9;
+  for(const e of st.enemies){
+    if(e.hp>0){
+      const d=Math.hypot(e.x-a.x,e.y-a.y);
+      if(d<bestD){bestD=d; best=e;}
+    }
+  }
+  return best;
+}
+function update(dt){
+  const dtMs=dt*1000;
+  // Timers
+  tickCooldowns(dtMs);
+  checkPlayersRevive(dtMs);
+  // Rage update
+  updateA1RageMode(st.players[0],dtMs);
+  // Movement
+  const L=leader();
+  if(!L.isDefeated){
+    L.vx = joyX*0.5;
+    L.vy += 0.0018;
+    L.x += L.vx*DESIGN_W*dt;
+    L.y += L.vy*DESIGN_H*dt;
+    const gy=laneY(L.lane);
+    if(L.y>gy){L.y=gy; L.vy=0; L.grounded=true;}
+    L.x=Math.max(40,Math.min(DESIGN_W-40,L.x));
+  }
+/* ================= Advanced Follower AI ================= */
+function updateAdvancedFollowerAI(dtMs){
+  st.players.forEach((p, i) => {
+    if(p === leader() || p.isDefeated) return;
+    
+    // Independent movement AI
+    if(!p._riding && p._aiState !== 'shopping'){
+      updateFollowerCombatAI(p, dtMs);
+    }
+    
+    // Between-wave inventory management
+    if(st.enemies.every(e => e.hp <= 0) && !p._aiShopCooldown){
+      scheduleFollowerUpkeep(p);
+    }
+  });
+}
+
+function updateFollowerCombatAI(follower, dtMs){
+  const L = leader();
+  
+  // AI State machine
+  if(!follower._aiState) follower._aiState = 'follow';
+  if(!follower._aiTimer) follower._aiTimer = 0;
+  
+  follower._aiTimer += dtMs;
+  
+  switch(follower._aiState){
+    case 'follow':
+      // Standard follow behavior with improved positioning
+      const targetX = L.x - 80 - (Math.random() * 40);
+      const targetY = laneY(follower.lane) + (Math.random() * 20 - 10);
+      
+      follower.x += (targetX - follower.x) * 0.12;
+      follower.y += (targetY - follower.y) * 0.18;
+      
+      // Check for better positioning opportunities
+      if(follower._aiTimer > 3000){
+        const nearestEnemy = findNearestEnemyTo(follower);
+        if(nearestEnemy && Math.hypot(nearestEnemy.x - follower.x, nearestEnemy.y - follower.y) > 200){
+          follower._aiState = 'reposition';
+          follower._aiTimer = 0;
+        }
+      }
+      break;
+      
+    case 'reposition':
+      // Move to better firing position
+      const enemy = findNearestEnemyTo(follower);
+      if(enemy){
+        const optimalX = enemy.x - 180; // Stay at range
+        const optimalY = enemy.y + (Math.random() * 60 - 30);
+        
+        follower.x += (optimalX - follower.x) * 0.15;
+        follower.y += (optimalY - follower.y) * 0.15;
+        
+        // Return to follow after positioning
+        if(follower._aiTimer > 2000 || Math.hypot(optimalX - follower.x, optimalY - follower.y) < 30){
+          follower._aiState = 'follow';
+          follower._aiTimer = 0;
+        }
+      } else {
+        follower._aiState = 'follow';
+        follower._aiTimer = 0;
+      }
+      break;
+      
+    case 'cover':
+      // Take cover behind obstacles or other players
+      const coverX = L.x - 120;
+      const coverY = L.y + 40;
+      
+      follower.x += (coverX - follower.x) * 0.20;
+      follower.y += (coverY - follower.y) * 0.20;
+      
+      if(follower._aiTimer > 3000){
+        follower._aiState = 'follow';
+        follower._aiTimer = 0;
+      }
+      break;
+  }
+  
+  // Adaptive skill usage AI
+  updateFollowerSkillAI(follower, dtMs);
+}
+
+function updateFollowerSkillAI(follower, dtMs){
+  if(!follower._skillCooldowns) follower._skillCooldowns = {};
+  
+  // Update AI skill cooldowns
+  for(const skill in follower._skillCooldowns){
+    follower._skillCooldowns[skill] -= dtMs;
+    if(follower._skillCooldowns[skill] < 0) follower._skillCooldowns[skill] = 0;
+  }
+  
+  // Smart skill usage based on situation
+  const nearestEnemy = findNearestEnemyTo(follower);
+  const enemyCount = st.enemies.filter(e => e.hp > 0 && Math.hypot(e.x - follower.x, e.y - follower.y) < 250).length;
+  
+  // Use skills intelligently
+  if(nearestEnemy && follower._skillCooldowns.S1 <= 0){
+    if(follower.id === 'Unique' && enemyCount >= 3){
+      // Use S1 for mob control
+      unique_useSkill(follower, 'S1');
+      follower._skillCooldowns.S1 = 6000;
+    } else if(follower.id === 'Missy' && follower.hp < follower.hpMax * 0.7){
+      // Use S2 for healing when low
+      missy_useSkill(follower, 'S2');
+      follower._skillCooldowns.S2 = 10000;
+    }
+  }
+  
+  // Emergency skill usage
+  if(follower.hp < follower.hpMax * 0.3 && follower._skillCooldowns.emergency <= 0){
+    if(follower.id === 'Missy'){
+      missy_useSkill(follower, 'S2'); // Heal
+    } else if(follower.id === 'Unique' && follower._drones){
+      unique_useSkill(follower, 'S2'); // Heal drones or summon
+    }
+    follower._skillCooldowns.emergency = 15000;
+  }
+}
+
+function scheduleFollowerUpkeep(follower){
+  if(follower._aiState === 'shopping') return;
+  
+  follower._aiState = 'shopping';
+  follower._aiShopCooldown = 20000; // 20 second cooldown between shopping
+  
+  // Delay the shopping to feel more natural
+  setTimeout(() => {
+    performFollowerUpkeep(follower);
+  }, 1000 + Math.random() * 2000);
+}
+
+function performFollowerUpkeep(follower){
+  if(follower.isDefeated) return;
+  
+  notify(`${follower.id} is managing inventory...`, '#6aa8ff');
+  
+  // Auto-organize inventory
+  autoOrganizeInventoryFor(follower);
+  
+  // Auto-sell low-value items
+  autoSellItemsFor(follower);
+  
+  // Smart shopping based on needs
+  smartShopFor(follower);
+  
+  // Return to normal AI
+  setTimeout(() => {
+    follower._aiState = 'follow';
+    follower._aiTimer = 0;
+  }, 3000);
+}
+
+function autoOrganizeInventoryFor(follower){
+  // Simulate inventory organization
+  // In a full implementation, this would sort items by type, rarity, etc.
+  if(Math.random() < 0.3){
+    notify(`${follower.id} organized inventory`, '#6aa8ff');
+  }
+}
+
+function autoSellItemsFor(follower){
+  // Simulate selling low-value items
+  const sellChance = Math.random();
+  if(sellChance < 0.4){
+    const goldGain = 50 + Math.floor(Math.random() * 100);
+    st.gold += goldGain;
+    updateCurrencies();
+    notify(`${follower.id} sold items (+${goldGain} gold)`, '#ffd56a');
+  }
+}
+
+function smartShopFor(follower){
+  // AI shopping based on follower needs
+  const needsHealing = follower.hp < follower.hpMax * 0.8;
+  const hasGold = st.gold >= 60;
+  
+  if(needsHealing && hasGold && Math.random() < 0.6){
+    // Buy healing item
+    st.gold -= 60;
+    const heal = Math.round(follower.hpMax * 0.4);
+    follower.hp = Math.min(follower.hpMax, follower.hp + heal);
+    updateCurrencies();
+    addFloater(follower.x, follower.y-60, '+'+heal+' HP', '#36c777');
+    notify(`${follower.id} bought HP potion`, '#36c777');
+  } else if(st.gold >= 90 && Math.random() < 0.3){
+    // Buy rage pill
+    st.gold -= 90;
+    follower.rage = Math.min(follower.rageMax, follower.rage + 30);
+    updateCurrencies();
+    notify(`${follower.id} bought rage pill`, '#f9cc2b');
+  }
+}
+
+function findNearestEnemyTo(character){
+  let nearest = null;
+  let bestDist = Infinity;
+  
+  for(const e of st.enemies){
+    if(e.hp <= 0) continue;
+    const dist = Math.hypot(e.x - character.x, e.y - character.y);
+    if(dist < bestDist){
+      bestDist = dist;
+      nearest = e;
+    }
+  }
+  return nearest;
+}
+
+  // Enemy update
+  for(const e of st.enemies){
+    if(e.hp<=0) continue;
+    
+    // Update boss tracking
+    if(e.kind === 'boss') {
+      st.bossHP = e.hp;
+      st.bossMax = e.max;
+    }
+    
+    // Basic move
+    e.x += (e.vx||0)*DESIGN_W*dt;
+    
+    // Flying enemy movement
+    if(e.isFlying && !e._diveBombing){
+      e.y += (e.vy||0)*DESIGN_H*dt;
+    }
+    
+    // Behavior
+    applyEnemyBehavior(e,dt);
+    if(e.fireCD!=null){
+      e.fireCD-=dtMs;
+      if(e.fireCD<=0){
+        enemyShoot(e);
+        e.fireCD=(e.kind==='miniboss'?500:900)+Math.random()*600;
+      }
+    }
+  }
+  updateEnemyFormations();
+  
+  // Update advanced follower AI
+  updateAdvancedFollowerAI(dtMs);
+  
+  // Update vehicles
+  updateVehicles(dtMs);
+  
+  // Update pets
+  updatePets(dtMs);
+  
+  // Update action button context
+  updateActionButtonText();
+  
+  // Update AI shop cooldowns
+  st.players.forEach(p => {
+    if(p._aiShopCooldown > 0) p._aiShopCooldown -= dtMs;
+  });
+  updateEnemyFormations();
+
+  // Player shots
+  for(const s of st.shots){
+    s.x += (s.vx||0)*dt;
+    s.y += (s.vy||0)*dt;
+    s.life -= dtMs;
+    
+    // Special behavior for unique projectiles
+    if(s.kind === 'unique_stellar_beam' && s.persistent && s.tickRate) {
+      if(!s.lastTick) s.lastTick = 0;
+      s.lastTick += dtMs;
+      if(s.lastTick >= s.tickRate) {
+        s.lastTick = 0;
+        // Continuous damage to enemies in beam area
+        for(const e of st.enemies) {
+          if(e.hp > 0 && Math.abs(e.x - s.x) < s.w/2 && Math.abs(e.y - s.y) < s.h/2) {
+            e.hp -= s.dmg;
+            addFloater(e.x, e.y-20, '-'+s.dmg, '#6aa8ff');
+            if(e.hp <= 0) onEnemyKilled(e);
+          }
+        }
+      }
+    }
+    
+    // Update attached beams
+    if(s.attachedTo && s.attachedTo.x !== undefined) {
+      s.x = s.attachedTo.x + 30;
+      s.y = s.attachedTo.y - 40;
+    }
+    
+    // Assistance modules
+    if(s.kind === 'unique_module' && s.assistCD) {
+      s.lastAssist = (s.lastAssist || 0) + dtMs;
+      if(s.lastAssist >= s.assistCD && s.hp > 0) {
+        // Find nearest enemy to assist with
+        const nearestEnemy = st.enemies.find(e => e.hp > 0 && Math.hypot(e.x - s.x, e.y - s.y) < 200);
+        if(nearestEnemy) {
+          st.shots.push({
+            x: s.x, y: s.y, vx: 400, vy: 0,
+            dmg: 20, life: 1000, color: '#00ff88', ownerId: s.ownerId
+          });
+          s.lastAssist = 0;
+        }
+      }
+    }
+    
+    // Maneki taunt behavior
+    if(s.kind === 'missy_maneki' && s.taunt && s.hp > 0) {
+      if(!s.lastTaunt) s.lastTaunt = 0;
+      s.lastTaunt += dtMs;
+      if(s.lastTaunt >= (s.tauntCD || 2000)) {
+        // Pull nearby enemies towards this guardian
+        for(const e of st.enemies) {
+          if(e.hp > 0 && Math.hypot(e.x - s.x, e.y - s.y) < s.pullRadius) {
+            const dx = s.x - e.x;
+            const dy = s.y - e.y;
+            const dist = Math.hypot(dx, dy);
+            if(dist > 0) {
+              e.x += (dx / dist) * 20 * dt;
+              e.y += (dy / dist) * 20 * dt;
+            }
+          }
+        }
+        s.lastTaunt = 0;
+      }
+    }
+    
+    // Royal bells healing and loot pull
+    if(s.kind === 'missy_royal_bell' && s.hp > 0) {
+      if(!s.lastHeal) s.lastHeal = 0;
+      s.lastHeal += dtMs;
+      if(s.lastHeal >= s.healRate) {
+        // Heal nearby players
+        st.players.forEach(p => {
+          if(!p.isDefeated && Math.hypot(p.x - s.x, p.y - s.y) < 150) {
+            const heal = Math.round(p.hpMax * 0.02);
+            p.hp = Math.min(p.hpMax, p.hp + heal);
+            addFloater(p.x, p.y-30, '+'+heal, '#36c777');
+          }
+        });
+        s.lastHeal = 0;
+      }
+      
+      // Loot pull effect (would need pickup system to be fully implemented)
+      if(s.lootPull && st.pickups) {
+        for(const pickup of st.pickups) {
+          const dist = Math.hypot(pickup.x - s.x, pickup.y - s.y);
+          if(dist < 200 && dist > 0) {
+            const dx = s.x - pickup.x;
+            const dy = s.y - pickup.y;
+            pickup.x += (dx / dist) * 100 * dt;
+            pickup.y += (dy / dist) * 100 * dt;
+          }
+        }
+      }
+    }
+  }
+  st.shots = st.shots.filter(s => s.life > 0 && (!s.hp || s.hp > 0));
+
+  // Enemy shots
+  for(const b of st.eShots){
+    b.x += b.vx*dt;
+    b.y += b.vy*dt;
+    b.life -= dtMs;
+  }
+  st.eShots = st.eShots.filter(b=>b.life>0);
+
+  // Collisions: player shots -> enemies
+  for(const s of st.shots){
+    for(const e of st.enemies){
+      if(e.hp<=0) continue;
+      let hit = false;
+      
+      // Special collision for new A1 skills
+      if(s.kind==='a1_void_impale'){
+        // Void Impale: rectangular hit area
+        const dx = Math.abs(e.x - s.x);
+        const dy = Math.abs(e.y - s.y);
+        hit = dx < (s.w/2) && dy < (s.h/2);
+      } else if(s.kind==='astral_sever_h'){
+        // Horizontal slash: full-width
+        hit = Math.abs(e.y - s.y) < (s.h/2);
+      } else if(s.kind==='astral_sever_v'){
+        // Vertical slash: full-height
+        hit = Math.abs(e.x - s.x) < (s.w/2);
+      } else {
+        // Standard collision
+        const dx=e.x-s.x, dy=e.y-s.y;
+        const dist=Math.hypot(dx,dy);
+        hit = (s.aoe && dist < s.aoe) || (!s.aoe && dist<28);
+      }
+      
+      if(hit){
+        let dmg=s.dmg;
+        if(s.kind==='a1_bomb'){
+          // apply armor shred debuff
+          e.armorShredDebuff=Math.max(e.armorShredDebuff||0, s.armorShred||0);
+          setTimeout(()=>{ if(e.armorShredDebuff) e.armorShredDebuff-= (s.armorShred||0); },6000);
+        } else if(s.kind==='a1_void_impale' && e.hp <= dmg && s.hpRecovery){
+          // Void Impale: HP recovery on kill
+          const caster = st.players.find(p => p.id === s.ownerId);
+          if(caster){
+            caster.hp = Math.min(caster.hpMax, caster.hp + s.hpRecovery);
+            addFloater(caster.x, caster.y-30, '+'+s.hpRecovery+' HP', '#36c777');
+          }
+        }
+        e.hp-=dmg;
+        addFloater(e.x,e.y-18,'-'+dmg,'#ff7a6a');
+        if(!s.pierce) s.life=0; else s.pierce--;
+        if(e.hp<=0) onEnemyKilled(e);
+      }
+    }
+  }
+
+  // Enemy shots -> players (target leader mostly)
+  for(const b of st.eShots){
+    for(const p of st.players){
+      if(p.isDefeated) continue;
+      if(Math.abs(p.x-b.x)<20 && Math.abs(p.y-b.y)<30){
+        const dmg=8;
+        damagePlayer(p,dmg);
+        b.life=0;
+        break;
+      }
+    }
+  }
+
+  // Pickups (very simple)
+  for(const it of st.pickups){
+    it.life -= dtMs;
+  }
+  st.pickups = st.pickups.filter(p=>p.life>0);
+
+  // Effects
+  for(const ef of st.effects) ef.life-=dtMs;
+  st.effects=st.effects.filter(e=>e.life>0);
+
+  // Basic Attack
+  if(st.players[0]._basicCD>0) st.players[0]._basicCD-=dtMs;
+  if(leader()._basicCD>0) leader()._basicCD-=dtMs;
+  basicAttackLoop();
+
+  // Wave progression: if no enemies remain
+  if(st.enemies.every(e=>e.hp<=0)){
+    st.wave++;
+    
+    // Update quest progress
+    updateQuestProgress('stage', 0); // Just check current stage
+    
+    if(st.wave>st.wavesPerStage){
+      st.stage++; st.wave=1;
+      updateQuestProgress('stage', 0); // Check stage progress
+      
+      // Check for endless mode unlock
+      if(st.stage > 10){
+        checkEndlessMode();
+      }
+    }
+    
+    // Spawn next wave
+    if(st.endlessMode){
+      spawnEndlessWave();
+    } else {
+      spawnWave();
+    }
+  }
+  // Game Over check
+  checkGameOver();
+  // Mirror leader hp for HUD
+  mirrorLeaderHP();
+}
+
+/* ===================== Drawing ===================== */
+function draw(){
+  ctx.clearRect(0,0,DESIGN_W,DESIGN_H);
+  // BG
+  ctx.fillStyle='#0f1826'; ctx.fillRect(0,0,DESIGN_W,DESIGN_H);
+  ctx.fillStyle='#14243a'; ctx.fillRect(0,DESIGN_H-160,DESIGN_W,160);
+  // Players
+  for(const p of st.players){
+    if(p.isDefeated) continue;
+    // Character rectangle
+    ctx.fillStyle = p.id==='A1'?'#ff4d4f':(p.id==='Unique'?'#6aa8ff':'#ff8c6a');
+    ctx.fillRect(p.x-18,p.y-44,36,60);
+    // Overhead HP bar (personal)
+    const ratio=p.hp/p.hpMax;
+    ctx.fillStyle='#1e2e34'; ctx.fillRect(p.x-24,p.y-56,48,4);
+    ctx.fillStyle='#36c777'; ctx.fillRect(p.x-24,p.y-56,48*ratio,4);
+    // Rage bar
+    const rRatio=p.rage/p.rageMax;
+    ctx.fillStyle='#2d2208'; ctx.fillRect(p.x-24,p.y-62,48,3);
+    ctx.fillStyle='#f9cc2b'; ctx.fillRect(p.x-24,p.y-62,48*rRatio,3);
+    // Secret gauge bar
+    const sRatio=p.secretGauge/p.secretMax;
+    ctx.fillStyle='#2d1a2d'; ctx.fillRect(p.x-24,p.y-68,48,3);
+    ctx.fillStyle='#ff6aa8'; ctx.fillRect(p.x-24,p.y-68,48*sRatio,3);
+    // Rage trail aura
+    if(p.id==='A1' && (p.rageOn || p._rageTrailT>0)){
+      const t=p.rageOn?1:Math.max(0,p._rageTrailT/1000);
+      ctx.globalAlpha=0.15+0.15*Math.sin(st.time*8);
+      ctx.fillStyle='#ff4d4f';
+      ctx.beginPath();ctx.arc(p.x,p.y-24,42,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;
+    }
+  }
+  // Enemy
+  for(const e of st.enemies){
+    if(e.hp<=0) continue;
+    ctx.fillStyle = e.kind==='miniboss'?'#ffbb9a':(e.kind==='boss'?'#ff4d4f':'#ff6e6e');
+    ctx.fillRect(e.x-20,e.y-36,40,60);
+    const ratio=e.hp/e.max;
+    ctx.fillStyle='#2a1e1e'; ctx.fillRect(e.x-24,e.y-46,48,4);
+    ctx.fillStyle='#ff8c6a'; ctx.fillRect(e.x-24,e.y-46,48*ratio,4);
+  }
+  // Projectiles
+  ctx.fillStyle='#9ad1ff';
+  for(const s of st.shots){
+    if(s.kind==='wave'){
+      ctx.fillStyle=s.color||'#9ad1ff';
+      ctx.fillRect(s.x - (s.w||18)/2, s.y - (s.h||6)/2, s.w||18, s.h||6);
+    } else if(s.kind==='a1_bomb'){
+      ctx.fillStyle='#ff4d4f';
+      ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill();
+    } else if(s.kind==='astral_sever_h' || s.kind==='astral_sever_v'){
+      ctx.fillStyle='#ffaa00';
+      ctx.globalAlpha=0.7;
+      ctx.fillRect(s.x - s.w/2, s.y - s.h/2, s.w, s.h);
+      ctx.globalAlpha=1;
+    } else {
+      ctx.fillStyle='#9ad1ff';
+      ctx.fillRect(s.x-4,s.y-3,8,6);
+    }
+  }
+  ctx.fillStyle='#ffb18b';
+  for(const b of st.eShots){
+    ctx.fillRect(b.x-3,b.y-2,6,4);
+  }
+  // Interactive objects (pickups, chests, etc.)
+  ctx.fillStyle='#6aa8ff';
+  for(const pickup of st.pickups){
+    if(pickup.kind === 'chest'){
+      ctx.fillStyle = pickup.chestType === 'treasure' ? '#ffd56a' : '#8b7355';
+      ctx.fillRect(pickup.x-12, pickup.y-20, 24, 20);
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillRect(pickup.x-8, pickup.y-18, 16, 4);
+    } else if(pickup.kind === 'switch'){
+      ctx.fillStyle = pickup.activated ? '#36c777' : '#ff6aa8';
+      ctx.fillRect(pickup.x-8, pickup.y-16, 16, 16);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(pickup.x-4, pickup.y-12, 8, 8);
+    } else if(pickup.kind === 'ladder'){
+      ctx.fillStyle = '#8b7355';
+      ctx.fillRect(pickup.x-4, pickup.y-40, 8, 80);
+      ctx.fillRect(pickup.x-12, pickup.y-30, 24, 4);
+      ctx.fillRect(pickup.x-12, pickup.y-10, 24, 4);
+      ctx.fillRect(pickup.x-12, pickup.y+10, 24, 4);
+    } else {
+      // Generic pickup
+      ctx.fillStyle='#6aa8ff';
+      ctx.fillRect(pickup.x-6, pickup.y-6, 12, 12);
+    }
+  }
+  
+  // Vehicle selection buttons
+  if(st.vehicles){
+    for(const vehicle of st.vehicles){
+      if(vehicle._selectionButtons){
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        for(const btn of vehicle._selectionButtons){
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillRect(btn.x - btn.w/2, btn.y - btn.h/2, btn.w, btn.h);
+          ctx.fillStyle = '#fff';
+          ctx.fillText(btn.text, btn.x, btn.y + 4);
+        }
+      }
+    }
+  }
+  ctx.font='12px sans-serif';
+  ctx.textAlign='center';
+  for(const ef of st.effects){
+    ctx.globalAlpha = Math.max(0, ef.life / (ef.max||800));
+    ctx.fillStyle = ef.color||'#fff';
+    if(ef.kind==='cast'){
+      ctx.strokeStyle=ef.color||'#6aa8ff';
+      ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(ef.x,ef.y,12+(1-(ef.life/(ef.max||320)))*20,0,Math.PI*2);ctx.stroke();
+    } else if(ef.kind==='impact'){
+      ctx.strokeStyle=ef.color||'#ff7a6a';
+      ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(ef.x,ef.y,8+(1-(ef.life/(ef.max||260)))*10,0,Math.PI*2);ctx.stroke();
+    } else if(ef.kind==='after'){
+      ctx.fillStyle=ef.color||'#ff4d4f';
+      ctx.beginPath();ctx.arc(ef.x,ef.y,10,0,Math.PI*2);ctx.fill();
+    } else if(ef.txt){
+      ctx.fillText(ef.txt,ef.x,ef.y);
+    }
+    ctx.globalAlpha=1;
+  }
+
+  // HUD updates
+  updateTeamStatusUI();
+  updateSecretGaugeUI();
+  document.getElementById('hpFill').style.transform='scaleX('+(st.hp/st.hpMax)+')';
+  document.getElementById('mpFill').style.transform='scaleX('+ ( (st.mp||100)/(st.mpMax||100) ) +')';
+  document.getElementById('bossFill').style.transform='scaleX('+(st.bossAlive?(st.bossHP/st.bossMax):0)+')';
+  const xpNext=xpToNext(st.level);
+  document.getElementById('xpDomFill').style.transform='scaleX('+Math.min(1, st.xp/xpNext)+')';
+  document.getElementById('xpDomLabel').textContent=`${Math.floor(st.xp)}/${xpNext} XP — Lv ${st.level}`;
+  document.getElementById('stagePill').textContent=`Stage ${st.stage} • Wave ${st.wave}/${st.wavesPerStage} • Kills ${st.kills}`;
+  document.getElementById('boostPill').textContent=`Lv ${st.level} • Booster: -`;
+}
+
+/* ================== Main Loop ================== */
+let last=performance.now();
+function loop(t){
+  const dt=(t-last)/1000; last=t;
+  if(st.running){
+    st.time+=dt*st.speed; st.dt=dt*st.speed;
+    if(!st.started){ st.started=true; spawnWave(); }
+    update(st.dt);
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ================== Damage Mirror & Simple Systems ================== */
+st.mp=100; st.mpMax=100; st.mpRegen=8;
+function mpTick(dt){ st.mp=Math.min(st.mpMax, st.mp + st.mpRegen*dt); }
+
+/* ================ Damage Intakes replaced with per-player ================ */
+/* Already integrated through damagePlayer in collisions */
+
+/* ================= Key Systems End ================= */
+
+/* Initial build */
+tallyTalentStats();
+updateCurrencies();
+renderTalentLanes(); // pre-render lanes
+initializeDailyQuests(); // Initialize quest system
+
+/* ================ Auto Settings Panel ================= */
+document.getElementById('setting-auto-ai').addEventListener('change',e=>{
+  st.auto=e.target.checked;
+  $('#btnAuto').textContent='Auto: '+(st.auto?'ON':'OFF');
+});
+document.getElementById('setting-parallax').addEventListener('change',e=>{
+  st.useParallax=e.target.checked;
+});
+
+/* ================ Public API (dev) ================= */
+window.game={
+  st,
+  addGold(n){st.gold+=n;updateCurrencies();},
+  addItem(i){addItemToBag(i);}
+};
+</script>
+</body>
+</html>
