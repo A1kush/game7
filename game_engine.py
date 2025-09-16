@@ -48,6 +48,10 @@ class Skill:
     hp_cost: float = 0.0
     description: str = ""
     special_effects: Dict[str, Any] = None
+    is_melee: bool = False
+    is_projectile: bool = False
+    hit_count: int = 1
+    bullet_reflect_count: int = 0
 
     def __post_init__(self):
         if self.special_effects is None:
@@ -81,6 +85,11 @@ class PlayerStats:
     revive_time: float = 0.0
     rage_active: bool = False
     rage_duration: float = 0.0
+    invulnerable_time: float = 0.0
+
+    # Combat attributes
+    is_melee_attacker: bool = False
+    can_reflect_bullets: bool = False
 
 
 @dataclass
@@ -139,6 +148,8 @@ class Character:
             if self.stats.secret_gauge < self.stats.max_secret_gauge:
                 return False
             self.stats.secret_gauge = 0
+            # Grant 0.4s invulnerability for Secret skill
+            self.stats.invulnerable_time = 0.4
 
         # Special conditions for Rage skill
         if skill_type == SkillType.R1:
@@ -146,16 +157,76 @@ class Character:
                 return False
             self.stats.rage_active = True
             self.stats.rage_duration = 10.0  # 10 seconds
+            # Grant 0.4s invulnerability for Rage skill
+            self.stats.invulnerable_time = 0.4
 
         return True
 
+    def use_basic_attack(self) -> Dict[str, Any]:
+        """Execute basic attack and return attack details"""
+        if "basic" not in self.skills:
+            return {"success": False, "reason": "No basic attack defined"}
+
+        basic_skill = self.skills["basic"]
+        attack_result = {
+            "success": True,
+            "skill_name": basic_skill.name,
+            "is_melee": basic_skill.is_melee,
+            "hit_count": basic_skill.hit_count,
+            "total_damage": 0,
+            "bullet_reflect_count": basic_skill.bullet_reflect_count,
+            "visual_effects": [],
+        }
+
+        # Calculate damage for each hit
+        for hit in range(basic_skill.hit_count):
+            damage = self.calculate_damage_for_skill(basic_skill)
+            attack_result["total_damage"] += damage
+
+            # Add visual effect for each melee swing
+            if basic_skill.is_melee:
+                attack_result["visual_effects"].append(
+                    {
+                        "type": "slash",
+                        "hit_number": hit + 1,
+                        "damage": damage,
+                        "direction": "left" if hit % 2 == 0 else "right",
+                    }
+                )
+
+        return attack_result
+
+    def calculate_damage_for_skill(self, skill: Skill) -> float:
+        """Calculate damage for a specific skill"""
+        base_damage = skill.base_damage * self.stats.attack / 100
+
+        # Apply rage bonus
+        if self.stats.rage_active:
+            base_damage *= 1.25
+
+        # Apply critical hit
+        if random.random() < self.stats.crit_chance:
+            base_damage *= self.stats.crit_damage
+
+        return base_damage
+
     def update_rage(self, delta_time: float):
-        """Update rage state"""
+        """Update rage state and invulnerability"""
         if self.stats.rage_active:
             self.stats.rage_duration -= delta_time
             if self.stats.rage_duration <= 0:
                 self.stats.rage_active = False
                 self.stats.rage_duration = 0
+
+        # Update invulnerability frames
+        if self.stats.invulnerable_time > 0:
+            self.stats.invulnerable_time -= delta_time
+            if self.stats.invulnerable_time < 0:
+                self.stats.invulnerable_time = 0
+
+    def is_invulnerable(self) -> bool:
+        """Check if character is currently invulnerable"""
+        return self.stats.invulnerable_time > 0
 
     def calculate_damage(self, skill_type: SkillType) -> float:
         """Calculate damage for a skill"""
@@ -194,14 +265,27 @@ class GameEngine:
 
     def _initialize_characters(self):
         """Initialize the three main characters"""
-        # A1 - Boss Slayer
+        # A1 - Boss Slayer (MELEE ONLY)
         a1_skills = {
+            # Basic Attack: 5-hit sword combo, no projectiles, reflects bullets
+            "basic": Skill(
+                "Void Sword Combo",
+                SkillType.S1,  # Using S1 for basic attack categorization
+                120.0,  # Base damage per hit (5 hits total)
+                0.0,  # No cooldown for basic attack
+                description="5-hit melee combo. Each swing reflects 2-5 bullets. No projectiles.",
+                is_melee=True,
+                is_projectile=False,
+                hit_count=5,
+                bullet_reflect_count=3,  # Average 2-5 bullets reflected
+            ),
             SkillType.S1: Skill(
                 "Umbral Crescent",
                 SkillType.S1,
                 180.0,
                 3.0,
-                description="Piercing crescent with Shield Breaker. Resets on kill.",
+                description="Piercing energy wave projectile. Resets on kill.",
+                is_projectile=True,
             ),
             SkillType.S2: Skill(
                 "Vortex Cross",
@@ -209,27 +293,31 @@ class GameEngine:
                 150.0,
                 4.0,
                 description="Dashing X-explosion that slows enemies.",
+                is_melee=True,
             ),
             SkillType.S3: Skill(
                 "Mirror Reversal",
                 SkillType.S3,
                 200.0,
                 6.0,
-                description="1.2s parry that triggers counter and resets S2 cooldown.",
+                description="Parry that reflects almost all bullets and triggers counter.",
+                is_melee=True,
+                bullet_reflect_count=10,  # Can parry almost all incoming bullets
             ),
             SkillType.S4: Skill(
                 "Riftfall Impact",
                 SkillType.S4,
                 250.0,
                 8.0,
-                description="Leap shockwave that shreds armor and knocks up enemies.",
+                description="Leap shockwave that shreds armor.",
+                is_melee=True,
             ),
             SkillType.R1: Skill(
                 "Nocturne Ascendance",
                 SkillType.R1,
                 0.0,
                 60.0,
-                description="10s: +25% ATK, +20% attack speed, enhanced parries.",
+                description="Rage mode: +ATK, +attack speed. Grants 0.4s invulnerability.",
             ),
             SkillType.X1: Skill(
                 "Astral Sever EX",
@@ -237,7 +325,8 @@ class GameEngine:
                 1000.0,
                 0.0,
                 20.0,
-                description="Full-screen cross-slash. Damage scales with kills.",
+                description="Full-screen cross-slash. 20% max HP cost. Grants 0.4s invulnerability.",
+                is_melee=True,
             ),
         }
 
@@ -245,7 +334,14 @@ class GameEngine:
             "A1",
             "A1 - Boss Slayer",
             CharacterClass.A1,
-            PlayerStats(attack=25.0, defense=15.0, max_hp=120.0, hp=120.0),
+            PlayerStats(
+                attack=25.0,
+                defense=15.0,
+                max_hp=120.0,
+                hp=120.0,
+                is_melee_attacker=True,
+                can_reflect_bullets=True,
+            ),
             a1_skills,
         )
 
@@ -386,6 +482,42 @@ class GameEngine:
         for char in self.characters.values():
             char.update_rage(delta_time)
 
+            # Update revival countdown
+            if char.stats.is_defeated and char.stats.revive_time > 0:
+                char.stats.revive_time -= delta_time
+                if char.stats.revive_time <= 0:
+                    # Auto-revive when timer expires
+                    self.revive_character(char.id, instant=True)
+
+    def use_basic_attack(self, character_id: str = None) -> Dict[str, Any]:
+        """Execute basic attack for specified character"""
+        if character_id is None:
+            character_id = self.active_character
+
+        char = self.get_character(character_id)
+        if not char or char.stats.is_defeated:
+            return {"success": False, "reason": "Character not available"}
+
+        return char.use_basic_attack()
+
+    def reflect_bullets(self, character_id: str, bullet_count: int) -> Dict[str, Any]:
+        """Handle bullet reflection for a character"""
+        char = self.get_character(character_id)
+        if not char or not char.stats.can_reflect_bullets:
+            return {"success": False, "reason": "Character cannot reflect bullets"}
+
+        # Check if A1 and using melee attack
+        if char.character_class == CharacterClass.A1 and char.stats.is_melee_attacker:
+            reflection_result = {
+                "success": True,
+                "reflected_bullets": min(bullet_count, 5),  # Max 5 bullets per swing
+                "character": character_id,
+                "visual_effect": "bullet_reflection",
+            }
+            return reflection_result
+
+        return {"success": False, "reason": "Reflection conditions not met"}
+
     def defeat_character(self, character_id: str):
         """Handle character defeat"""
         char = self.get_character(character_id)
@@ -447,7 +579,7 @@ class GameEngine:
                     "experience_needed": char.experience_needed,
                     "skill_points": char.skill_points,
                     "skills": {
-                        skill_type.value: {
+                        (skill_type.value if hasattr(skill_type, 'value') else str(skill_type)): {
                             "name": skill.name,
                             "skill_type": skill.skill_type.value,
                             "base_damage": skill.base_damage,
@@ -455,6 +587,10 @@ class GameEngine:
                             "hp_cost": skill.hp_cost,
                             "description": skill.description,
                             "special_effects": skill.special_effects,
+                            "is_melee": skill.is_melee,
+                            "is_projectile": skill.is_projectile,
+                            "hit_count": skill.hit_count,
+                            "bullet_reflect_count": skill.bullet_reflect_count,
                         }
                         for skill_type, skill in char.skills.items()
                     },
